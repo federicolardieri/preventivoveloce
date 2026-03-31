@@ -1,0 +1,12 @@
+{
+  "id": "1",
+  "number": "001",
+  "date": "2024-03-27",
+  "validUntil": "2024-04-27",
+  "client": {
+    "name": "Test Client",
+    "email": "test@example.com"
+  },
+  "items": [],
+  "template": "modern"
+}
