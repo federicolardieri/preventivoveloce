@@ -154,7 +154,7 @@ export default function DashboardHome() {
             <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <p className="text-sm font-bold text-red-800">{downloadError}</p>
           </div>
-          <a href="/#pricing" className="text-sm text-red-600 underline font-bold whitespace-nowrap ml-4">
+          <a href="/impostazioni?tab=piano" className="text-sm text-red-600 underline font-bold whitespace-nowrap ml-4">
             Sblocca il piano →
           </a>
         </div>

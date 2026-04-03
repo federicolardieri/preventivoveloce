@@ -20,7 +20,9 @@ import {
 import { Copy, Eye, MoreHorizontal, Archive, Download, FileText, Search, Filter, AlertTriangle, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DuplicateDialog } from "./DuplicateDialog";
-import { useRouter } from "next/navigation";
+import { SendQuoteDialog } from "@/components/quote/SendQuoteDialog";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,14 +78,41 @@ function isExpired(quote: Quote): boolean {
   return expiryDate(quote) < new Date();
 }
 
-export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
+export function QuotesTable(props: QuotesTableProps) {
+  return (
+    <Suspense fallback={<div className="h-40 animate-pulse bg-muted/20 rounded-2xl" />}>
+      <QuotesTableContent {...props} />
+    </Suspense>
+  );
+}
+
+function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
+  const searchParams = useSearchParams();
   const { quotesList, archiveQuote, archiveInSupabase, duplicateQuote, changeStatus } = useQuoteStore();
   const router = useRouter();
+  
+  useEffect(() => {
+    const success = searchParams.get('success');
+    if (success === 'sent') {
+      setSendResult({ id: 'url', ok: true });
+      // Clear URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('success');
+      router.replace(`/preventivi${params.toString() ? '?' + params.toString() : ''}`, { scroll: false });
+    } else if (success === 'saved') {
+      setSaveResult(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('success');
+      router.replace(`/preventivi${params.toString() ? '?' + params.toString() : ''}`, { scroll: false });
+    }
+  }, [searchParams, router]);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all');
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [pendingDuplicateId, setPendingDuplicateId] = useState<string | null>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [pendingSendQuote, setPendingSendQuote] = useState<Quote | null>(null);
 
   const pillCounts = STATUS_PILLS.reduce<Record<string, number>>((acc, p) => {
     acc[p.value] = p.value === 'all'
@@ -119,20 +148,23 @@ export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendResult, setSendResult] = useState<{ id: string; ok: boolean } | null>(null);
+  const [saveResult, setSaveResult] = useState<boolean>(false);
 
-  const handleSend = async (quote: Quote) => {
-    if (!quote.client?.email) return;
+  const handleSend = async (quote: Quote, customMessage: string): Promise<boolean> => {
+    if (!quote.client?.email) return false;
     setSendingId(quote.id);
     setSendResult(null);
     try {
       const res = await fetch('/api/email/send-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quoteId: quote.id }),
+        body: JSON.stringify({ quoteId: quote.id, customMessage }),
       });
       setSendResult({ id: quote.id, ok: res.ok });
+      return res.ok;
     } catch {
       setSendResult({ id: quote.id, ok: false });
+      return false;
     } finally {
       setSendingId(null);
     }
@@ -189,7 +221,7 @@ export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
             <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
             <p className="text-sm font-bold text-red-800">{downloadError}</p>
           </div>
-          <a href="/#pricing" className="text-sm text-red-600 underline font-bold whitespace-nowrap ml-4">
+          <a href="/impostazioni?tab=piano" className="text-sm text-red-600 underline font-bold whitespace-nowrap ml-4">
             Sblocca il piano →
           </a>
         </div>
@@ -200,6 +232,14 @@ export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
             {sendResult.ok ? 'Email inviata! Il cliente ha ricevuto il preventivo con il link di accettazione.' : 'Errore durante l\'invio. Riprova.'}
           </p>
           <button onClick={() => setSendResult(null)} className="ml-4 text-xs text-slate-400 hover:text-slate-600">✕</button>
+        </div>
+      )}
+      {saveResult && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+          <p className="text-sm font-bold text-emerald-800">
+            Preventivo salvato correttamente nello storico!
+          </p>
+          <button onClick={() => setSaveResult(false)} className="ml-4 text-xs text-slate-400 hover:text-slate-600">✕</button>
         </div>
       )}
       {showFilters && (
@@ -353,7 +393,10 @@ export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
                             <span>Scarica PDF</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleSend(quote)}
+                            onClick={() => {
+                              setPendingSendQuote(quote);
+                              setSendDialogOpen(true);
+                            }}
                             disabled={!quote.client?.email || sendingId === quote.id}
                             className="cursor-pointer text-emerald-700 focus:text-emerald-700 focus:bg-emerald-50 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                           >
@@ -403,6 +446,23 @@ export function QuotesTable({ limit, showFilters }: QuotesTableProps) {
           const newId = useQuoteStore.getState().currentQuote?.id;
           if (newId) router.push(`/preventivi/${newId}`);
           setPendingDuplicateId(null);
+        }}
+      />
+
+      <SendQuoteDialog
+        open={sendDialogOpen}
+        onOpenChange={(v) => { setSendDialogOpen(v); if (!v) setPendingSendQuote(null); }}
+        clientEmail={pendingSendQuote?.client?.email || ''}
+        clientName={pendingSendQuote?.client?.name || ''}
+        quoteNumber={pendingSendQuote?.number || ''}
+        onConfirmSend={async (msg) => {
+          if (!pendingSendQuote) return false;
+          const ok = await handleSend(pendingSendQuote, msg);
+          if (ok) {
+            setSendDialogOpen(false);
+            setPendingSendQuote(null);
+          }
+          return ok;
         }}
       />
     </div>

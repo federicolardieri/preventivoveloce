@@ -30,6 +30,7 @@ export interface QuoteTheme {
   logoScale?: number;
   logoOffsetX?: number;  // offset orizzontale in pt (positivo = destra)
   logoOffsetY?: number;  // offset verticale in pt (positivo = basso)
+  logoPadding?: number;  // padding interno alla forma (0–0.5); negativo = taglia i bordi
   showFooterNotes: boolean;
   showPaymentTerms: boolean;
 }

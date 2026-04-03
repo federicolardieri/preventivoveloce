@@ -2,8 +2,8 @@
 // @ts-nocheck
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
 import { Building2, CreditCard, Plus, Trash2, ChevronDown, ChevronUp, Check, Zap, Crown, Sparkles, AlertCircle, User, Camera, Mail, Phone, Loader2, X, ZoomIn, ZoomOut } from "lucide-react";
@@ -502,12 +502,15 @@ const PLANS = [
 type SettingsSection = 'profilo' | 'aziende' | 'piano';
 
 // ── Main Page ───────────────────────────────────────────────────────────
-export default function ImpostazioniPage() {
+function ImpostazioniPageInner() {
   const { companies, addCompany, updateCompany, removeCompany } = useProfileStore();
   const [newCardOpen, setNewCardOpen] = useState(false);
   const [newForm, setNewForm] = useState<FormData>(emptyForm());
   const [adding, setAdding] = useState(false);
-  const [activeSection, setActiveSection] = useState<SettingsSection>('profilo');
+  const searchParams = useSearchParams();
+  const [activeSection, setActiveSection] = useState<SettingsSection>(
+    (searchParams.get('tab') as SettingsSection) || 'profilo'
+  );
 
   // User & Plan state
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -851,5 +854,13 @@ export default function ImpostazioniPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ImpostazioniPage() {
+  return (
+    <Suspense fallback={null}>
+      <ImpostazioniPageInner />
+    </Suspense>
   );
 }

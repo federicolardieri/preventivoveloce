@@ -46,6 +46,7 @@ import { LogoUpload } from "./LogoUpload";
 import { QuotePreview } from "./QuotePreview";
 import { AttachmentsManager } from "./AttachmentsManager";
 import { AIAssistant } from "./AIAssistant";
+import { SendQuoteDialog } from "./SendQuoteDialog";
 
 export function QuoteEditor() {
   const { currentQuote, updateDetails, saveQuote, saveToSupabase } = useQuoteStore();
@@ -56,11 +57,13 @@ export function QuoteEditor() {
   const [saving, setSaving] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
   const [quotaBlocked, setQuotaBlocked] = useState(false);
+  const [noCreditsEdit, setNoCreditsEdit] = useState(false);
   const [savedToDb, setSavedToDb] = useState(false);
   const [magicInput, setMagicInput] = useState("");
   const [mobilePreview, setMobilePreview] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const isNewQuote = currentQuote?.items.length === 0 && !currentQuote?.client.name;
   const [showMagic, setShowMagic] = useState(isNewQuote);
 
@@ -79,7 +82,13 @@ export function QuoteEditor() {
       .then(r => r.json())
       .then(data => {
         if (!data.allowed) setQuotaBlocked(true);
-        if (data.isExistingQuote) setSavedToDb(true);
+        if (data.isExistingQuote) {
+          setSavedToDb(true);
+          // Quota esaurita ma la quote esiste già: blocca modifica/preview/salvataggio
+          if (data.creditsRemaining !== null && data.creditsRemaining <= 0) {
+            setNoCreditsEdit(true);
+          }
+        }
       })
       .catch(() => {});
   }, [currentQuote?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -127,35 +136,37 @@ export function QuoteEditor() {
       const ok = await persistToSupabase();
       if (ok) {
         if (wasFirstSave) router.refresh();
-        router.push("/preventivi");
+        router.push("/preventivi?success=saved");
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSendToClient = async () => {
-    if (!currentQuote) return;
+  const handleSendToClient = async (customMessage: string): Promise<boolean> => {
+    if (!currentQuote) return false;
     setSending(true);
     setSendError(null);
     try {
       const wasFirstSave = !savedToDb;
       const ok = await persistToSupabase();
-      if (!ok) return;
+      if (!ok) return false;
       if (wasFirstSave) router.refresh();
       const res = await fetch('/api/email/send-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quoteId: useQuoteStore.getState().currentQuote?.id ?? currentQuote.id }),
+        body: JSON.stringify({ quoteId: useQuoteStore.getState().currentQuote?.id ?? currentQuote.id, customMessage }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setSendError(body.error ?? 'Errore invio email');
-        return;
+        return false;
       }
-      router.push('/preventivi');
+      router.push('/preventivi?success=sent');
+      return true;
     } catch {
       setSendError('Errore di rete. Riprova.');
+      return false;
     } finally {
       setSending(false);
     }
@@ -245,7 +256,7 @@ export function QuoteEditor() {
       <div className="flex flex-col lg:flex-row w-full h-full max-w-[1600px] mx-auto relative">
 
         {/* Main Editor Area (Left Pane) */}
-        <div className={`w-full lg:w-[40%] flex flex-col h-full overflow-y-auto custom-scrollbar px-4 md:px-6 lg:px-10 py-6 md:py-10 transition-all ${isLocked ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
+        <div className={`w-full lg:w-[40%] flex flex-col h-full overflow-y-auto custom-scrollbar px-4 md:px-6 lg:px-10 py-6 md:py-10 transition-all ${isLocked || noCreditsEdit ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
           
           <div className="w-full max-w-2xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
@@ -459,7 +470,7 @@ export function QuoteEditor() {
                       <div>
                         <p className="text-sm font-bold text-red-700">Limite raggiunto</p>
                         <p className="text-xs text-red-600 mt-0.5">{quotaError}</p>
-                        <a href="/#pricing" className="text-xs font-bold text-[#5c32e6] underline mt-1 inline-block">
+                        <a href="/impostazioni?tab=piano" className="text-xs font-bold text-[#5c32e6] underline mt-1 inline-block">
                           Scopri i piani →
                         </a>
                       </div>
@@ -497,7 +508,7 @@ export function QuoteEditor() {
                   )}
 
                   <Button
-                    onClick={handleSendToClient}
+                    onClick={() => setSendDialogOpen(true)}
                     disabled={sending || isProTemplate || quotaBlocked || !currentQuote.client?.email}
                     className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                     size="lg"
@@ -548,7 +559,7 @@ export function QuoteEditor() {
               </div>
               {/* PDF Preview */}
               <div className="flex-1 overflow-hidden">
-                <QuotePreview quotaBlocked={quotaBlocked} />
+                <QuotePreview quotaBlocked={quotaBlocked || noCreditsEdit} />
               </div>
             </div>
           </div>
@@ -562,9 +573,30 @@ export function QuoteEditor() {
           </div>
           {/* PDF Preview Area */}
           <div className="flex-1 h-full">
-             <QuotePreview quotaBlocked={quotaBlocked} />
+             <QuotePreview quotaBlocked={quotaBlocked || noCreditsEdit} />
           </div>
         </div>
+
+        {/* No-credits edit overlay */}
+        {noCreditsEdit && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center lg:w-[40%] pointer-events-auto">
+            <div className="bg-white/80 backdrop-blur-md p-10 rounded-[3rem] border-2 border-red-200 shadow-2xl flex flex-col items-center text-center max-w-sm m-6 animate-in fade-in zoom-in duration-500">
+              <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-6 border-2 border-red-100">
+                <Lock className="w-10 h-10 text-red-400" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Crediti esauriti</h3>
+              <p className="text-slate-600 font-medium leading-relaxed">
+                Non puoi modificare o salvare questo preventivo. Passa a Starter o Pro per continuare a lavorare sui tuoi preventivi.
+              </p>
+              <button
+                onClick={() => router.push('/impostazioni?tab=piano')}
+                className="mt-8 bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-black px-10 py-4 rounded-2xl transition-all shadow-xl shadow-indigo-400/20 active:scale-95"
+              >
+                Vedi i piani →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Locked Editor Overlay */}
         {isLocked && (
@@ -578,7 +610,7 @@ export function QuoteEditor() {
                  Hai selezionato un template **PRO**. Per compilare i dati e scaricare il documento con questo stile, è necessario attivare il piano Pro.
                </p>
                <button 
-                 onClick={() => router.push('/abbonamento')}
+                 onClick={() => router.push('/impostazioni?tab=piano')}
                  className="mt-8 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-10 py-4 rounded-2xl transition-all shadow-xl shadow-amber-400/20 active:scale-95"
                >
                  Sblocca Ora
@@ -590,6 +622,14 @@ export function QuoteEditor() {
       </div>
     </div>
     <AIAssistant />
+    <SendQuoteDialog
+      open={sendDialogOpen}
+      onOpenChange={setSendDialogOpen}
+      clientEmail={currentQuote.client?.email || ''}
+      clientName={currentQuote.client?.name || ''}
+      quoteNumber={currentQuote.number}
+      onConfirmSend={handleSendToClient}
+    />
     </>
   );
 }

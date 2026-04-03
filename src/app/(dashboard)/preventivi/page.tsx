@@ -66,7 +66,7 @@ export default function PreventiviPage() {
         </div>
         <p className="text-xs text-slate-400 mb-5">Totale lordo preventivi emessi negli ultimi 6 mesi</p>
         <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={chartData} barSize={28} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <XAxis
                 dataKey="month"

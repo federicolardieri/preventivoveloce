@@ -36,124 +36,216 @@ function TemplateThumbnail({ id, primaryColor, locked }: { id: TemplateId; prima
   return (
     <div className="w-full h-[72px] bg-background border border-border rounded-lg overflow-hidden relative shadow-inner">
       {id === "classic" && (
-        <>
-          <div className="h-1 w-full" style={{ backgroundColor: primaryColor }} />
-          <div className="px-2 pt-1.5 space-y-1">
-            <div className="h-1.5 w-1/3 bg-slate-300 rounded" />
-            <div className="h-1 w-1/2 bg-slate-200 rounded" />
+        /* Bordo verticale sinistro + header due colonne + card cliente */
+        <div className="flex h-full">
+          <div className="w-1.5 h-full flex-shrink-0" style={{ backgroundColor: primaryColor }} />
+          <div className="flex-1 px-2 pt-2 space-y-1.5">
+            <div className="flex justify-between items-start pb-1.5 border-b border-slate-100">
+              <div className="space-y-0.5">
+                <div className="h-2 w-8 bg-slate-300 rounded" />
+                <div className="h-1 w-6 bg-slate-200 rounded" />
+              </div>
+              <div className="flex flex-col items-end space-y-0.5">
+                <div className="h-1 w-5 rounded" style={{ backgroundColor: primaryColor, opacity: 0.5 }} />
+                <div className="h-2 w-9 bg-slate-700/20 rounded" />
+              </div>
+            </div>
+            <div className="h-5 w-full rounded border-l-2 bg-slate-50" style={{ borderColor: primaryColor }} />
+            <div className="h-4 w-full bg-slate-100 rounded" />
           </div>
-          <div className="mx-2 mt-2 h-6 bg-slate-200/70 rounded" />
-        </>
+        </div>
       )}
       {id === "modern" && (
+        /* Header scuro full-bleed + accent bar + card cliente */
         <>
-          <div className="h-7 w-full flex items-center px-2 gap-1" style={{ backgroundColor: primaryColor }}>
-            <div className="w-3 h-3 rounded-sm bg-white/30" />
-            <div className="h-1 w-1/3 bg-white/50 rounded" />
+          <div className="flex justify-between items-end px-2 py-1.5" style={{ backgroundColor: primaryColor }}>
+            <div className="space-y-0.5">
+              <div className="w-5 h-2 rounded bg-white/30" />
+              <div className="h-1 w-8 bg-white/20 rounded" />
+            </div>
+            <div className="flex flex-col items-end space-y-0.5">
+              <div className="h-1 w-5 bg-white/20 rounded" />
+              <div className="h-2.5 w-10 bg-white/60 rounded" />
+            </div>
           </div>
-          <div className="px-2 pt-1.5 space-y-1">
-            <div className="h-1 w-1/2 bg-slate-200 rounded" />
-            <div className="mt-1 h-5 bg-slate-200/70 rounded" />
+          <div className="h-0.5 w-full" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+          <div className="px-2 pt-1 space-y-1">
+            <div className="h-5 border border-slate-200 rounded border-l-2" style={{ borderLeftColor: primaryColor }} />
+            <div className="h-4 bg-slate-100 rounded" />
           </div>
         </>
       )}
       {id === "minimal" && (
+        /* Solo testo + numero grande a destra + doppio separatore + due colonne */
         <div className="px-2 pt-2 space-y-1.5">
-          <div className="h-1.5 w-2/5 bg-slate-300 rounded" />
-          <div className="h-px w-full bg-slate-200" />
-          <div className="h-1 w-3/4 bg-slate-200 rounded" />
-          <div className="h-1 w-1/2 bg-slate-100 rounded" />
-          <div className="h-1 w-2/3 bg-slate-100 rounded" />
+          <div className="flex justify-between items-start">
+            <div className="space-y-0.5">
+              <div className="h-1.5 w-8 bg-slate-300 rounded" />
+              <div className="h-1 w-6 bg-slate-200 rounded" />
+            </div>
+            <div className="flex flex-col items-end space-y-0.5">
+              <div className="h-1 w-4 rounded" style={{ backgroundColor: primaryColor, opacity: 0.5 }} />
+              <div className="h-3 w-12 bg-slate-700/25 rounded" />
+            </div>
+          </div>
+          <div className="h-0.5 w-full bg-slate-700/30" />
+          <div className="h-px w-full" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+          <div className="flex gap-2 pt-0.5">
+            <div className="flex-1 space-y-0.5">
+              <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+              <div className="h-1.5 w-3/4 bg-slate-300 rounded" />
+            </div>
+            <div className="flex-1 space-y-0.5">
+              <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+              <div className="h-1.5 w-3/4 bg-slate-300 rounded" />
+            </div>
+          </div>
+          <div className="h-4 bg-slate-100 rounded" />
         </div>
       )}
       {id === "bold" && (
-        <div className="flex h-full">
-          <div className="w-5 h-full flex-shrink-0" style={{ backgroundColor: primaryColor }} />
-          <div className="flex-1 px-1.5 pt-2 space-y-1">
-            <div className="h-1.5 w-1/2 bg-slate-300 rounded" />
-            <div className="h-1 w-3/4 bg-slate-200 rounded" />
-            <div className="h-4 w-full bg-slate-200/70 rounded mt-1" />
+        /* Fascia hero colorata full-width + strip info + tabella */
+        <>
+          <div className="flex justify-between items-end px-2 pt-2 pb-1.5" style={{ backgroundColor: primaryColor }}>
+            <div className="space-y-0.5">
+              <div className="h-3.5 w-14 bg-white/70 rounded" />
+              <div className="h-0.5 w-5 bg-white/40 rounded" />
+            </div>
+            <div className="flex flex-col items-end space-y-0.5">
+              <div className="w-5 h-2 rounded bg-white/30" />
+              <div className="h-1.5 w-7 bg-white/50 rounded" />
+            </div>
           </div>
-        </div>
+          <div className="flex px-2 py-1 gap-2 bg-slate-50 border-b border-slate-100">
+            <div className="flex-1 space-y-0.5">
+              <div className="h-1 w-1/2 rounded" style={{ backgroundColor: primaryColor, opacity: 0.5 }} />
+              <div className="h-1 w-3/4 bg-slate-300 rounded" />
+            </div>
+            <div className="w-px bg-slate-200" />
+            <div className="flex-1 space-y-0.5">
+              <div className="h-1 w-1/2 bg-slate-300 rounded" />
+              <div className="h-1 w-3/4 bg-slate-200 rounded" />
+            </div>
+          </div>
+          <div className="px-2 pt-1">
+            <div className="h-4 bg-slate-100 rounded" />
+          </div>
+        </>
       )}
       {id === "corporate" && (
+        /* Header 3 colonne + barra accent + due address box affiancati */
         <>
-          <div className="h-2 w-full" style={{ backgroundColor: primaryColor }} />
-          <div className="px-2 pt-1.5 flex gap-1.5">
-            <div className="flex-1 space-y-0.5 bg-slate-100 rounded p-1">
-              <div className="h-1 w-full bg-slate-300 rounded" />
-              <div className="h-1 w-2/3 bg-slate-200 rounded" />
+          <div className="flex justify-between px-2 pt-1.5 pb-1 gap-1">
+            <div className="w-5/12 space-y-0.5">
+              <div className="h-2 w-5 bg-slate-200 rounded" />
+              <div className="h-1 w-full bg-slate-200 rounded" />
             </div>
-            <div className="flex-1 space-y-0.5 bg-slate-100 rounded p-1">
-              <div className="h-1 w-full bg-slate-300 rounded" />
+            <div className="w-3/12 flex flex-col items-center space-y-0.5">
+              <div className="h-1 w-3/4 rounded" style={{ backgroundColor: primaryColor, opacity: 0.5 }} />
+              <div className="h-2.5 w-full rounded" style={{ backgroundColor: primaryColor, opacity: 0.18 }} />
+            </div>
+            <div className="w-4/12 flex flex-col items-end space-y-0.5">
               <div className="h-1 w-2/3 bg-slate-200 rounded" />
+              <div className="h-1.5 w-full bg-slate-300 rounded" />
             </div>
           </div>
-          <div className="mx-2 mt-1.5 h-4 bg-slate-200/70 rounded" />
+          <div className="h-1.5 w-full" style={{ backgroundColor: primaryColor }} />
+          <div className="px-2 pt-1 flex gap-1.5">
+            <div className="flex-1 bg-slate-100 rounded p-0.5 space-y-0.5">
+              <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+              <div className="h-1 w-full bg-slate-300 rounded" />
+            </div>
+            <div className="flex-1 bg-slate-100 rounded p-0.5 space-y-0.5 border-l-2" style={{ borderColor: primaryColor }}>
+              <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+              <div className="h-1 w-full bg-slate-300 rounded" />
+            </div>
+          </div>
+          <div className="px-2 pt-1">
+            <div className="h-4 bg-slate-100 rounded" />
+          </div>
         </>
       )}
       {id === "creative" && (
-        <div className="p-2 space-y-1">
-          <div className="flex gap-1 h-2">
-            <div className="flex-1 rounded" style={{ backgroundColor: primaryColor }} />
-            <div className="flex-1 rounded bg-slate-300" />
+        /* Sidebar colorata sinistra 32% + colonna destra bianca con titolo */
+        <div className="flex h-full">
+          <div className="w-[32%] h-full flex flex-col p-1.5 space-y-1" style={{ backgroundColor: primaryColor }}>
+            <div className="w-5 h-2.5 rounded bg-white/30" />
+            <div className="h-1 w-full bg-white/40 rounded" />
+            <div className="h-1 w-2/3 bg-white/20 rounded" />
+            <div className="flex-1" />
+            <div className="h-4 w-full rounded bg-white/10" />
           </div>
-          <div className="flex gap-1.5">
-            <div className="w-1/2 bg-slate-100 rounded p-1 space-y-0.5">
-              <div className="h-1 w-full bg-slate-300 rounded" />
+          <div className="flex-1 p-1.5 space-y-1">
+            <div className="h-1 w-1/2 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+            <div className="h-3 w-3/4 bg-slate-700/20 rounded" />
+            <div className="h-px w-full bg-slate-200" />
+            <div className="space-y-0.5">
               <div className="h-1 w-2/3 bg-slate-200 rounded" />
+              <div className="h-1 w-1/2 bg-slate-200 rounded" />
             </div>
-            <div className="w-1/2 bg-slate-100 rounded p-1 space-y-0.5">
-              <div className="h-1 w-full bg-slate-300 rounded" />
-              <div className="h-1 w-2/3 bg-slate-200 rounded" />
-            </div>
+            <div className="h-5 bg-slate-100 rounded" />
           </div>
-          <div className="h-3 bg-slate-200/70 rounded" />
         </div>
       )}
       {id === "cover-page" && (
+        /* Pagina 1: copertina full-color | Pagina 2: contenuto con barra */
         <div className="flex h-full">
-          {/* Page 1 mini */}
-          <div className="w-[46%] h-full flex flex-col p-1" style={{ backgroundColor: primaryColor }}>
-            <div className="w-5 h-1.5 bg-white/30 rounded mb-1" />
-            <div className="flex-1 flex items-center justify-center">
-              <div className="space-y-0.5 text-center">
-                <div className="h-1.5 w-8 bg-white/60 rounded mx-auto" />
-                <div className="h-1 w-5 bg-white/30 rounded mx-auto" />
-              </div>
+          <div className="w-[46%] h-full flex flex-col justify-between p-1.5" style={{ backgroundColor: primaryColor }}>
+            <div className="space-y-0.5">
+              <div className="w-5 h-1.5 bg-white/30 rounded" />
+              <div className="h-1 w-7 bg-white/15 rounded" />
             </div>
-            <div className="h-1 w-full bg-white/20 rounded" />
+            <div className="space-y-0.5">
+              <div className="h-1 w-5 bg-white/30 rounded" />
+              <div className="h-4 w-10 bg-white/60 rounded" />
+              <div className="h-0.5 w-4 bg-white/40 rounded" />
+            </div>
+            <div className="h-4 w-full rounded bg-white/10" />
           </div>
           <div className="w-px bg-white/20" />
-          {/* Page 2 mini */}
           <div className="flex-1 h-full p-1 space-y-0.5 bg-white">
             <div className="h-0.5 w-full rounded" style={{ backgroundColor: primaryColor }} />
             <div className="h-1 w-2/3 bg-slate-200 rounded" />
-            <div className="h-3.5 w-full bg-slate-100 rounded" />
-            <div className="h-3 w-full bg-slate-100 rounded" />
+            <div className="h-3.5 w-full rounded bg-slate-100" />
+            <div className="h-3 bg-slate-100 rounded" />
           </div>
         </div>
       )}
       {id === "executive" && (
+        /* Pagina 1: bianca con finance box colorato | Pagina 2: dettaglio */
         <div className="flex h-full">
-          {/* Page 1 mini */}
-          <div className="w-[46%] h-full flex flex-col bg-slate-800">
-            <div className="h-1" style={{ backgroundColor: primaryColor }} />
-            <div className="flex-1 p-1 space-y-0.5">
-              <div className="h-1 w-3/4 bg-white/20 rounded" />
-              <div className="h-1 w-1/2 bg-white/10 rounded" />
-              <div className="mt-1 px-1 py-0.5 rounded" style={{ backgroundColor: primaryColor }}>
-                <div className="h-1 w-full bg-white/40 rounded" />
+          <div className="w-[46%] h-full flex flex-col p-1.5 bg-white space-y-1">
+            <div className="flex justify-between items-start">
+              <div className="w-4 h-2 bg-slate-200 rounded" />
+              <div className="flex flex-col items-end space-y-0.5">
+                <div className="h-1 w-4 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+                <div className="h-2 w-6 bg-slate-700/20 rounded" />
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <div className="w-1/2 space-y-0.5">
+                <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+                <div className="h-1 w-full bg-slate-200 rounded" />
+              </div>
+              <div className="w-1/2 space-y-0.5">
+                <div className="h-1 w-2/3 rounded" style={{ backgroundColor: primaryColor, opacity: 0.4 }} />
+                <div className="h-1 w-full bg-slate-200 rounded" />
+              </div>
+            </div>
+            <div className="flex-1 rounded p-1" style={{ backgroundColor: primaryColor }}>
+              <div className="space-y-0.5">
+                <div className="h-0.5 w-full bg-white/20 rounded" />
+                <div className="h-0.5 w-2/3 bg-white/20 rounded" />
+                <div className="h-1.5 w-full bg-white/40 rounded" />
               </div>
             </div>
           </div>
           <div className="w-px bg-slate-200" />
-          {/* Page 2 mini */}
           <div className="flex-1 h-full p-1 space-y-0.5 bg-white">
             <div className="h-0.5 w-full rounded" style={{ backgroundColor: primaryColor }} />
             <div className="h-1 w-2/3 bg-slate-200 rounded" />
-            <div className="h-3.5 w-full bg-slate-100 rounded" />
-            <div className="h-3 w-full bg-slate-100 rounded" />
+            <div className="h-3.5 bg-slate-100 rounded" />
+            <div className="h-3 bg-slate-100 rounded" />
           </div>
         </div>
       )}

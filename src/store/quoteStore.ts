@@ -75,6 +75,7 @@ function quoteToDb(quote: Quote, userId: string) {
     item_custom_columns: quote.itemCustomColumns ?? [],
     client_id: quote.clientId ?? null,
     archived: quote.archived ?? false,
+    attachments: quote.attachments ?? [],
     total_cents: totalCents,
     updated_at: new Date().toISOString(),
   };
@@ -97,7 +98,7 @@ function dbToQuote(row: Record<string, any>): Quote {
     validityDays: row.validity_days ?? 30,
     currency: row.currency ?? 'EUR',
     itemCustomColumns: row.item_custom_columns ?? [],
-    attachments: [],
+    attachments: row.attachments ?? [],
     clientId: row.client_id ?? undefined,
     archived: row.archived ?? false,
     createdAt: row.created_at,
@@ -361,7 +362,7 @@ export const useQuoteStore = create<QuoteStoreState>()(
           ? {
             ...state.currentQuote,
             sender: { ...state.currentQuote.sender, logoOriginal: undefined },
-            attachments: (state.currentQuote.attachments ?? []).map((a) => ({ ...a, data: undefined })),
+            attachments: state.currentQuote.attachments ?? [],
           }
           : null,
         isProPlan: state.isProPlan,

@@ -1,31 +1,42 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useQuoteStore, createEmptyQuote } from "@/store/quoteStore";
 import { QuoteEditor } from "@/components/quote/QuoteEditor";
 import { generateQuoteNumber } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
-export default function NuovoPreventivoPage() {
+function NuovoPreventivoContent() {
   const { setCurrentQuote } = useQuoteStore();
   const [mounted, setMounted] = useState(false);
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
+  
   // Evita che il preventivo venga ricreato quando quotesList cambia durante il salvataggio.
-  // Il flusso era: saveQuote() → quotesList.length++ → useEffect ri-gira → quota vuota
-  // sovrascrive currentQuote → saveToSupabase salva dati vuoti nel DB.
   const initialized = useRef(false);
 
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
 
-    // Legge quotesList fresco dallo store (non dalla chiusura del componente)
-    // per generare il numero corretto anche se loadFromSupabase è già completato.
     const { quotesList } = useQuoteStore.getState();
+
+    // Se c'è un ID in "edit", carichiamo quel preventivo dallo store
+    if (editId) {
+      const quoteToEdit = quotesList.find(q => q.id === editId);
+      if (quoteToEdit) {
+        setCurrentQuote(quoteToEdit);
+        setMounted(true);
+        return;
+      }
+    }
+
+    // Altrimenti creiamo un nuovo preventivo vuoto
     const sequence = quotesList.length + 1;
     const newQuote = createEmptyQuote(generateQuoteNumber(sequence));
     setCurrentQuote(newQuote);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-  }); // nessuna dipendenza — gira ad ogni render ma la ref blocca le ri-inizializzazioni
+  }, [editId, setCurrentQuote]);
 
   if (!mounted) return null;
 
@@ -33,5 +44,13 @@ export default function NuovoPreventivoPage() {
     <div className="h-full flex flex-col overflow-hidden">
       <QuoteEditor />
     </div>
+  );
+}
+
+export default function NuovoPreventivoPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-slate-500 font-bold">Caricamento editor...</div>}>
+      <NuovoPreventivoContent />
+    </Suspense>
   );
 }

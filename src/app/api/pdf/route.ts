@@ -92,8 +92,8 @@ async function applyWatermark(pdfBytes: Uint8Array, strong = false): Promise<Uin
     if (strong) {
       // Watermark accentuato per Free/Starter in preview: 3 strisce diagonali
       const size = 46;
-      const opacity = 0.30;
-      const color = rgb(0.2, 0.1, 0.7);
+      const opacity = 0.25;
+      const color = rgb(0.36, 0.2, 0.9); // Professional violet/blue
       const text = 'ANTEPRIMA — Passa a Pro';
       const offsets = [
         { dx: -170, dy: -180 },
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // _preview: true → chiamata di anteprima (live preview), skip quota enforcement
     // _preview: false/assente → download reale, enforce quota
-    const { _preview = false, ...raw } = body as Quote & { _preview?: boolean };
+    const { _preview = false, _view = false, ...raw } = body as Quote & { _preview?: boolean; _view?: boolean };
 
     if (!raw) {
       return NextResponse.json({ error: "No data provided" }, { status: 400 });
@@ -148,8 +148,8 @@ export async function POST(req: NextRequest) {
     let quota: Awaited<ReturnType<typeof checkQuota>> | null = null;
     try {
       quota = await checkQuota(raw.id ?? '');
-    } catch {
-      // Se checkQuota fallisce, quota rimane null → watermark applicato per sicurezza
+    } catch (e) {
+      console.error("[api/pdf] checkQuota error:", e);
     }
 
     quote = await normalizeQuote(raw as Quote);
@@ -167,21 +167,45 @@ export async function POST(req: NextRequest) {
     }
     const baseBuffer = Buffer.concat(chunks);
 
-    // Watermark:
-    // - Preview + Pro → nessun watermark
-    // - Preview + Free/Starter (o piano sconosciuto) → watermark accentuato
-    // - Download + Free → watermark leggero
-    // - Download + Starter/Pro → nessun watermark
-    const isPro = quota?.plan === 'pro';
-    const needsWatermark = (_preview && !isPro) || (!_preview && quota?.plan === 'free');
-    const strongWatermark = _preview && !isPro;
+    // Watermark logic:
+    // - Preview: Show strong watermark for anyone not on Pro (Free or Starter)
+    // - Download: Show light watermark for Free only, Starter and Pro are clean
+    const currentPlan = quota?.plan ?? 'free';
+    const isFree = currentPlan === 'free';
+    const isStarter = currentPlan === 'starter';
+    const isPro = currentPlan === 'pro';
+
+    // Watermark logic:
+    // 1. Editor Preview (_preview=true, _view=false): Watermark for anyone not on Pro
+    // 2. Detail Preview (_preview=true, _view=true): Watermark ONLY for Free users
+    // 3. Download (_preview=false): Watermark ONLY for Free users
+    
+    let needsWatermark = false;
+    let useStrongWatermark = false;
+
+    if (_preview) {
+      if (_view) {
+        // Schermata "Visualizza" (Detail Viewer) - Pulita per tutti
+        needsWatermark = false;
+        useStrongWatermark = false;
+      } else {
+        // Schermata "Nuovo/Modifica" (Editor) - Watermark per Free e Starter
+        needsWatermark = !isPro;
+        useStrongWatermark = !isPro;
+      }
+    } else {
+      // Download reale - Pulito per tutti
+      needsWatermark = false;
+      useStrongWatermark = false;
+    }
+
     let finalPdfBytes: Uint8Array = needsWatermark
-      ? await applyWatermark(baseBuffer, strongWatermark)
+      ? await applyWatermark(baseBuffer, useStrongWatermark)
       : baseBuffer;
 
     // Merge attachments if they exist
     if (quote.attachments && quote.attachments.length > 0) {
-      const pdfDoc = await PDFDocument.load(baseBuffer);
+      const pdfDoc = await PDFDocument.load(finalPdfBytes);
       
       for (const att of quote.attachments) {
         try {

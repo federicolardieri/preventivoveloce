@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { generatePDF } from '@/pdf/generatePDF';
 import { Quote } from '@/types/quote';
 import { Resend } from 'resend';
+import { PDFDocument } from 'pdf-lib';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
@@ -74,7 +75,7 @@ async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
     notes: raw.notes || '',
     paymentTerms: raw.paymentTerms || '',
     itemCustomColumns: raw.itemCustomColumns ?? [],
-    attachments: [],
+    attachments: raw.attachments ?? [],
   };
 }
 
@@ -85,12 +86,64 @@ async function generatePDFBuffer(quote: Quote): Promise<Buffer> {
   for await (const chunk of stream) {
     chunks.push(Buffer.from(chunk));
   }
-  return Buffer.concat(chunks);
+  const baseBuffer = Buffer.concat(chunks);
+
+  // Merge attachments if they exist
+  if (normalized.attachments && normalized.attachments.length > 0) {
+    try {
+      const pdfDoc = await PDFDocument.load(baseBuffer);
+      
+      for (const att of normalized.attachments) {
+        try {
+          if (!att.data) continue;
+          const base64Parts = att.data.split(',');
+          if (base64Parts.length < 2) continue;
+          
+          const base64Data = base64Parts[1];
+          const fileBytes = Buffer.from(base64Data, 'base64');
+          
+          if (att.type === 'application/pdf') {
+            const externalPdf = await PDFDocument.load(fileBytes);
+            const copiedPages = await pdfDoc.copyPages(externalPdf, externalPdf.getPageIndices());
+            copiedPages.forEach((page) => pdfDoc.addPage(page));
+          } else if (att.type === 'image/jpeg' || att.type === 'image/png') {
+            let image;
+            if (att.type === 'image/jpeg') image = await pdfDoc.embedJpg(fileBytes);
+            else if (att.type === 'image/png') image = await pdfDoc.embedPng(fileBytes);
+            
+            if (image) {
+              const page = pdfDoc.addPage([595.28, 841.89]); // Standard A4 layout
+              const { width, height } = page.getSize();
+              const margin = 50;
+              const imgDims = image.scaleToFit(width - (margin * 2), height - (margin * 2));
+              
+              page.drawImage(image, {
+                x: width / 2 - imgDims.width / 2,
+                y: height / 2 - imgDims.height / 2,
+                width: imgDims.width,
+                height: imgDims.height,
+              });
+            }
+          }
+        } catch (attError) {
+          console.error(`[send-quote] Failed to merge attachment ${att.name}`, attError);
+        }
+      }
+      
+      const mergedPdfBytes = await pdfDoc.save();
+      return Buffer.from(mergedPdfBytes);
+    } catch (mergeError) {
+      console.error('[send-quote] PDF merge failed, returning base PDF', mergeError);
+      return baseBuffer;
+    }
+  }
+
+  return baseBuffer;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { quoteId } = await req.json();
+    const { quoteId, customMessage } = await req.json();
 
     if (!quoteId || typeof quoteId !== 'string') {
       return NextResponse.json({ error: 'quoteId mancante' }, { status: 400 });
@@ -130,7 +183,7 @@ export async function POST(req: NextRequest) {
       validityDays: quoteRow.validity_days ?? 30,
       currency: quoteRow.currency ?? 'EUR',
       itemCustomColumns: quoteRow.item_custom_columns ?? [],
-      attachments: [],
+      attachments: quoteRow.attachments ?? [],
       createdAt: quoteRow.created_at,
       updatedAt: quoteRow.updated_at,
     };
@@ -145,7 +198,7 @@ export async function POST(req: NextRequest) {
 
     // Genera token univoco (32 byte hex = 64 char)
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // +7 giorni
+    const expiresAt = new Date(Date.now() + quote.validityDays * 24 * 60 * 60 * 1000);
 
     const admin = createAdminClient();
     const { error: tokenErr } = await admin
@@ -167,7 +220,7 @@ export async function POST(req: NextRequest) {
       from: `${senderName} via Preventivo Veloce <${FROM_EMAIL}>`,
       to: clientEmail,
       subject: `Preventivo ${quoteRow.number} da ${senderName}`,
-      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays }),
+      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays, customMessage: typeof customMessage === 'string' ? customMessage.trim() : '' }),
       attachments: [
         {
           filename: fileName,
@@ -200,12 +253,14 @@ function buildClientEmailHtml({
   quoteNumber,
   acceptUrl,
   validityDays,
+  customMessage,
 }: {
   senderName: string;
   clientName: string;
   quoteNumber: string;
   acceptUrl: string;
   validityDays: number;
+  customMessage: string;
 }) {
   return `<!DOCTYPE html>
 <html lang="it">
@@ -232,11 +287,17 @@ function buildClientEmailHtml({
           <!-- Body -->
           <tr>
             <td style="padding:36px 40px;">
-              <p style="margin:0 0 20px;font-size:16px;color:#334155;">Gentile <strong>${escHtml(clientName)}</strong>,</p>
+              <p style="margin:0 0 16px;font-size:16px;color:#334155;">Gentile <strong>${escHtml(clientName)}</strong>,</p>
               <p style="margin:0 0 16px;font-size:15px;color:#475569;line-height:1.6;">
                 ${escHtml(senderName)} ti ha inviato il preventivo <strong style="color:#1e293b;">${escHtml(quoteNumber)}</strong>.
                 Trovi il documento in allegato a questa email.
               </p>
+              ${customMessage ? `
+              <div style="background:#f8fafc;border-left:4px solid #5c32e6;border-radius:0 10px 10px 0;padding:16px 20px;margin:0 0 20px;">
+                <p style="margin:0 0 4px;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Messaggio da ${escHtml(senderName)}</p>
+                <p style="margin:0;font-size:15px;color:#334155;line-height:1.6;white-space:pre-line;">${escHtml(customMessage)}</p>
+              </div>
+              ` : ''}
               <p style="margin:0 0 28px;font-size:15px;color:#475569;line-height:1.6;">
                 Il preventivo è valido per <strong>${validityDays} giorni</strong>. Se sei d'accordo, puoi accettarlo direttamente online cliccando il pulsante qui sotto.
               </p>

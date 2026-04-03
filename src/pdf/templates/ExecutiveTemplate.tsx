@@ -2,8 +2,8 @@ import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Quote, FontFamily } from '@/types/quote';
 import { PDFItemsTable } from '../components/PDFItemsTable';
 import { PDFFooter } from '../components/PDFFooter';
-import { calculateTotals } from '@/lib/utils';
 import { PDFLogo } from '../components/PDFLogo';
+import { calculateTotals } from '@/lib/utils';
 
 function boldFont(family: FontFamily): string {
   if (family === 'Times-Roman') return 'Times-Bold';
@@ -22,231 +22,222 @@ const fmt = (cents: number, currency: string) => {
   return `${symbol}${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
 };
 
+// ─── Executive Template (PRO) ────────────────────────────────────────────────
+// Pagina 1: Executive Summary
+//   - Header elegante con logo + titolo preventivo
+//   - Due colonne: informazioni mittente | informazioni cliente
+//   - Riepilogo finanziario in un box premium con breakdown IVA
+//   - Validità e note nella colonna destra
+//
+// Pagina 2: Dettaglio voci
+//   - Header ridotto con logo e numero
+//   - Tabella completa + footer con totali
+//   - Blocco firme
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const ExecutiveTemplate = ({ quote }: { quote: Quote }) => {
   const { sender, client, theme } = quote;
   const font = theme.fontFamily ?? 'Helvetica';
   const bold = boldFont(font);
-  const primary = theme.primaryColor ?? '#5c32e6';
-  const accent = theme.accentColor ?? primary;
-  const textColor = theme.textColor ?? '#1e293b';
+  const primary  = theme.primaryColor ?? '#1e293b';
+  const accent   = theme.accentColor  ?? '#5c32e6';
+  const textColor = theme.textColor   ?? '#1e293b';
 
   const { subtotal, vatTotals, total } = calculateTotals(quote.items);
 
-  // ─── PAGE 1: EXECUTIVE SUMMARY ─────────────────────────────────────────────
+  // ─── PAGINA 1: EXECUTIVE SUMMARY ──────────────────────────────────────────
   const p1 = StyleSheet.create({
-    page: { backgroundColor: '#ffffff', fontFamily: font },
+    page: { backgroundColor: '#ffffff', fontFamily: font, padding: 44 },
 
-    // Dark sidebar (left 38%)
-    sidebar: {
-      position: 'absolute', top: 0, left: 0, bottom: 0, width: '38%',
-      backgroundColor: textColor,
-    },
-    // Accent strip on sidebar top
-    sidebarAccent: {
-      position: 'absolute', top: 0, left: 0, width: '38%', height: 6,
-      backgroundColor: primary,
-    },
-    // Subtle decorative line at bottom of sidebar
-    sidebarBottomLine: {
-      position: 'absolute', bottom: 0, left: 0, width: '38%', height: 2,
-      backgroundColor: primary,
-    },
-    // Decorative dot grid pattern (subtle)
-    sidebarDot: {
-      position: 'absolute', top: 40, right: 20,
-      width: 60, height: 60,
-      backgroundColor: 'rgba(255,255,255,0.03)',
-      borderRadius: 30,
-    },
-
-    // Main content area (right 62%)
-    main: { marginLeft: '38%', padding: 44, flex: 1, flexDirection: 'column', justifyContent: 'space-between' },
-
-    // Sidebar content
-    sidebarContent: {
-      width: '38%', position: 'absolute', top: 0, left: 0, bottom: 0,
-      padding: 36, flexDirection: 'column', justifyContent: 'space-between',
-    },
-    logo: { width: 145, height: 70, objectFit: 'contain', marginBottom: 20, marginTop: 8 },
-    sidebarName: { fontSize: 15, fontFamily: bold, color: '#ffffff', marginBottom: 10, lineHeight: 1.3 },
-    sidebarDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.12)', marginBottom: 20 },
-    sidebarSection: { marginBottom: 18 },
-    sidebarLabel: {
-      fontSize: 7.5, fontFamily: bold, color: primary,
-      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6,
-    },
-    sidebarText:  { fontSize: 9, color: 'rgba(255,255,255,0.7)', marginBottom: 3, lineHeight: 1.5 },
-
-    // Summary totals in sidebar
-    totalBox: {
-      backgroundColor: primary, padding: 18,
-      borderTopLeftRadius: 8, borderTopRightRadius: 8,
-      borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
-    },
-    totalEyebrow: {
-      fontSize: 7.5, fontFamily: bold, color: 'rgba(255,255,255,0.6)',
-      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8,
-    },
-    totalValue: { fontSize: 26, fontFamily: bold, color: '#ffffff', lineHeight: 1, marginBottom: 4 },
-    totalSub:   { fontSize: 8.5, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5 },
-
-    // Main right side
-    mainTop: {},
-    mainTag: {
-      fontSize: 9, fontFamily: bold, color: primary,
-      textTransform: 'uppercase', letterSpacing: 3, marginBottom: 14,
-    },
-    mainTitle: { fontSize: 44, fontFamily: bold, color: textColor, lineHeight: 1.1, marginBottom: 4 },
-    mainAccentBar: { width: 40, height: 4, backgroundColor: accent, marginBottom: 24, borderRadius: 2 },
-    mainNum: { fontSize: 12, color: '#94a3b8', marginBottom: 4, letterSpacing: 0.5 },
-    mainDate: { fontSize: 9.5, color: '#94a3b8' },
-
-    clientCard: {
-      backgroundColor: '#f8fafc', padding: 20,
-      borderTopLeftRadius: 8, borderTopRightRadius: 8,
-      borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
-      borderLeftWidth: 3, borderLeftColor: primary,
-    },
-    clientLabel: {
-      fontSize: 7.5, fontFamily: bold, color: '#94a3b8',
-      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8,
-    },
-    clientName:  { fontSize: 17, fontFamily: bold, color: textColor, marginBottom: 5 },
-    clientSub:   { fontSize: 9.5, color: '#64748b', marginBottom: 3, lineHeight: 1.4 },
-
-    // Summary breakdown
-    summaryBlock: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 14 },
-    summaryRow: {
+    // Header
+    header: {
       flexDirection: 'row', justifyContent: 'space-between',
-      paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: '#f8fafc',
+      alignItems: 'flex-start', marginBottom: 28,
+      paddingBottom: 20, borderBottomWidth: 2, borderBottomColor: primary,
     },
-    summaryLabel: { fontSize: 9.5, color: '#64748b' },
-    summaryValue: { fontSize: 9.5, fontFamily: bold, color: textColor },
+    logoBlock: { flexDirection: 'column' },
+    senderName: { fontSize: 13, fontFamily: bold, color: textColor, marginBottom: 4, marginTop: 6 },
+    senderSub:  { fontSize: 8.5, color: '#64748b', marginBottom: 2, lineHeight: 1.4 },
+
+    // Blocco titolo a destra
+    titleBlock: { alignItems: 'flex-end' },
+    titleEyebrow: {
+      fontSize: 8, fontFamily: bold, color: accent,
+      textTransform: 'uppercase', letterSpacing: 3, marginBottom: 6,
+    },
+    titleMain: { fontSize: 30, fontFamily: bold, color: primary, lineHeight: 1, marginBottom: 6 },
+    titleAccent: { width: 40, height: 3, backgroundColor: accent, marginBottom: 6, borderRadius: 2, alignSelf: 'flex-end' },
+    titleNum: { fontSize: 12, fontFamily: bold, color: accent, marginBottom: 2 },
+    titleDate: { fontSize: 8.5, color: '#94a3b8' },
+
+    // Due colonne: mittente | cliente
+    twoCol: { flexDirection: 'row', gap: 0, marginBottom: 24 },
+    col1: { width: '48%' },
+    col2: { width: '48%', marginLeft: '4%' },
+
+    colHeader: {
+      fontSize: 7.5, fontFamily: bold, color: accent,
+      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10,
+      borderBottomWidth: 1.5, borderBottomColor: accent, paddingBottom: 5,
+    },
+    colName: { fontSize: 12, fontFamily: bold, color: textColor, marginBottom: 4, marginTop: 6 },
+    colSub:  { fontSize: 8.5, color: '#64748b', marginBottom: 2.5, lineHeight: 1.4 },
+
+    // Riepilogo finanziario
+    financeBox: {
+      backgroundColor: primary, padding: 24,
+      borderTopLeftRadius: 8, borderTopRightRadius: 8,
+      borderBottomLeftRadius: 8, borderBottomRightRadius: 8,
+      marginBottom: 20,
+    },
+    financeTitle: {
+      fontSize: 8, fontFamily: bold, color: 'rgba(255,255,255,0.5)',
+      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16,
+    },
+    financeRow: {
+      flexDirection: 'row', justifyContent: 'space-between',
+      paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.08)',
+    },
+    financeLabel: { fontSize: 9, color: 'rgba(255,255,255,0.65)' },
+    financeValue: { fontSize: 9, fontFamily: bold, color: '#ffffff' },
+    financeTotalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 },
+    financeTotalLabel: { fontSize: 10, fontFamily: bold, color: 'rgba(255,255,255,0.75)' },
+    financeTotalValue: { fontSize: 22, fontFamily: bold, color: '#ffffff' },
+
+    // Box validità
+    validityBox: {
+      backgroundColor: '#f8fafc', padding: 16,
+      borderTopLeftRadius: 6, borderTopRightRadius: 6,
+      borderBottomLeftRadius: 6, borderBottomRightRadius: 6,
+      borderLeftWidth: 3, borderLeftColor: accent,
+    },
+    validityLabel: { fontSize: 7.5, fontFamily: bold, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 5 },
+    validityValue: { fontSize: 11, fontFamily: bold, color: textColor },
+    validitySub:   { fontSize: 8.5, color: '#64748b', marginTop: 3 },
   });
 
-  // ─── PAGE 2: DETAIL ────────────────────────────────────────────────────────
+  // ─── PAGINA 2: DETTAGLIO ──────────────────────────────────────────────────
   const p2 = StyleSheet.create({
-    page: { backgroundColor: '#ffffff', fontFamily: font },
-    topBar: { height: 6, backgroundColor: primary },
-    inner: { padding: 40 },
+    page:    { backgroundColor: '#ffffff', fontFamily: font },
+    topBar:  { height: 5, backgroundColor: primary },
+    accentBar: { height: 2, backgroundColor: accent },
+    inner:   { padding: 44 },
 
     heading: {
       flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
       marginBottom: 24, paddingBottom: 16,
       borderBottomWidth: 1, borderBottomColor: '#e2e8f0',
     },
+    headingLeft: {},
     headingTitle: { fontSize: 18, fontFamily: bold, color: textColor },
     headingSub:   { fontSize: 9, color: '#94a3b8', marginTop: 3 },
     headingRight: { alignItems: 'flex-end' },
-    headingNum:   { fontSize: 11, fontFamily: bold, color: primary },
+    headingNum:   { fontSize: 11, fontFamily: bold, color: accent },
     headingDate:  { fontSize: 9, color: '#94a3b8', marginTop: 3 },
 
-    signatureBlock: { marginTop: 40, flexDirection: 'row', justifyContent: 'flex-end', gap: 48 },
-    signatureBox: { alignItems: 'center', width: 160 },
-    signatureLine: { width: '100%', height: 1, backgroundColor: '#cbd5e1', marginBottom: 8 },
+    signatureBlock: { marginTop: 40, flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+    signatureBox:   { alignItems: 'center', width: '45%' },
+    signatureLine:  { width: '100%', height: 1, backgroundColor: '#cbd5e1', marginBottom: 8 },
     signatureLabel: { fontSize: 8.5, color: '#94a3b8', letterSpacing: 0.5 },
   });
 
+  const logoEl = sender.logo
+    ? <PDFLogo src={sender.logo} theme={theme} baseWidth={160} baseHeight={58} />
+    : null;
+
   return (
     <Document>
-      {/* ── PAGE 1: EXECUTIVE SUMMARY ── */}
+      {/* ── PAGINA 1: EXECUTIVE SUMMARY ── */}
       <Page size="A4" style={p1.page}>
-        {/* Sidebar backgrounds */}
-        <View style={p1.sidebar} />
-        <View style={p1.sidebarAccent} />
-        <View style={p1.sidebarBottomLine} />
-        <View style={p1.sidebarDot} />
-
-        {/* Sidebar content */}
-        <View style={p1.sidebarContent}>
-          <View>
-            {sender.logo ? <PDFLogo src={sender.logo} theme={theme} baseWidth={145} baseHeight={70} /> : null}
-            <Text style={p1.sidebarName}>{sender.name || 'Nome Azienda'}</Text>
-            <View style={p1.sidebarDivider} />
-
-            {sender.address ? (
-              <View style={p1.sidebarSection}>
-                <Text style={p1.sidebarLabel}>Indirizzo</Text>
-                <Text style={p1.sidebarText}>{sender.address}</Text>
-                {(sender.city || sender.postalCode) ? (
-                  <Text style={p1.sidebarText}>{sender.postalCode} {sender.city}</Text>
-                ) : null}
-              </View>
-            ) : null}
-
-            {sender.vatNumber ? (
-              <View style={p1.sidebarSection}>
-                <Text style={p1.sidebarLabel}>P.IVA / C.F.</Text>
-                <Text style={p1.sidebarText}>{sender.vatNumber}</Text>
-              </View>
-            ) : null}
-
-            {(sender.email || sender.phone) ? (
-              <View style={p1.sidebarSection}>
-                <Text style={p1.sidebarLabel}>Contatti</Text>
-                {sender.email ? <Text style={p1.sidebarText}>{sender.email}</Text> : null}
-                {sender.phone ? <Text style={p1.sidebarText}>{sender.phone}</Text> : null}
-              </View>
-            ) : null}
+        {/* Header */}
+        <View style={p1.header}>
+          <View style={p1.logoBlock}>
+            {logoEl}
+            {!sender.logo && <Text style={p1.senderName}>{sender.name || 'Nome Azienda'}</Text>}
+            {sender.logo && sender.name && <Text style={p1.senderName}>{sender.name}</Text>}
+            {sender.vatNumber && <Text style={p1.senderSub}>P.IVA {sender.vatNumber}</Text>}
+            {sender.email && <Text style={p1.senderSub}>{sender.email}</Text>}
+            {sender.phone && <Text style={p1.senderSub}>{sender.phone}</Text>}
           </View>
-
-          {/* Total summary box */}
-          <View style={p1.totalBox}>
-            <Text style={p1.totalEyebrow}>Totale Preventivo</Text>
-            <Text style={p1.totalValue}>{fmt(total, quote.currency)}</Text>
-            <Text style={p1.totalSub}>IVA inclusa · Valido {quote.validityDays} giorni</Text>
+          <View style={p1.titleBlock}>
+            <Text style={p1.titleEyebrow}>Offerta Commerciale</Text>
+            <Text style={p1.titleMain}>Preventivo.</Text>
+            <View style={p1.titleAccent} />
+            <Text style={p1.titleNum}>N° {quote.number}</Text>
+            <Text style={p1.titleDate}>{formatDate(quote.createdAt)}</Text>
           </View>
         </View>
 
-        {/* Main right content */}
-        <View style={p1.main}>
-          <View style={p1.mainTop}>
-            <Text style={p1.mainTag}>Offerta Commerciale</Text>
-            <Text style={p1.mainTitle}>Preventivo.</Text>
-            <View style={p1.mainAccentBar} />
-            <Text style={p1.mainNum}>N° {quote.number}</Text>
-            <Text style={p1.mainDate}>{formatDate(quote.createdAt)}</Text>
+        {/* Due colonne: mittente | cliente */}
+        <View style={p1.twoCol}>
+          <View style={p1.col1}>
+            <Text style={p1.colHeader}>Emesso da</Text>
+            <Text style={p1.colName}>{sender.name || 'Nome Azienda'}</Text>
+            {sender.address && <Text style={p1.colSub}>{sender.address}</Text>}
+            {(sender.city || sender.postalCode) && (
+              <Text style={p1.colSub}>{sender.postalCode} {sender.city}</Text>
+            )}
+            {sender.vatNumber && <Text style={p1.colSub}>P.IVA {sender.vatNumber}</Text>}
+            {sender.email && <Text style={p1.colSub}>{sender.email}</Text>}
+            {sender.phone && <Text style={p1.colSub}>{sender.phone}</Text>}
+            {sender.customFields?.map(f => <Text key={f.id} style={p1.colSub}>{f.label}: {f.value}</Text>)}
           </View>
+          <View style={p1.col2}>
+            <Text style={p1.colHeader}>Destinatario</Text>
+            <Text style={p1.colName}>{client.name || 'Cliente'}</Text>
+            {client.address && <Text style={p1.colSub}>{client.address}</Text>}
+            {(client.city || client.postalCode) && (
+              <Text style={p1.colSub}>{client.postalCode} {client.city}{client.country ? ` (${client.country})` : ''}</Text>
+            )}
+            {client.vatNumber && <Text style={p1.colSub}>P.IVA {client.vatNumber}</Text>}
+            {client.email && <Text style={p1.colSub}>{client.email}</Text>}
+            {client.customFields?.map(f => <Text key={f.id} style={p1.colSub}>{f.label}: {f.value}</Text>)}
+          </View>
+        </View>
 
-          {/* Client card + financial summary */}
-          <View>
-            <View style={p1.clientCard}>
-              <Text style={p1.clientLabel}>Preparato per</Text>
-              <Text style={p1.clientName}>{client.name || 'Cliente'}</Text>
-              {client.address ? <Text style={p1.clientSub}>{client.address}</Text> : null}
-              {(client.city || client.postalCode) ? (
-                <Text style={p1.clientSub}>{client.postalCode} {client.city}{client.country ? ` (${client.country})` : ''}</Text>
-              ) : null}
-              {client.vatNumber ? <Text style={p1.clientSub}>P.IVA {client.vatNumber}</Text> : null}
-              {client.email ? <Text style={p1.clientSub}>{client.email}</Text> : null}
-            </View>
-
-            {/* Financial summary */}
-            <View style={p1.summaryBlock}>
-              <View style={p1.summaryRow}>
-                <Text style={p1.summaryLabel}>Imponibile</Text>
-                <Text style={p1.summaryValue}>{fmt(subtotal, quote.currency)}</Text>
+        {/* Riepilogo finanziario */}
+        <View style={p1.financeBox}>
+          <Text style={p1.financeTitle}>Riepilogo Economico</Text>
+          <View style={p1.financeRow}>
+            <Text style={p1.financeLabel}>Imponibile netto</Text>
+            <Text style={p1.financeValue}>{fmt(subtotal, quote.currency)}</Text>
+          </View>
+          {Object.entries(vatTotals).map(([rate, amount]) => {
+            if ((amount as number) <= 0) return null;
+            return (
+              <View key={rate} style={p1.financeRow}>
+                <Text style={p1.financeLabel}>IVA {rate}%</Text>
+                <Text style={p1.financeValue}>{fmt(amount as number, quote.currency)}</Text>
               </View>
-              {Object.entries(vatTotals).map(([rate, amount]) => {
-                if ((amount as number) <= 0) return null;
-                return (
-                  <View key={rate} style={p1.summaryRow}>
-                    <Text style={p1.summaryLabel}>IVA {rate}%</Text>
-                    <Text style={p1.summaryValue}>{fmt(amount as number, quote.currency)}</Text>
-                  </View>
-                );
-              })}
-            </View>
+            );
+          })}
+          <View style={p1.financeTotalRow}>
+            <Text style={p1.financeTotalLabel}>TOTALE</Text>
+            <Text style={p1.financeTotalValue}>{fmt(total, quote.currency)}</Text>
           </View>
+        </View>
+
+        {/* Box validità */}
+        <View style={p1.validityBox}>
+          <Text style={p1.validityLabel}>Validità Offerta</Text>
+          <Text style={p1.validityValue}>{quote.validityDays} giorni dalla data di emissione</Text>
+          <Text style={p1.validitySub}>Scadenza: {(() => {
+            try {
+              const d = new Date(quote.createdAt);
+              d.setDate(d.getDate() + (quote.validityDays ?? 30));
+              return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+            } catch { return '—'; }
+          })()}</Text>
         </View>
       </Page>
 
-      {/* ── PAGE 2: DETAIL ── */}
+      {/* ── PAGINA 2: DETTAGLIO VOCI ── */}
       <Page size="A4" style={p2.page}>
         <View style={p2.topBar} fixed />
+        <View style={p2.accentBar} fixed />
         <View style={p2.inner}>
           <View style={p2.heading}>
-            <View>
+            <View style={p2.headingLeft}>
               <Text style={p2.headingTitle}>Dettaglio Voci</Text>
               <Text style={p2.headingSub}>{sender.name} → {client.name}</Text>
             </View>
@@ -259,7 +250,7 @@ export const ExecutiveTemplate = ({ quote }: { quote: Quote }) => {
           <PDFItemsTable quote={quote} />
           <PDFFooter quote={quote} />
 
-          {/* Signature blocks */}
+          {/* Firme */}
           <View style={p2.signatureBlock}>
             <View style={p2.signatureBox}>
               <View style={p2.signatureLine} />

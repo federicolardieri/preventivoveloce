@@ -16,128 +16,136 @@ const formatDate = (d: string) => {
   } catch { return d; }
 };
 
+// ─── Classic Template ────────────────────────────────────────────────────────
+// Design: "Italian Letterhead"
+// Bordo accent verticale a sinistra (6pt), header due colonne, cliente su card
+// grigio con bordo sinistro colorato. Stile formale e professionale.
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const ClassicTemplate = ({ quote }: { quote: Quote }) => {
   const { sender, client, theme } = quote;
   const font = theme.fontFamily ?? 'Helvetica';
   const bold = boldFont(font);
   const primary = theme.primaryColor ?? '#5c32e6';
-  const accent = theme.accentColor ?? primary;
-  const textColor = theme.textColor ?? '#1e293b';
+  const accent  = theme.accentColor  ?? primary;
+  const text    = theme.textColor    ?? '#1e293b';
   const logoPos = theme.logoPosition ?? 'left';
 
   const s = StyleSheet.create({
-    page:        { backgroundColor: '#ffffff', fontFamily: font },
-    accentBar:   { height: 6, backgroundColor: accent },
-    content:     { padding: 40 },
-    headerRow:   { flexDirection: 'row', marginBottom: 32 },
-    leftCol:     { width: '54%', paddingRight: 20 },
-    rightCol:    { width: '46%', alignItems: 'flex-end' },
-    logo:        { width: 240, height: 85, objectFit: 'contain', marginBottom: 10 },
-    senderName:  { fontSize: 15, fontFamily: bold, color: textColor, marginBottom: 5 },
-    subText:     { fontSize: 9, color: '#64748b', marginBottom: 2.5, lineHeight: 1.4 },
-    title:       { fontSize: 28, fontFamily: bold, color: primary, textTransform: 'uppercase', letterSpacing: 1.5 },
-    quoteNum:    { fontSize: 11, color: '#64748b', marginTop: 4 },
-    clientLabel: { fontSize: 8, fontFamily: bold, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
-    clientName:  { fontSize: 13, fontFamily: bold, color: textColor, marginBottom: 3 },
-    divider:     { height: 1, backgroundColor: '#e2e8f0', marginBottom: 12 },
+    page: { backgroundColor: '#ffffff', fontFamily: font },
+
+    // Bordo verticale colorato a sinistra — fixed per ripetersi su più pagine
+    leftBorder: {
+      position: 'absolute', top: 0, left: 0, bottom: 0, width: 6,
+      backgroundColor: primary,
+    },
+    leftBorderAccent: {
+      position: 'absolute', top: 0, left: 6, bottom: 0, width: 2,
+      backgroundColor: accent, opacity: 0.25,
+    },
+
+    content: { paddingLeft: 52, paddingRight: 40, paddingTop: 36, paddingBottom: 36 },
+
+    // Header: mittente a sinistra, preventivo a destra
+    headerRow: {
+      flexDirection: 'row', justifyContent: 'space-between',
+      alignItems: 'flex-start', marginBottom: 20,
+      paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: '#e2e8f0',
+    },
+    senderCol: { width: '55%' },
+    quoteCol:  { width: '43%', alignItems: 'flex-end' },
+
+    senderName: { fontSize: 13, fontFamily: bold, color: text, marginBottom: 4 },
+    senderSub:  { fontSize: 8.5, color: '#64748b', marginBottom: 2, lineHeight: 1.4 },
+
+    // Titolo preventivo
+    quoteEyebrow: {
+      fontSize: 10, fontFamily: bold, color: primary,
+      textTransform: 'uppercase', letterSpacing: 2.5, marginBottom: 6,
+    },
+    quoteNum:  { fontSize: 22, fontFamily: bold, color: text, lineHeight: 1, marginBottom: 6 },
+    quoteSub:  { fontSize: 8.5, color: '#64748b', marginBottom: 2 },
+
+    // Sezione cliente
+    clientCard: {
+      marginBottom: 22, backgroundColor: '#f8fafc',
+      padding: 14, borderLeftWidth: 3, borderLeftColor: accent,
+    },
+    clientLabel: { fontSize: 7.5, fontFamily: bold, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 5 },
+    clientName:  { fontSize: 13, fontFamily: bold, color: text, marginBottom: 3 },
+    clientSub:   { fontSize: 8.5, color: '#64748b', marginBottom: 2, lineHeight: 1.4 },
   });
 
-  const logoEl = sender.logo ? <PDFLogo src={sender.logo} theme={theme} baseWidth={240} baseHeight={85} /> : null;
+  const logoEl = sender.logo
+    ? <PDFLogo src={sender.logo} theme={theme} baseWidth={180} baseHeight={64} />
+    : null;
 
-  const senderInfo = (
-    <>
-      {!sender.logo ? <Text style={s.senderName}>{sender.name || 'Nome Azienda'}</Text> : null}
-      {sender.logo && sender.name ? <Text style={s.senderName}>{sender.name}</Text> : null}
-      {sender.address ? <Text style={s.subText}>{sender.address}</Text> : null}
-      {(sender.city || sender.postalCode) ? (
-        <Text style={s.subText}>{sender.postalCode} {sender.city}{sender.country ? ` (${sender.country})` : ''}</Text>
-      ) : null}
-      {sender.vatNumber ? <Text style={s.subText}>P.IVA/CF: {sender.vatNumber}</Text> : null}
-      {sender.email ? <Text style={s.subText}>{sender.email}</Text> : null}
-      {sender.phone ? <Text style={s.subText}>{sender.phone}</Text> : null}
-      {sender.customFields?.map(f => (
-        <Text key={f.id} style={s.subText}>{f.label}: {f.value}</Text>
-      ))}
-    </>
+  const senderBlock = (
+    <View>
+      {logoPos !== 'center' && logoEl}
+      {!sender.logo && <Text style={s.senderName}>{sender.name || 'Nome Azienda'}</Text>}
+      {sender.logo && sender.name && <Text style={s.senderName}>{sender.name}</Text>}
+      {sender.address && <Text style={s.senderSub}>{sender.address}</Text>}
+      {(sender.city || sender.postalCode) && (
+        <Text style={s.senderSub}>{sender.postalCode} {sender.city}{sender.country ? ` (${sender.country})` : ''}</Text>
+      )}
+      {sender.vatNumber && <Text style={s.senderSub}>P.IVA {sender.vatNumber}</Text>}
+      {sender.email && <Text style={s.senderSub}>{sender.email}</Text>}
+      {sender.phone && <Text style={s.senderSub}>{sender.phone}</Text>}
+      {sender.customFields?.map(f => <Text key={f.id} style={s.senderSub}>{f.label}: {f.value}</Text>)}
+    </View>
   );
 
-  const titleBlock = (align: 'flex-start' | 'flex-end') => (
-    <View style={{ alignItems: align, marginBottom: 20 }}>
-      <Text style={s.title}>Preventivo</Text>
+  const quoteBlock = (
+    <View style={{ alignItems: 'flex-end' }}>
+      <Text style={s.quoteEyebrow}>Preventivo</Text>
       <Text style={s.quoteNum}>#{quote.number}</Text>
-      <Text style={[s.subText, { marginTop: 5 }]}>Data: {formatDate(quote.createdAt)}</Text>
-      <Text style={s.subText}>Validità: {quote.validityDays} giorni</Text>
+      <Text style={s.quoteSub}>{formatDate(quote.createdAt)}</Text>
+      <Text style={s.quoteSub}>Validità: {quote.validityDays} giorni</Text>
     </View>
   );
 
-  const clientBlock = (align: 'flex-start' | 'flex-end') => (
-    <View style={{ alignItems: align, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#e2e8f0' }}>
-      <Text style={s.clientLabel}>Spettabile</Text>
-      <Text style={s.clientName}>{client.name || 'Cliente'}</Text>
-      {client.address ? <Text style={s.subText}>{client.address}</Text> : null}
-      {(client.city || client.postalCode) ? (
-        <Text style={s.subText}>{client.postalCode} {client.city}{client.country ? ` (${client.country})` : ''}</Text>
-      ) : null}
-      {client.vatNumber ? <Text style={s.subText}>P.IVA/CF: {client.vatNumber}</Text> : null}
-      {client.email ? <Text style={s.subText}>{client.email}</Text> : null}
-      {client.customFields?.map(f => (
-        <Text key={f.id} style={s.subText}>{f.label}: {f.value}</Text>
-      ))}
-    </View>
-  );
-
-  let header;
-  if (logoPos === 'center') {
-    header = (
-      <>
-        {logoEl && (
-          <View style={{ alignItems: 'center', marginBottom: 16 }}>
-            {logoEl}
-          </View>
-        )}
-        <View style={s.headerRow}>
-          <View style={s.leftCol}>{senderInfo}</View>
-          <View style={s.rightCol}>
-            {titleBlock('flex-end')}
-            {clientBlock('flex-end')}
-          </View>
-        </View>
-      </>
-    );
-  } else if (logoPos === 'right') {
-    header = (
+  const headerContent = logoPos === 'right'
+    ? (
       <View style={s.headerRow}>
-        <View style={{ width: '46%', paddingRight: 20 }}>
-          {titleBlock('flex-start')}
-          {clientBlock('flex-start')}
-        </View>
-        <View style={{ width: '54%' }}>
-          {logoEl}
-          {senderInfo}
-        </View>
+        <View style={{ width: '43%' }}>{quoteBlock}</View>
+        <View style={{ width: '55%', alignItems: 'flex-end' }}>{senderBlock}</View>
+      </View>
+    )
+    : (
+      <View style={s.headerRow}>
+        <View style={s.senderCol}>{senderBlock}</View>
+        <View style={s.quoteCol}>{quoteBlock}</View>
       </View>
     );
-  } else {
-    header = (
-      <View style={s.headerRow}>
-        <View style={s.leftCol}>
-          {logoEl}
-          {senderInfo}
-        </View>
-        <View style={s.rightCol}>
-          {titleBlock('flex-end')}
-          {clientBlock('flex-end')}
-        </View>
-      </View>
-    );
-  }
 
   return (
     <Document>
       <Page size="A4" style={s.page}>
-        <View style={s.accentBar} fixed />
+        <View style={s.leftBorder} fixed />
+        <View style={s.leftBorderAccent} fixed />
+
         <View style={s.content}>
-          {header}
+          {/* Logo centrato sopra tutto */}
+          {logoPos === 'center' && logoEl && (
+            <View style={{ alignItems: 'center', marginBottom: 16 }}>{logoEl}</View>
+          )}
+
+          {headerContent}
+
+          {/* Cliente */}
+          <View style={s.clientCard}>
+            <Text style={s.clientLabel}>Spettabile</Text>
+            <Text style={s.clientName}>{client.name || 'Cliente'}</Text>
+            {client.address && <Text style={s.clientSub}>{client.address}</Text>}
+            {(client.city || client.postalCode) && (
+              <Text style={s.clientSub}>{client.postalCode} {client.city}{client.country ? ` (${client.country})` : ''}</Text>
+            )}
+            {client.vatNumber && <Text style={s.clientSub}>P.IVA {client.vatNumber}</Text>}
+            {client.email && <Text style={s.clientSub}>{client.email}</Text>}
+            {client.customFields?.map(f => <Text key={f.id} style={s.clientSub}>{f.label}: {f.value}</Text>)}
+          </View>
+
           <PDFItemsTable quote={quote} />
           <PDFFooter quote={quote} />
         </View>

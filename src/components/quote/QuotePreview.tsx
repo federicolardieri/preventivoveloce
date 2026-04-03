@@ -5,7 +5,15 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { FileScan, AlertCircle, ChevronLeft, ChevronRight, Lock, Zap } from "lucide-react";
 import { PRO_TEMPLATES } from "@/types/quote";
 
-export function QuotePreview({ compact = false, quotaBlocked = false }: { compact?: boolean; quotaBlocked?: boolean }) {
+export function QuotePreview({ 
+  compact = false, 
+  quotaBlocked = false,
+  mode = 'edit'
+}: { 
+  compact?: boolean; 
+  quotaBlocked?: boolean;
+  mode?: 'edit' | 'view';
+}) {
   const { currentQuote } = useQuoteStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,7 +79,12 @@ export function QuotePreview({ compact = false, quotaBlocked = false }: { compac
           method: "POST",
           headers: { "Content-Type": "application/json" },
           // _preview: true → il server salta il check quota e applica solo il watermark
-          body: JSON.stringify({ ...currentQuote, _preview: true }),
+          // _view: true → indica che siamo nella schermata di dettaglio, non nell'editor
+          body: JSON.stringify({ 
+            ...currentQuote, 
+            _preview: true,
+            _view: mode === 'view'
+          }),
         });
 
         if (!response.ok) throw new Error("Failed to generate PDF");
@@ -96,7 +109,7 @@ export function QuotePreview({ compact = false, quotaBlocked = false }: { compac
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuote]);
+  }, [currentQuote, mode]);
 
   const goToPrevPage = () => setCurrentPage((p) => Math.max(0, p - 1));
   const goToNextPage = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
@@ -124,7 +137,7 @@ export function QuotePreview({ compact = false, quotaBlocked = false }: { compac
             Passa a Starter o Pro per crearne altri.
           </p>
           <a
-            href="/#pricing"
+            href="/impostazioni?tab=piano"
             className="mt-8 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-black px-8 py-3 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#5c32e6]/30 inline-block"
           >
             Sblocca il piano →

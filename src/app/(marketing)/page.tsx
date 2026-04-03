@@ -7,7 +7,7 @@ import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'fra
 import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
   Play, Star, Clock, Download, Palette, ChevronRight,
-  Timer, TrendingUp, Shield, Users,
+  Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
 } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -73,6 +73,9 @@ const MARQUEE_ITEMS = [
   { icon: TrendingUp, text: 'Vinci più lavori' },
   { icon: Timer, text: 'Da 30 minuti a 20 secondi' },
   { icon: Download, text: 'PDF da inviare subito' },
+  { icon: Mail, text: 'Invio email diretto al cliente' },
+  { icon: MailCheck, text: 'Accettazione in un click' },
+  { icon: Bell, text: 'Notifica quando accetta' },
   { icon: Users, text: 'Storico clienti completo' },
 ];
 
@@ -130,6 +133,7 @@ function Navbar() {
           {[
             { label: 'Funzionalità', href: '#features' },
             { label: 'Come funziona', href: '#come-funziona' },
+            { label: 'Invio email', href: '#email-flow' },
             { label: 'Prezzi', href: '#pricing' },
           ].map(item => (
             <a key={item.label} href={item.href} className="text-sm font-semibold text-white/45 hover:text-white transition-colors">
@@ -308,7 +312,7 @@ function AIDemo() {
   const [text, setText] = useState('');
   const [phase, setPhase] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  const fullText = 'Preventivo sviluppo sito e-commerce con 50 prodotti, pagamenti Stripe, pannello admin e SEO base.';
+  const fullText = 'Preventivo per Mario Rossi (mario@acme.it) — sito e-commerce 50 prodotti: sviluppo €4.500, Stripe €800, pannello admin €1.200, SEO base €500. IVA 22%.';
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
 
@@ -328,7 +332,7 @@ function AIDemo() {
         }, 100);
         setTimeout(() => setPhase(2), 2200);
       }
-    }, 28);
+    }, 22);
     return () => clearInterval(t);
   }, [inView]);
 
@@ -360,10 +364,11 @@ function AIDemo() {
           )}
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-4 space-y-3">
+          {/* Messaggio utente */}
           <div className="flex gap-3">
             <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-white/50">Tu</div>
-            <div className="bg-[#5c32e6]/20 border border-[#5c32e6]/25 rounded-xl px-4 py-3 text-sm text-white/80 leading-relaxed flex-1">
+            <div className="bg-[#5c32e6]/20 border border-[#5c32e6]/25 rounded-xl px-3 py-2.5 text-xs text-white/80 leading-relaxed flex-1">
               {text}
               {phase === 0 && <span className="animate-pulse text-[#5c32e6]">|</span>}
             </div>
@@ -387,37 +392,364 @@ function AIDemo() {
                   <motion.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-[#1a1a24] border border-white/10 rounded-xl overflow-hidden"
+                    className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-lg"
                   >
-                    <div className="bg-[#5c32e6]/10 border-b border-white/5 px-4 py-2.5 flex items-center justify-between">
-                      <span className="text-xs font-black text-white">PRV-2026-025 — Sito E-commerce</span>
+                    {/* Header stile PDF */}
+                    <div className="bg-[#5c32e6] px-4 py-3 flex items-start justify-between">
+                      <div>
+                        <p className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-0.5">Preventivo</p>
+                        <p className="text-sm font-black text-white leading-tight">PRV-2026-025</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-white/70">Acme SRL</p>
+                        <p className="text-[10px] text-white/60">mario@acme.it</p>
+                      </div>
                     </div>
-                    <div className="p-4 space-y-2.5">
+
+                    {/* Mittente / Cliente */}
+                    <div className="grid grid-cols-2 gap-0 border-b border-gray-100">
+                      <div className="px-3 py-2 border-r border-gray-100">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Da</p>
+                        <p className="text-[11px] font-black text-gray-800">La Mia Azienda SRL</p>
+                        <p className="text-[10px] text-gray-500">info@mia-azienda.it</p>
+                      </div>
+                      <div className="px-3 py-2">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">A</p>
+                        <p className="text-[11px] font-black text-gray-800">Mario Rossi</p>
+                        <p className="text-[10px] text-gray-500">mario@acme.it</p>
+                      </div>
+                    </div>
+
+                    {/* Voci */}
+                    <div className="px-3 py-2">
+                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1 mb-1.5">
+                        <span>Descrizione</span>
+                        <span>Importo</span>
+                      </div>
                       {[
                         ['Sviluppo e-commerce (50 prodotti)', '€4.500'],
                         ['Integrazione Stripe + checkout', '€800'],
                         ['Pannello admin personalizzato', '€1.200'],
                         ['SEO base + ottimizzazione', '€500'],
-                      ].map(([desc, price]) => (
-                        <div key={desc} className="flex justify-between items-center text-xs">
-                          <span className="text-white/55">{desc}</span>
-                          <span className="font-black text-white ml-4">{price}</span>
+                      ].map(([desc, price], idx) => (
+                        <div key={desc} className={`flex justify-between items-center py-1 ${idx % 2 === 0 ? 'bg-gray-50/60 -mx-1 px-1 rounded' : ''}`}>
+                          <span className="text-[10px] text-gray-700">{desc}</span>
+                          <span className="text-[10px] font-black text-gray-900 ml-3">{price}</span>
                         </div>
                       ))}
-                      <div className="border-t border-white/10 pt-2.5 flex justify-between items-center">
-                        <span className="text-xs text-white/40 font-semibold">Totale + IVA 22%</span>
-                        <span className="text-base font-black text-emerald-400">€8.534</span>
+                    </div>
+
+                    {/* Totali */}
+                    <div className="px-3 pb-2.5 space-y-1 border-t border-gray-100 pt-2">
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-gray-500">Imponibile</span>
+                        <span className="font-semibold text-gray-800">€7.000</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-gray-500">IVA 22%</span>
+                        <span className="font-semibold text-gray-800">€1.540</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1 border-t border-gray-200">
+                        <span className="text-[11px] font-black text-gray-800">Totale</span>
+                        <span className="text-sm font-black text-[#5c32e6]">€8.534</span>
                       </div>
                     </div>
-                    <div className="px-4 pb-4 flex gap-2">
-                      <div className="flex-1 bg-[#5c32e6] rounded-lg py-2 text-center text-xs font-black text-white">Scarica PDF</div>
-                      <div className="bg-white/5 border border-white/10 rounded-lg py-2 px-4 text-xs font-bold text-white/50">Modifica</div>
+
+                    <div className="px-3 pb-3 flex gap-2">
+                      <div className="flex-1 bg-[#5c32e6] rounded-lg py-1.5 text-center text-[10px] font-black text-white">Scarica PDF</div>
+                      <div className="bg-gray-100 rounded-lg py-1.5 px-3 text-[10px] font-bold text-gray-500">Invia email</div>
                     </div>
                   </motion.div>
                 )}
               </div>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Email Flow Demo ───────────────────────────────────────────────────────────
+
+const DEMO_PHASES = [3200, 3200, 3200, 3400];
+const DEMO_TOTAL = DEMO_PHASES.reduce((s, d) => s + d, 0);
+
+function EmailFlowDemo() {
+  const [phase, setPhase] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: '-80px' });
+
+  useEffect(() => {
+    if (!inView) return;
+    const id = setInterval(() => {
+      setElapsed(e => {
+        const next = (e + 80) % DEMO_TOTAL;
+        let acc = 0;
+        for (let i = 0; i < DEMO_PHASES.length; i++) {
+          acc += DEMO_PHASES[i];
+          if (next < acc) { setPhase(i); break; }
+        }
+        return next;
+      });
+    }, 80);
+    return () => clearInterval(id);
+  }, [inView]);
+
+  const phaseStart = DEMO_PHASES.slice(0, phase).reduce((s, d) => s + d, 0);
+  const phaseProgress = Math.min((elapsed - phaseStart) / DEMO_PHASES[phase], 1);
+
+  const STEPS = [
+    { label: '1. Invio dal tuo account', dot: 'bg-[#5c32e6]' },
+    { label: '2. Email al cliente', dot: 'bg-blue-400' },
+    { label: '3. Cliente accetta', dot: 'bg-emerald-400' },
+    { label: '4. Notifiche automatiche', dot: 'bg-amber-400' },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="absolute -inset-3 bg-emerald-500/8 rounded-3xl blur-3xl" />
+      <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+
+        {/* Browser bar */}
+        <div className="h-9 bg-[#0d0d14] border-b border-white/5 flex items-center px-4 gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+          </div>
+          <div className="flex items-center gap-1.5 ml-2">
+            <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }} className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[10px] font-bold text-white/40">Demo in tempo reale</span>
+          </div>
+          {/* Step indicator */}
+          <div className="ml-auto flex items-center gap-1.5">
+            {STEPS.map((s, i) => (
+              <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === phase ? `w-8 ${s.dot}` : i < phase ? `w-3 ${s.dot} opacity-60` : 'w-1.5 bg-white/10'}`} />
+            ))}
+          </div>
+        </div>
+
+        {/* Step label */}
+        <div className="px-4 pt-3 pb-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={phase}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-2"
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${STEPS[phase].dot}`} />
+              <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">{STEPS[phase].label}</span>
+            </motion.div>
+          </AnimatePresence>
+          {/* Progress bar */}
+          <div className="mt-1.5 h-0.5 bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${STEPS[phase].dot}`}
+              animate={{ width: `${phaseProgress * 100}%` }}
+              transition={{ duration: 0.08, ease: 'linear' }}
+            />
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="p-4">
+          <AnimatePresence mode="wait">
+
+            {/* Phase 0 — App: invio preventivo */}
+            {phase === 0 && (
+              <motion.div key="p0" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#0d0d14] rounded-xl border border-white/8 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                    <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Preventivo Veloce — Il tuo account</span>
+                  </div>
+                  <div className="p-3">
+                    <div className="bg-[#1a1a24] rounded-lg border border-white/5 p-3 mb-3">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-black text-white/70">PRV-2026-025</span>
+                        <span className="text-[9px] bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded-full font-bold">Pronto</span>
+                      </div>
+                      <p className="text-[9px] text-white/35 mb-2">Sito E-commerce • Acme SRL • mario.rossi@acme.it</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] text-white/40">Totale + IVA</span>
+                        <span className="text-sm font-black text-white">€8.534</span>
+                      </div>
+                    </div>
+                    <motion.button
+                      animate={{ boxShadow: ['0 0 0 0 rgba(92,50,230,0)', '0 0 0 8px rgba(92,50,230,0.25)', '0 0 0 0 rgba(92,50,230,0)'] }}
+                      transition={{ duration: 1.8, repeat: Infinity }}
+                      className="w-full bg-[#5c32e6] rounded-lg py-2.5 flex items-center justify-center gap-2 text-[11px] font-black text-white"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      Invia via email a mario.rossi@acme.it
+                    </motion.button>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center gap-2 px-1">
+                  <motion.div animate={{ x: [0, 4, 0] }} transition={{ duration: 0.8, repeat: Infinity }} className="text-[#5c32e6]">
+                    <Send className="w-3 h-3" />
+                  </motion.div>
+                  <span className="text-[9px] text-white/30">PDF allegato automaticamente · Link accettazione generato · Valido 30 giorni</span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 1 — Inbox del cliente */}
+            {phase === 1 && (
+              <motion.div key="p1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#f1f5f9] rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                  {/* inbox topbar */}
+                  <div className="bg-gray-200 px-3 py-1.5 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-[11px] font-black text-gray-600 uppercase tracking-widest">Inbox — mario@acme.it</span>
+                  </div>
+                  {/* Email row non letta */}
+                  <div className="bg-[#eef2ff] px-3 py-2.5 border-b border-indigo-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#5c32e6] to-[#a78bfa] flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">PV</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[11px] font-black text-gray-900">La Mia Azienda SRL via Preventivo Veloce</span>
+                          <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">adesso</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-700 truncate">Preventivo PRV-2026-025 — Sito E-commerce</p>
+                        <p className="text-[10px] text-gray-500 truncate">Ciao Mario, ti invio il preventivo. Trovi il PDF in allegato...</p>
+                      </div>
+                      <div className="w-2 h-2 rounded-full bg-[#5c32e6] flex-shrink-0" />
+                    </div>
+                  </div>
+                  {/* Corpo email aperta */}
+                  <div className="bg-white px-3 py-3">
+                    <p className="text-[12px] font-bold text-gray-800 mb-1">Ciao Mario,</p>
+                    <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
+                      <strong className="text-gray-800">La Mia Azienda SRL</strong> ti ha inviato il preventivo <strong className="text-gray-800">PRV-2026-025</strong> per il sito e-commerce. Trovi il PDF completo in allegato.
+                    </p>
+                    <div className="bg-gray-50 rounded-lg border border-gray-200 p-2 mb-3 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4 h-4 text-red-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-gray-800">Preventivo-PRV-2026-025.pdf</p>
+                        <p className="text-[10px] text-gray-500">Totale €8.534 · PDF allegato</p>
+                      </div>
+                      <span className="text-[11px] text-[#5c32e6] font-bold flex-shrink-0">Apri</span>
+                    </div>
+                    <motion.button
+                      animate={{ boxShadow: ['0 0 0 0 rgba(34,197,94,0)', '0 0 0 8px rgba(34,197,94,0.2)', '0 0 0 0 rgba(34,197,94,0)'] }}
+                      transition={{ duration: 1.4, repeat: Infinity }}
+                      className="w-full bg-emerald-500 text-white text-[12px] font-black py-2.5 rounded-lg"
+                    >
+                      ✓ Accetta il preventivo
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 2 — Pagina di accettazione */}
+            {phase === 2 && (
+              <motion.div key="p2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#0a0a0f] rounded-xl border border-white/10 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-white/5 flex items-center gap-2">
+                    <div className="flex-1 bg-[#1a1a24] rounded h-5 flex items-center px-2">
+                      <span className="text-[8px] text-white/25">preventivoveloce.it/firma/a8f3...</span>
+                    </div>
+                  </div>
+                  <div className="p-4 flex flex-col items-center text-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#5c32e6]/15 border border-[#5c32e6]/20 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-[#a78bfa]" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-white/35 uppercase tracking-widest font-black mb-0.5">Preventivo</p>
+                      <p className="text-sm font-black text-white">PRV-2026-025</p>
+                      <p className="text-[9px] text-white/40">da <span className="text-white/60 font-semibold">Acme SRL</span></p>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-lg border border-white/8 p-2 text-left space-y-1.5">
+                      <div className="flex justify-between text-[9px]">
+                        <span className="text-white/40">Destinatario</span>
+                        <span className="text-white/70 font-semibold">Mario Rossi</span>
+                      </div>
+                      <div className="flex justify-between text-[9px]">
+                        <span className="text-white/40">Importo</span>
+                        <span className="text-white/70 font-semibold">€8.534</span>
+                      </div>
+                      <div className="flex justify-between text-[9px]">
+                        <span className="text-white/40">Validità</span>
+                        <span className="text-white/70 font-semibold">30 giorni</span>
+                      </div>
+                    </div>
+                    <motion.button
+                      animate={phaseProgress > 0.5 ? { scale: [1, 1.05, 1], boxShadow: ['0 0 0 0 rgba(92,50,230,0)', '0 0 0 10px rgba(92,50,230,0.3)', '0 0 0 0 rgba(92,50,230,0)'] } : {}}
+                      transition={{ duration: 1.2, repeat: Infinity }}
+                      className="w-full bg-[#5c32e6] rounded-lg py-2.5 text-white text-[11px] font-black flex items-center justify-center gap-1.5"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Accetto il preventivo
+                    </motion.button>
+                    <p className="text-[7px] text-white/25 leading-relaxed">L'accettazione viene registrata con data, ora e IP. Nessun account richiesto.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 3 — Notifiche email */}
+            {phase === 3 && (
+              <motion.div key="p3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="space-y-2">
+                  {/* Email notifica al mittente */}
+                  <div className="bg-[#f0fdf4] rounded-xl overflow-hidden border border-green-200 shadow-sm">
+                    <div className="bg-green-100 px-3 py-1.5 border-b border-green-200 flex items-center justify-between">
+                      <span className="text-[11px] font-black text-green-800 uppercase tracking-widest">📤 La tua inbox — mittente</span>
+                      <span className="text-[10px] text-green-700 font-bold">adesso</span>
+                    </div>
+                    <div className="bg-white px-3 py-2.5">
+                      <p className="text-[12px] font-black text-gray-900 mb-1">🎉 Mario Rossi ha accettato PRV-2026-025</p>
+                      <p className="text-[11px] text-gray-600 mb-2 leading-relaxed">
+                        Il preventivo è stato aggiornato ad <strong className="text-emerald-700">Accettato</strong> nel tuo account. Trovi il PDF timbrato in allegato.
+                      </p>
+                      <div className="flex gap-2">
+                        <div className="flex-1 bg-green-50 rounded-lg border border-green-200 p-2 text-center">
+                          <p className="text-[12px] font-black text-green-700">€8.534</p>
+                          <p className="text-[10px] text-gray-500">Importo accettato</p>
+                        </div>
+                        <div className="flex-1 bg-gray-50 rounded-lg border border-gray-200 p-2 text-center">
+                          <p className="text-[12px] font-black text-gray-800">PDF ✓</p>
+                          <p className="text-[10px] text-gray-500">Timbrato allegato</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Email conferma al cliente */}
+                  <div className="bg-[#eff6ff] rounded-xl overflow-hidden border border-blue-200 shadow-sm">
+                    <div className="bg-blue-100 px-3 py-1.5 border-b border-blue-200 flex items-center justify-between">
+                      <span className="text-[11px] font-black text-blue-800 uppercase tracking-widest">📥 Conferma a mario@acme.it</span>
+                      <span className="text-[10px] text-blue-700 font-bold">adesso</span>
+                    </div>
+                    <div className="bg-white px-3 py-2.5">
+                      <p className="text-[12px] font-black text-gray-900 mb-1">Hai accettato il preventivo PRV-2026-025</p>
+                      <p className="text-[11px] text-gray-600 leading-relaxed">
+                        Accettato il <strong className="text-gray-800">{new Date().toLocaleDateString('it-IT')}</strong>. Il PDF con timbro di accettazione è in allegato. <strong className="text-gray-800">La Mia Azienda SRL</strong> ti contatterà presto.
+                      </p>
+                    </div>
+                  </div>
+                  {/* Status app */}
+                  <div className="bg-[#0d0d14] rounded-lg border border-emerald-500/20 px-3 py-2 flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] font-black text-white/80">Stato aggiornato automaticamente</p>
+                      <p className="text-[10px] text-white/40">PRV-2026-025 → Accettato · Dashboard aggiornata</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -959,47 +1291,58 @@ export default function LandingPage() {
 
       {/* ── HOW IT WORKS ── */}
       <section className="py-28 px-6 bg-white/[0.015] border-y border-white/5">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
-              In 3 passi, il preventivo è pronto
+              In 4 passi, il cliente accetta
             </h2>
+            <p className="text-white/35 text-base">Dal brief alla firma digitale — tutto automatico.</p>
           </FadeIn>
 
-          <div className="grid md:grid-cols-3 gap-8 relative">
+          <div className="grid md:grid-cols-4 gap-6 relative">
             {/* Connector line */}
-            <div className="hidden md:block absolute top-7 left-[calc(16.666%+28px)] right-[calc(16.666%+28px)] h-px bg-gradient-to-r from-[#5c32e6]/30 via-[#5c32e6]/60 to-[#5c32e6]/30" />
+            <div className="hidden md:block absolute top-7 left-[calc(12.5%+28px)] right-[calc(12.5%+28px)] h-px bg-gradient-to-r from-[#5c32e6]/30 via-[#5c32e6]/60 to-emerald-500/30" />
 
             {[
               {
                 n: '01',
                 title: 'Crea l\'account',
-                desc: 'Registrati in 30 secondi. Nessuna carta richiesta. Piano Free incluso per sempre.',
+                desc: 'Registrati in 30 secondi. Nessuna carta. Piano Free incluso per sempre.',
                 icon: Users,
+                color: 'bg-[#5c32e6]/15 border-[#5c32e6]/25 text-[#a78bfa]',
               },
               {
                 n: '02',
                 title: 'Descrivi il lavoro',
-                desc: 'Scrivi in italiano cosa devi fare. L\'AI capisce e compila tutto automaticamente.',
+                desc: 'Scrivi in italiano. L\'AI genera voci, prezzi, IVA e PDF in 20 secondi.',
                 icon: Sparkles,
+                color: 'bg-[#5c32e6]/15 border-[#5c32e6]/25 text-[#a78bfa]',
               },
               {
                 n: '03',
-                title: 'Scarica il PDF',
-                desc: 'In 20 secondi hai un PDF professionale con il tuo logo pronto da inviare al cliente.',
-                icon: Download,
+                title: 'Invia via email',
+                desc: 'Un click. Il PDF arriva al cliente con il pulsante di accettazione integrato.',
+                icon: Send,
+                color: 'bg-[#5c32e6]/15 border-[#5c32e6]/25 text-[#a78bfa]',
+              },
+              {
+                n: '04',
+                title: 'Il cliente accetta',
+                desc: 'Clicca "Accetto" dall\'email. Tu ricevi notifica e il PDF timbrato — automatico.',
+                icon: MailCheck,
+                color: 'bg-[#5c32e6]/15 border-[#5c32e6]/25 text-[#a78bfa]',
               },
             ].map((step, i) => (
-              <FadeIn key={step.n} delay={i * 0.12}>
+              <FadeIn key={step.n} delay={i * 0.1}>
                 <div className="text-center relative">
                   <motion.div
-                    className="w-14 h-14 rounded-2xl bg-[#5c32e6]/15 border border-[#5c32e6]/25 flex items-center justify-center mx-auto mb-5 relative z-10"
+                    className={`w-14 h-14 rounded-2xl border flex items-center justify-center mx-auto mb-5 relative z-10 ${step.color}`}
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <span className="text-xl font-black text-[#a78bfa]">{step.n}</span>
+                    <span className="text-xl font-black">{step.n}</span>
                   </motion.div>
-                  <h3 className="text-lg font-black text-white mb-3">{step.title}</h3>
+                  <h3 className="text-base font-black text-white mb-2">{step.title}</h3>
                   <p className="text-sm text-white/40 leading-relaxed">{step.desc}</p>
                 </div>
               </FadeIn>
@@ -1083,6 +1426,87 @@ export default function LandingPage() {
                 </motion.div>
               </FadeIn>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── EMAIL FLOW ── */}
+      <section id="email-flow" className="py-28 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/3 to-transparent pointer-events-none" />
+        <FloatingOrb className="top-1/2 left-0 w-80 h-80 bg-emerald-500/6" delay={2} />
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-14 items-center">
+
+            {/* Left: demo */}
+            <FadeIn direction="left">
+              <EmailFlowDemo />
+            </FadeIn>
+
+            {/* Right: copy */}
+            <FadeIn delay={0.12} direction="right">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/12 border border-emerald-500/20 text-emerald-300 text-sm font-bold px-3 py-1.5 rounded-full mb-6">
+                <MailCheck className="w-3.5 h-3.5" />
+                Nuova funzione — Invio automatico
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+                Invia. Il cliente
+                <br />
+                <span className="text-emerald-300">accetta. Tu vinci.</span>
+              </h2>
+              <p className="text-white/45 text-base leading-relaxed mb-8">
+                Clicchi "Invia via email" e il preventivo arriva direttamente al cliente con un pulsante{' '}
+                <span className="text-white/75 font-semibold">Accetta Preventivo</span>.
+                Quando firma, ricevi subito una notifica — senza muovere un dito.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {[
+                  {
+                    icon: Send,
+                    color: 'bg-[#5c32e6]/15 text-[#a78bfa]',
+                    title: 'Invio diretto al cliente',
+                    desc: 'Un click e il preventivo è nella sua inbox, con il PDF allegato.',
+                  },
+                  {
+                    icon: MailCheck,
+                    color: 'bg-emerald-500/15 text-emerald-300',
+                    title: 'Accettazione in un click',
+                    desc: 'Il cliente clicca "Accetta" direttamente dall\'email — nessun account necessario.',
+                  },
+                  {
+                    icon: Bell,
+                    color: 'bg-amber-500/15 text-amber-300',
+                    title: 'Notifica immediata',
+                    desc: 'Ricevi un\'email nel momento esatto in cui il cliente accetta. Stato aggiornato in automatico.',
+                  },
+                ].map(({ icon: Icon, color, title, desc }) => (
+                  <motion.div
+                    key={title}
+                    className="flex items-start gap-3"
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white/80 mb-0.5">{title}</p>
+                      <p className="text-sm text-white/40 leading-relaxed">{desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="bg-[#111118] border border-white/6 rounded-2xl p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 text-emerald-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white/80">Dal primo invio all'accettazione</p>
+                  <p className="text-xs text-white/40">I preventivi inviati via email vengono accettati in media <span className="text-emerald-400 font-black">7 minuti</span> dopo l'apertura.</p>
+                </div>
+              </div>
+            </FadeIn>
           </div>
         </div>
       </section>

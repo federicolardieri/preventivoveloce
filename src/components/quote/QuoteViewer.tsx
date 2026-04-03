@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuoteStore } from "@/store/quoteStore";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +10,7 @@ import { Download, ArrowLeft, Edit3, AlertCircle, Send, CheckCircle2, X } from "
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QuoteStatus } from "@/types/quote";
+import { SendQuoteDialog } from "./SendQuoteDialog";
 
 const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
   { value: "bozza",      label: "Bozza" },
@@ -25,38 +26,26 @@ export function QuoteViewer() {
   const router = useRouter();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [noCredits, setNoCredits] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<'success' | 'error' | null>(null);
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
 
-  // Quote nello storico = già nel DB. Preview e download sono SEMPRE permessi.
-  // Controlliamo solo se l'utente ha crediti per decidere se può modificare.
-  useEffect(() => {
-    if (!currentQuote?.id) return;
-    fetch(`/api/quota?quoteId=${currentQuote.id}`)
-      .then(r => r.json())
-      .then(data => {
-        // creditsRemaining = 0 e non è un piano pro → no crediti per nuove operazioni
-        if (data.creditsRemaining !== null && data.creditsRemaining <= 0 && !data.isExistingQuote) {
-          setNoCredits(true);
-        }
-      })
-      .catch(() => {});
-  }, [currentQuote?.id]);
-
-  const handleSend = async () => {
-    if (!currentQuote?.id) return;
+  const handleSend = async (customMessage: string): Promise<boolean> => {
+    if (!currentQuote?.id) return false;
     setSending(true);
     setSendResult(null);
     try {
       const res = await fetch('/api/email/send-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quoteId: currentQuote.id }),
+        body: JSON.stringify({ quoteId: currentQuote.id, customMessage }),
       });
       setSendResult(res.ok ? 'success' : 'error');
+      if (res.ok) router.push('/preventivi?success=sent');
+      return res.ok;
     } catch {
       setSendResult('error');
+      return false;
     } finally {
       setSending(false);
     }
@@ -157,7 +146,7 @@ export function QuoteViewer() {
 
           {/* Preview — mai bloccata per quote nello storico (già pagate con crediti) */}
           <div className="h-[60vh] xl:h-[calc(100vh-220px)] max-w-4xl mx-auto shadow-2xl rounded-2xl border border-slate-200 overflow-hidden bg-white">
-            <QuotePreview />
+            <QuotePreview mode="view" />
           </div>
 
           {/* Mobile action panel — stacked below preview */}
@@ -217,16 +206,15 @@ export function QuoteViewer() {
               </Button>
               <Button
                 variant="outline"
-                className="flex-1 h-12 rounded-xl border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-semibold disabled:opacity-40"
+                className="flex-1 h-12 rounded-xl border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-semibold"
                 onClick={() => router.push(`/nuovo?edit=${currentQuote.id}`)}
-                disabled={noCredits}
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                {noCredits ? 'Crediti esauriti' : 'Modifica'}
+                Modifica
               </Button>
             </div>
             <Button
-              onClick={handleSend}
+              onClick={() => setSendDialogOpen(true)}
               disabled={sending || !hasClientEmail}
               className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
               title={!hasClientEmail ? 'Inserisci l\'email del cliente nel preventivo per abilitare l\'invio' : undefined}
@@ -287,7 +275,7 @@ export function QuoteViewer() {
           {/* Azioni */}
           <div className="space-y-3 mt-auto">
             <Button
-              onClick={handleSend}
+              onClick={() => setSendDialogOpen(true)}
               disabled={sending || !hasClientEmail}
               className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               title={!hasClientEmail ? 'Inserisci l\'email del cliente nel preventivo per abilitare l\'invio' : undefined}
@@ -307,13 +295,11 @@ export function QuoteViewer() {
 
             <Button
               variant="outline"
-              className="w-full h-12 rounded-xl border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-12 rounded-xl border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-semibold"
               onClick={() => router.push(`/nuovo?edit=${currentQuote.id}`)}
-              disabled={noCredits}
-              title={noCredits ? 'Crediti esauriti — passa a un piano superiore per modificare' : undefined}
             >
               <Edit3 className="w-4 h-4 mr-2" />
-              {noCredits ? 'Crediti esauriti' : 'Modifica Preventivo'}
+              Modifica Preventivo
             </Button>
 
             <Button
@@ -327,6 +313,15 @@ export function QuoteViewer() {
 
         </div>
       </div>
+
+      <SendQuoteDialog
+        open={sendDialogOpen}
+        onOpenChange={setSendDialogOpen}
+        clientEmail={currentQuote.client?.email || ''}
+        clientName={currentQuote.client?.name || ''}
+        quoteNumber={currentQuote.number}
+        onConfirmSend={handleSend}
+      />
     </div>
   );
 }
