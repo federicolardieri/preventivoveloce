@@ -1,5 +1,8 @@
+import '@/env';
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import CookieBanner from "@/components/CookieBanner";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -80,6 +83,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         {children}
+        <CookieBanner />
+        <AnalyticsProvider />
       </body>
     </html>
   );

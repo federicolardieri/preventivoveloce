@@ -70,6 +70,7 @@ function quoteToDb(quote: Quote, userId: string) {
     items: quote.items,
     notes: quote.notes,
     payment_terms: quote.paymentTerms,
+    iban: quote.iban ?? null,
     validity_days: quote.validityDays,
     currency: quote.currency,
     item_custom_columns: quote.itemCustomColumns ?? [],
@@ -95,6 +96,7 @@ function dbToQuote(row: Record<string, any>): Quote {
     items: row.items ?? [],
     notes: row.notes ?? '',
     paymentTerms: row.payment_terms ?? '',
+    iban: row.iban ?? undefined,
     validityDays: row.validity_days ?? 30,
     currency: row.currency ?? 'EUR',
     itemCustomColumns: row.item_custom_columns ?? [],
@@ -320,13 +322,15 @@ export const useQuoteStore = create<QuoteStoreState>()(
       // ── Supabase Sync ────────────────────────────────────────────────────────
 
       loadFromSupabase: async (supabase) => {
+        // Exclude attachments (base64) from list query for performance
         const { data: rows, error } = await supabase
           .from('quotes')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .select('id, user_id, number, status, template, theme, sender, client, items, notes, payment_terms, iban, validity_days, currency, item_custom_columns, total_cents, archived, created_at, updated_at')
+          .order('created_at', { ascending: false })
+          .limit(200);
 
         if (error || !rows) return;
-        const all = rows.map(dbToQuote);
+        const all = rows.map((row: Record<string, unknown>) => dbToQuote({ ...row, attachments: [] }));
         set({
           quotesList: all.filter(q => !q.archived),
           archivedList: all.filter(q => q.archived),

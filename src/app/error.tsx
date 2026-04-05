@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export default function GlobalError({
   error,
@@ -10,7 +11,10 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    // Solo in dev — in prod Sentry cattura automaticamente via global-error.tsx
+    if (process.env.NODE_ENV === 'development') {
+      console.error(error);
+    }
   }, [error]);
 
   return (
@@ -34,12 +38,12 @@ export default function GlobalError({
               >
                 Riprova
               </button>
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center justify-center h-12 px-8 rounded-2xl border border-border bg-white text-slate-700 font-bold hover:bg-slate-50 transition-colors"
               >
                 Torna alla Home
-              </a>
+              </Link>
             </div>
           </div>
         </div>

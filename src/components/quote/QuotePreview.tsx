@@ -179,6 +179,7 @@ export function QuotePreview({
               <div className={`relative group transition-all duration-500 ${isLocked ? 'grayscale-[0.3]' : 'hover:scale-[1.01]'}`}>
                 {/* Paper Shadow Stack */}
                 <div className="absolute inset-0 bg-black/40 blur-2xl translate-y-4 scale-95 opacity-50 transition-opacity" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={pageImages[currentPage]}
                   alt={`Pagina ${currentPage + 1}`}

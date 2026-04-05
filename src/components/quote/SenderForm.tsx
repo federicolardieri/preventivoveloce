@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, X, ChevronDown, Building2 } from "lucide-react";
+import { Plus, X, ChevronDown, Building2, Save } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export function SenderForm() {
   const { currentQuote, updateSender } = useQuoteStore();
-  const { companies } = useProfileStore();
+  const { companies, addCompany } = useProfileStore();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedFeedback, setSavedFeedback] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +52,30 @@ export function SenderForm() {
 
   const sender = currentQuote.sender;
 
+  const isAlreadySaved = companies.some(
+    (c) => c.name === sender.name && c.vatNumber === sender.vatNumber && sender.name.trim() !== ''
+  );
+
+  const handleSaveCompany = async () => {
+    if (!sender.name.trim()) return;
+    setSaving(true);
+    const supabase = createClient();
+    await addCompany(supabase, {
+      label: sender.name,
+      name: sender.name,
+      address: sender.address,
+      city: sender.city,
+      postalCode: sender.postalCode,
+      country: sender.country,
+      vatNumber: sender.vatNumber,
+      email: sender.email,
+      phone: sender.phone,
+    });
+    setSaving(false);
+    setSavedFeedback(true);
+    setTimeout(() => setSavedFeedback(false), 2000);
+  };
+
   const addCustomField = () => {
     const fields = sender.customFields || [];
     updateSender({ 
@@ -75,6 +102,24 @@ export function SenderForm() {
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-lg font-bold text-card-foreground tracking-tight">Dati Mittente</CardTitle>
+
+          <div className="flex items-center gap-2">
+            {sender.name.trim() && !isAlreadySaved && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSaveCompany}
+                disabled={saving}
+                className="border-emerald-200 text-emerald-600 hover:bg-emerald-50 rounded-xl font-bold text-xs h-8 gap-1.5"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? 'Salvo...' : 'Salva in rubrica'}
+              </Button>
+            )}
+            {savedFeedback && (
+              <span className="text-xs font-bold text-emerald-600 animate-in fade-in">Salvato!</span>
+            )}
 
           {companies.length > 0 && (
             <div className="relative" ref={pickerRef}>
@@ -119,6 +164,7 @@ export function SenderForm() {
               )}
             </div>
           )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

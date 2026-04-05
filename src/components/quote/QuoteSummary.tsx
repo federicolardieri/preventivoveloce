@@ -11,7 +11,6 @@ export function QuoteSummary() {
 
   // Basic hydration guard to prevent mismatch during SSR
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
   if (!mounted || !currentQuote) return null;
 

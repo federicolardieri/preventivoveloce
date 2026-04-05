@@ -504,7 +504,7 @@ export default function ClientiPage() {
       </div>
 
       {/* Dialog preventivi del cliente */}
-      <Dialog open={!!quotesDialogClient} onOpenChange={(open) => { if (!open) setQuotesDialogClient(null); }}>
+      <Dialog open={!!quotesDialogClient} onOpenChange={(open: boolean) => { if (!open) setQuotesDialogClient(null); }}>
         <DialogContent className="sm:max-w-lg p-0 overflow-hidden rounded-3xl border-0 shadow-2xl">
           {/* Header colorato */}
           <div className="relative bg-gradient-to-br from-primary to-purple-700 px-6 pt-6 pb-8 overflow-hidden">

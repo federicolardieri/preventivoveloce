@@ -56,7 +56,8 @@ export default function ForgotPasswordPage() {
     });
 
     if (error) {
-      setError(error.message);
+      console.error('[forgot-password] Supabase error:', error.message);
+      setError('Errore durante l\'invio del link. Riprova tra qualche secondo.');
       setLoading(false);
     } else {
       setSuccess(true);

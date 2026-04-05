@@ -14,6 +14,6 @@ export const config = {
      * - favicon.ico, sitemap.xml, robots.txt
      * - file con estensione (es. logo.png)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!monitoring|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

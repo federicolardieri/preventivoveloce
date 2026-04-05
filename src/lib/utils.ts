@@ -10,7 +10,15 @@ export function formatCurrency(cents: number): string {
   return new Intl.NumberFormat('it-IT', {
     style: 'currency',
     currency: 'EUR',
+    minimumFractionDigits: 2,
   }).format(cents / 100)
+}
+
+export function formatAmount(cents: number, currency: string = 'EUR'): string {
+  const symbol = currency === 'USD' ? '$' : currency === 'GBP' ? '£' : currency === 'CHF' ? 'CHF' : '€';
+  const abs = Math.abs(cents / 100);
+  const formatted = abs.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${symbol} ${formatted}`;
 }
 
 export function calculateTotals(items: QuoteItem[]) {
@@ -18,9 +26,13 @@ export function calculateTotals(items: QuoteItem[]) {
   const vatTotals: Record<number, number> = { 0: 0, 4: 0, 10: 0, 22: 0 };
 
   items.forEach(item => {
-    const itemSubtotal = (item.unitPrice * item.quantity) * (1 - item.discount / 100);
+    const lineBase = item.unitPrice * item.quantity;
+    const discountVal = item.discountType === 'fixed'
+      ? (item.discount || 0)
+      : lineBase * ((item.discount || 0) / 100);
+    const itemSubtotal = Math.max(0, lineBase - discountVal);
     subtotal += itemSubtotal;
-    
+
     const vatAmount = itemSubtotal * (item.vatRate / 100);
     vatTotals[item.vatRate] = (vatTotals[item.vatRate] || 0) + vatAmount;
   });

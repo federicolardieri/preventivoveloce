@@ -56,7 +56,7 @@ export const PDFItemsTable = ({ quote }: { quote: Quote }) => {
   });
 
   const symbol = currency === 'USD' ? '$' : currency === 'GBP' ? '£' : currency === 'CHF' ? 'CHF' : '€';
-  const fmt = (cents: number) => `${symbol} ${(cents / 100).toFixed(2).replace('.', ',')}`;
+  const fmt = (cents: number) => `${symbol} ${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const colDesc = { width: `${descPct}%` };
   const colCustom = { width: '10%', textAlign: 'left' as const };

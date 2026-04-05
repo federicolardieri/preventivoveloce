@@ -62,7 +62,7 @@ export function AIAssistant() {
       handleSend(aiPrompt.trim());
       setAiPrompt(''); // Clear after sending
     }
-  }, [aiPrompt, open]);
+  }, [aiPrompt, open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startNewQuote = () => {
     const year = new Date().getFullYear();
@@ -160,12 +160,11 @@ export function AIAssistant() {
         body: JSON.stringify({ message: text, history: historyForApi, quoteId: currentQuote?.id }),
       });
 
-      if (res.status === 403) {
+      if (res.status === 403 || res.status === 429) {
         const err = await res.json();
         setMessages(prev => [...prev, {
-          id: crypto.randomUUID(), role: 'assistant' as const,
-          text: err.message ?? 'Limite raggiunto. Passa a un piano superiore per continuare.',
-          timestamp: new Date(),
+          role: 'assistant' as const,
+          text: err.message ?? 'Limite raggiunto. Riprova tra qualche secondo.',
         }]);
         setLoading(false);
         return;

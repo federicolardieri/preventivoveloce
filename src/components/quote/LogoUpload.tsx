@@ -10,20 +10,14 @@ import { LogoShape } from "@/types/quote";
 export function LogoUpload() {
   const { currentQuote, updateSender, updateTheme } = useQuoteStore();
 
-  if (!currentQuote) return null;
-
-  const { theme, sender } = currentQuote;
-  const logoShape = theme.logoShape || 'original';
-  const logoScale = theme.logoScale || 1;
-  const logoOffsetX = theme.logoOffsetX ?? 0;
-  const logoOffsetY = theme.logoOffsetY ?? 0;
-  const logoPadding = theme.logoPadding ?? 0;
-  const logoOriginal = sender.logoOriginal;
-
-  const STEP = 4;
-  const nudge = (dx: number, dy: number) => {
-    updateTheme({ logoOffsetX: logoOffsetX + dx, logoOffsetY: logoOffsetY + dy });
-  };
+  const theme = currentQuote?.theme;
+  const sender = currentQuote?.sender;
+  const logoShape = theme?.logoShape || 'original';
+  const logoScale = theme?.logoScale || 1;
+  const logoOffsetX = theme?.logoOffsetX ?? 0;
+  const logoOffsetY = theme?.logoOffsetY ?? 0;
+  const logoPadding = theme?.logoPadding ?? 0;
+  const logoOriginal = sender?.logoOriginal;
 
   // Processa il logo applicando forma e scala tramite canvas
   const processLogo = useCallback(async (
@@ -59,9 +53,7 @@ export function LogoUpload() {
           } else {
             const radius = BASE * 0.12;
             ctx.beginPath();
-            // @ts-ignore
             if (ctx.roundRect) {
-              // @ts-ignore
               ctx.roundRect(0, 0, BASE, BASE, radius);
             } else {
               ctx.rect(0, 0, BASE, BASE);
@@ -99,6 +91,13 @@ export function LogoUpload() {
       processLogo(logoOriginal, logoShape, logoScale, logoPadding);
     }
   }, [logoOriginal, logoShape, logoScale, logoPadding, processLogo]);
+
+  if (!currentQuote) return null;
+
+  const STEP = 4;
+  const nudge = (dx: number, dy: number) => {
+    updateTheme({ logoOffsetX: logoOffsetX + dx, logoOffsetY: logoOffsetY + dy });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -139,6 +138,7 @@ export function LogoUpload() {
                 'rounded-xl w-48 h-24'
               }`}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={logoOriginal}
                 alt="Logo Preview"
@@ -177,7 +177,7 @@ export function LogoUpload() {
                     { id: 'original', label: 'Originale', Icon: FullImage },
                     { id: 'circle',   label: 'Cerchio',   Icon: Circle },
                     { id: 'square',   label: 'Quadrato',  Icon: Square },
-                  ] as { id: LogoShape; label: string; Icon: any }[]
+                  ] as { id: LogoShape; label: string; Icon: React.ComponentType<{ className?: string }> }[]
                 ).map((s) => {
                   const isActive = logoShape === s.id;
                   return (

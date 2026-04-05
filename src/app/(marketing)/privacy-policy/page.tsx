@@ -112,13 +112,17 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section title="6. Condivisione con Terze Parti">
-          <p>Non vendiamo i tuoi dati. Li condividiamo solo con:</p>
+          <p>Non vendiamo i tuoi dati. Li condividiamo solo con i seguenti fornitori (sub-processor):</p>
           <ul className="space-y-2 mt-2">
             {[
-              ['Supabase', 'database e autenticazione (dati archiviati in EU)'],
-              ['Stripe', 'elaborazione pagamenti'],
-              ['Resend', 'invio email transazionali'],
+              ['Supabase', 'database, autenticazione e storage file (dati archiviati in UE)'],
               ['Vercel', 'hosting dell\'applicazione'],
+              ['Stripe', 'elaborazione pagamenti e fatturazione'],
+              ['Resend', 'invio email transazionali (registrazione, conferma preventivi, reset password)'],
+              ['Upstash', 'rate limiting — memorizza temporaneamente l\'indirizzo IP per prevenire abusi'],
+              ['Sentry', 'monitoraggio errori applicativi — può raccogliere informazioni tecniche sul contesto in cui l\'errore si è verificato'],
+              ['Google (Gemini)', 'assistente AI — i testi che inserisci nell\'assistente vengono elaborati dai modelli Gemini di Google'],
+              ['Plausible Analytics', 'statistiche di utilizzo anonime e aggregate (solo se presti il consenso ai cookie analitici)'],
             ].map(([label, desc]) => (
               <li key={label} className="flex gap-2">
                 <span className="text-[#a78bfa] mt-0.5">·</span>

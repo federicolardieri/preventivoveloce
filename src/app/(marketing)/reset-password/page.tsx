@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Loader2, Sparkles, ChevronLeft, Lock, CheckCircle2 } from 'lucide-react';
+import { Loader2, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -34,7 +34,8 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError(error.message);
+      console.error('[reset-password] Supabase error:', error.message);
+      setError('Errore durante l\'aggiornamento della password. Riprova.');
       setLoading(false);
     } else {
       await supabase.auth.signOut();

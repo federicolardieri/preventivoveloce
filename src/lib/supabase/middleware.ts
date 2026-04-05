@@ -37,6 +37,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/reset-password') ||
     pathname.startsWith('/api/stripe/webhook') ||
+    pathname.startsWith('/api/account/on-deleted') ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/firma/') ||
     pathname.startsWith('/firma/') ||

@@ -90,7 +90,7 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
   });
 
   const symbol = quote.currency === 'USD' ? '$' : quote.currency === 'GBP' ? '£' : quote.currency === 'CHF' ? 'CHF' : '€';
-  const fmt = (cents: number) => `${symbol} ${(cents / 100).toFixed(2).replace('.', ',')}`;
+  const fmt = (cents: number) => `${symbol} ${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const signatureStyles = StyleSheet.create({
     signatureSection: {

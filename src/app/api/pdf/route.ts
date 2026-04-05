@@ -5,6 +5,8 @@ import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 import fs from 'fs/promises';
 import path from 'path';
 import { checkQuota } from '@/lib/quota';
+import { createClient } from '@/lib/supabase/server';
+import { checkPDFRateLimit } from '@/lib/ratelimit';
 
 async function normalizeQuote(raw: Quote): Promise<Quote> {
   const now = new Date().toISOString();
@@ -132,13 +134,57 @@ async function applyWatermark(pdfBytes: Uint8Array, strong = false): Promise<Uin
 export async function POST(req: NextRequest) {
   let quote: Quote | null = null;
   try {
+    // Auth check
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limit: max 20/min per utente
+    const rl = await checkPDFRateLimit(user.id);
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Troppe richieste. Riprova tra poco.' }, { status: 429 });
+    }
+
     const body = await req.json();
+    
+    // Validazione Zod
+    const { quoteSchema } = await import('@/schemas/quoteSchema');
+    const parsedParams = quoteSchema.safeParse(body);
+    
+    if (!parsedParams.success) {
+      console.error('[api/pdf] Validation errors:', parsedParams.error.issues);
+      return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
+    }
+
     // _preview: true → chiamata di anteprima (live preview), skip quota enforcement
     // _preview: false/assente → download reale, enforce quota
-    const { _preview = false, _view = false, ...raw } = body as Quote & { _preview?: boolean; _view?: boolean };
+    const { _preview = false, _view = false, ...raw } = parsedParams.data;
 
+    // Type casting formale per compatibilità col resto del codice
     if (!raw) {
       return NextResponse.json({ error: "No data provided" }, { status: 400 });
+    }
+
+    // Validazione dimensione allegati server-side
+    const MAX_ATTACHMENT_SIZE = 2 * 1024 * 1024; // 2MB per file
+    const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB totale
+    if (raw.attachments && Array.isArray(raw.attachments)) {
+      let totalSize = 0;
+      for (const att of raw.attachments) {
+        if (att.data) {
+          const base64Part = att.data.split(',')[1] ?? att.data;
+          const size = Math.ceil(base64Part.length * 0.75);
+          if (size > MAX_ATTACHMENT_SIZE) {
+            return NextResponse.json({ error: `Allegato "${att.name}" troppo grande (max 2MB)` }, { status: 400 });
+          }
+          totalSize += size;
+        }
+      }
+      if (totalSize > MAX_TOTAL_SIZE) {
+        return NextResponse.json({ error: 'Allegati troppo pesanti (max 10MB totale)' }, { status: 400 });
+      }
     }
 
     // ── Piano utente (solo per decidere il watermark, mai per bloccare) ─────
@@ -171,8 +217,6 @@ export async function POST(req: NextRequest) {
     // - Preview: Show strong watermark for anyone not on Pro (Free or Starter)
     // - Download: Show light watermark for Free only, Starter and Pro are clean
     const currentPlan = quota?.plan ?? 'free';
-    const isFree = currentPlan === 'free';
-    const isStarter = currentPlan === 'starter';
     const isPro = currentPlan === 'pro';
 
     // Watermark logic:
@@ -255,11 +299,10 @@ export async function POST(req: NextRequest) {
       }
     });
 
-  } catch (error: any) {
-    console.error("PDF Generation Error:", error);
-    return NextResponse.json({ 
-      error: "Failed to generate PDF", 
-      details: error?.message || String(error)
+  } catch (error) {
+    console.error("[api/pdf] Errore imprevisto:", error);
+    return NextResponse.json({
+      error: "Si è verificato un errore durante la generazione del documento."
     }, { status: 500 });
   }
 }

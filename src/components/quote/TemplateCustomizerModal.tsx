@@ -140,7 +140,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
   const showAccentColor = TEMPLATES_WITH_ACCENT.has(currentQuote.template);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v: boolean) => !v && onClose()}>
       <DialogContent className="!max-w-[96vw] sm:!max-w-[96vw] w-[1200px] !max-h-[90vh] h-[85vh] !p-0 flex flex-col !gap-0 overflow-hidden !rounded-2xl">
 
         {/* Header */}
@@ -229,7 +229,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Font</h3>
                 <Select
                   value={theme.fontFamily}
-                  onValueChange={(v) => updateTheme({ fontFamily: v as FontFamily })}
+                  onValueChange={(v: string) => updateTheme({ fontFamily: v as FontFamily })}
                 >
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue />
@@ -374,7 +374,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Font</h3>
               <Select
                 value={theme.fontFamily}
-                onValueChange={(v) => updateTheme({ fontFamily: v as FontFamily })}
+                onValueChange={(v: string) => updateTheme({ fontFamily: v as FontFamily })}
               >
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue />

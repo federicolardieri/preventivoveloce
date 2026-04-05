@@ -7,6 +7,8 @@ import { PDFDocument } from 'pdf-lib';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+import { z } from 'zod';
+import { checkEmailRateLimit } from '@/lib/ratelimit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@preventivoveloce.it';
@@ -143,16 +145,27 @@ async function generatePDFBuffer(quote: Quote): Promise<Buffer> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { quoteId, customMessage } = await req.json();
+    const sendQuoteSchema = z.object({
+      quoteId: z.string().uuid('quoteId non valido'),
+      customMessage: z.string().max(1000).optional().default(''),
+    });
 
-    if (!quoteId || typeof quoteId !== 'string') {
-      return NextResponse.json({ error: 'quoteId mancante' }, { status: 400 });
+    const parsed = sendQuoteSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Input non valido' }, { status: 400 });
     }
+    const { quoteId, customMessage } = parsed.data;
 
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+    }
+
+    // Rate limit: max 10 email/ora per utente
+    const rl = await checkEmailRateLimit(user.id);
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Troppe email inviate. Riprova più tardi.' }, { status: 429 });
     }
 
     // Carica il preventivo
@@ -220,7 +233,7 @@ export async function POST(req: NextRequest) {
       from: `${senderName} via Preventivo Veloce <${FROM_EMAIL}>`,
       to: clientEmail,
       subject: `Preventivo ${quoteRow.number} da ${senderName}`,
-      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays, customMessage: typeof customMessage === 'string' ? customMessage.trim() : '' }),
+      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays, customMessage: customMessage.trim() }),
       attachments: [
         {
           filename: fileName,
@@ -342,5 +355,5 @@ function buildClientEmailHtml({
 }
 
 function escHtml(str: string) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }

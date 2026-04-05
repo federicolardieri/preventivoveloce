@@ -15,7 +15,6 @@ export default function DettaglioPreventivoPage({ params }: { params: Promise<{ 
     const quote = quotesList.find(q => q.id === resolvedParams.id);
     if (quote) {
       setCurrentQuote(quote);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMounted(true);
     } else {
       router.push("/preventivi"); // not found

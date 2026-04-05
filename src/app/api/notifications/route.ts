@@ -16,13 +16,24 @@ export async function GET() {
   return NextResponse.json({ notifications: data ?? [] });
 }
 
+import { z } from 'zod';
+
+const patchSchema = z.object({
+  id: z.string().uuid().optional(),
+});
+
 export async function PATCH(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const id: string | undefined = body.id;
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: "Dati non validi" }, { status: 400 });
+  }
+
+  const { id } = parsed.data;
 
   if (id) {
     await supabase.from('notifications').update({ read: true }).eq('id', id).eq('user_id', user.id);

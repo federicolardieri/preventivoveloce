@@ -215,6 +215,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           >
             <div className="w-10 h-10 rounded-full overflow-hidden relative border border-white/40 bg-white shadow-inner">
               {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-primary/20 to-purple-300/30">

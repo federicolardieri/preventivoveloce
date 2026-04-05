@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,7 +10,6 @@ import { Loader2, Sparkles, ChevronLeft, CheckCircle2, RefreshCw } from 'lucide-
 const RESEND_COOLDOWN = 60;
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,9 +72,10 @@ export default function RegisterPage() {
     });
 
     if (error) {
+      console.error('[register] Supabase error:', error.message);
       setError(error.message === 'User already registered'
         ? 'Email già registrata. Prova ad accedere.'
-        : error.message);
+        : 'Errore durante la registrazione. Riprova.');
       setLoading(false);
     } else {
       setSuccess(true);

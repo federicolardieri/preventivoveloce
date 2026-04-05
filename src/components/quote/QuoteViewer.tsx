@@ -179,7 +179,7 @@ export function QuoteViewer() {
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Stato Preventivo</h2>
               <Select
                 value={currentQuote.status}
-                onValueChange={(v) => changeStatus(currentQuote.id, v as QuoteStatus)}
+                onValueChange={(v: string) => changeStatus(currentQuote.id, v as QuoteStatus)}
               >
                 <SelectTrigger className="w-full h-11 rounded-xl border-slate-200 font-semibold text-sm">
                   <SelectValue />
@@ -254,7 +254,7 @@ export function QuoteViewer() {
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Stato Preventivo</h2>
             <Select
               value={currentQuote.status}
-              onValueChange={(v) => changeStatus(currentQuote.id, v as QuoteStatus)}
+              onValueChange={(v: string) => changeStatus(currentQuote.id, v as QuoteStatus)}
             >
               <SelectTrigger className="w-full h-11 rounded-xl border-slate-200 font-semibold text-sm">
                 <SelectValue />

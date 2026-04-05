@@ -1,12 +1,10 @@
-// TEMPORARILY DISABLED — tutto il contenuto originale è sotto
-// @ts-nocheck
 "use client";
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import { Building2, CreditCard, Plus, Trash2, ChevronDown, ChevronUp, Check, Zap, Crown, Sparkles, AlertCircle, User, Camera, Mail, Phone, Loader2, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Building2, CreditCard, Plus, Trash2, ChevronDown, ChevronUp, Check, Zap, Crown, Sparkles, User, Camera, Mail, Phone, Loader2, X, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfileStore, CompanyProfile } from "@/store/profileStore";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +14,15 @@ const INPUT_CLASS =
   "w-full h-11 rounded-xl border border-border px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground font-medium bg-muted/30 text-sm transition-colors";
 
 type FormData = Omit<CompanyProfile, 'id'>;
+
+interface UserInfo {
+  id: string;
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  avatarUrl: string;
+  plan: string;
+}
 
 const emptyForm = (): FormData => ({
   label: '',
@@ -159,11 +166,11 @@ function getCroppedBlob(imageSrc: string, cropArea: Area, size = 400): Promise<B
 }
 
 // ── Profile Section ───────────────────────────────────────────────────
-function ProfiloSection({ user, onUpdate }: { user: any, onUpdate: () => void }) {
+function ProfiloSection({ user, onUpdate }: { user: UserInfo | null, onUpdate: () => void }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [fullName, setFullName] = useState(user?.fullName || "");
-  const [phone, setPhone] = useState(user?.phoneNumber || "");
+  const [fullName, setFullName] = useState(user?.fullName ?? "");
+  const [phone, setPhone] = useState(user?.phoneNumber ?? "");
   const [uploading, setUploading] = useState(false);
   const [deletingAvatar, setDeletingAvatar] = useState(false);
 
@@ -177,13 +184,14 @@ function ProfiloSection({ user, onUpdate }: { user: any, onUpdate: () => void })
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [, setCroppedAreaPixels] = useState<Area | null>(null);
   // ref per avere sempre l'ultimo valore senza dipendere dalla closure
   const croppedAreaPixelsRef = useRef<Area | null>(null);
 
   const supabase = createClient();
 
   const handleSave = async () => {
+    if (!user) return;
     setLoading(true);
 
     // 1. Update public.profiles
@@ -238,7 +246,7 @@ function ProfiloSection({ user, onUpdate }: { user: any, onUpdate: () => void })
   // Eseguito quando l'utente conferma il crop nel modal
   const handleCropConfirm = async () => {
     const pixels = croppedAreaPixelsRef.current;
-    if (!cropSrc || !pixels) return;
+    if (!cropSrc || !pixels || !user) return;
     setUploading(true);
     setCropSrc(null);
     try {
@@ -270,7 +278,7 @@ function ProfiloSection({ user, onUpdate }: { user: any, onUpdate: () => void })
   };
 
   const handleDeleteAvatar = async () => {
-    if (!user?.avatarUrl) return;
+    if (!user?.avatarUrl || !user) return;
     setDeletingAvatar(true);
     try {
       // Estrai il path relativo all'interno del bucket (dopo "/avatars/")
@@ -378,6 +386,7 @@ function ProfiloSection({ user, onUpdate }: { user: any, onUpdate: () => void })
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 </div>
               ) : user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.avatarUrl} alt={fullName} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-primary/5">
@@ -463,14 +472,18 @@ interface PlanInfo {
   planExpiresAt: string | null;
 }
 
-const PLANS = [
+type BillingCycle = 'monthly' | 'annual';
+
+const PLANS = (billing: BillingCycle) => [
   {
     id: 'free' as const,
     name: 'Free',
     price: '0',
     period: 'per sempre',
+    perMonth: null,
+    priceId: null,
     credits: '1 preventivo totale',
-    features: ['1 preventivo', 'Template Classic e Bold', 'Watermark sul PDF', 'Assistente AI base'],
+    features: ['1 preventivo', 'Tutti gli 8 template', 'Watermark sul PDF'],
     icon: Zap,
     color: 'border-border',
     badge: '',
@@ -478,10 +491,14 @@ const PLANS = [
   {
     id: 'starter' as const,
     name: 'Starter',
-    price: '9,90',
-    period: '/mese',
+    price: billing === 'annual' ? '89' : '9,90',
+    period: billing === 'annual' ? '/anno' : '/mese',
+    perMonth: billing === 'annual' ? '€7,42/mese' : null,
+    priceId: billing === 'annual'
+      ? process.env.NEXT_PUBLIC_STRIPE_STARTER_ANNUAL_PRICE_ID
+      : process.env.NEXT_PUBLIC_STRIPE_STARTER_MONTHLY_PRICE_ID,
     credits: '10 preventivi al mese',
-    features: ['10 preventivi/mese', 'Tutti i template', 'PDF senza watermark', 'Assistente AI avanzato', 'Allegati PDF'],
+    features: ['10 preventivi/mese', 'Tutti i template', 'PDF senza watermark'],
     icon: Sparkles,
     color: 'border-primary/30',
     badge: 'Popolare',
@@ -489,10 +506,14 @@ const PLANS = [
   {
     id: 'pro' as const,
     name: 'Pro',
-    price: '29',
-    period: '/mese',
+    price: billing === 'annual' ? '249' : '29',
+    period: billing === 'annual' ? '/anno' : '/mese',
+    perMonth: billing === 'annual' ? '€20,75/mese' : null,
+    priceId: billing === 'annual'
+      ? process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL_PRICE_ID
+      : process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID,
     credits: 'Preventivi illimitati',
-    features: ['Preventivi illimitati', 'Tutti i template PRO', 'PDF senza watermark', 'AI illimitata', 'Allegati illimitati', 'Supporto prioritario'],
+    features: ['Preventivi illimitati', 'PDF senza watermark', 'AI + Allegati PDF'],
     icon: Crown,
     color: 'border-amber-400/40',
     badge: 'Per professionisti',
@@ -513,10 +534,11 @@ function ImpostazioniPageInner() {
   );
 
   // User & Plan state
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [changingPlan, setChangingPlan] = useState<string | null>(null);
-  const [planSuccess, setPlanSuccess] = useState<string | null>(null);
+  const [planSuccess, _setPlanSuccess] = useState<string | null>(null);
+  const [billing, setBilling] = useState<BillingCycle>('monthly');
 
   const router = useRouter();
   const supabase = createClient();
@@ -535,7 +557,7 @@ function ImpostazioniPageInner() {
 
       setUserInfo({
         id: user.id,
-        email: user.email,
+        email: user.email ?? '',
         fullName: profile?.full_name || user.user_metadata?.full_name || "",
         phoneNumber: profile?.phone_number || "",
         avatarUrl: profile?.avatar_url || user.user_metadata?.avatar_url || "",
@@ -559,20 +581,60 @@ function ImpostazioniPageInner() {
     setNewCardOpen(false);
   };
 
-  const handleChangePlan = async (plan: string) => {
-    setChangingPlan(plan);
-    setPlanSuccess(null);
+  const handleChangePlan = async (planId: string) => {
+    if (planId === 'free') {
+      setChangingPlan('free');
+      try {
+        const res = await fetch('/api/stripe/portal', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          window.location.href = data.url;
+        } else {
+          console.error('Portal error:', data);
+          alert('Errore portale: ' + (data.error ?? res.status));
+        }
+      } finally {
+        setChangingPlan(null);
+      }
+      return;
+    }
+
+    const plan = PLANS(billing).find((p) => p.id === planId);
+    const priceId = plan?.priceId;
+
+    if (!priceId) {
+      alert('Price ID non trovato. Riavvia il server di sviluppo (Ctrl+C → npm run dev).');
+      return;
+    }
+
+    setChangingPlan(planId);
     try {
-      const res = await fetch('/api/plan', {
+      const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ priceId }),
       });
+      const text = await res.text();
+
+      let data: { url?: string; error?: string } = {};
+      try { data = JSON.parse(text); } catch { /* HTML error page */ }
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Errore checkout (' + res.status + '): ' + (data.error ?? text.slice(0, 200)));
+      }
+    } finally {
+      setChangingPlan(null);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setChangingPlan('portal');
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
       if (res.ok) {
-        await loadData();
-        router.refresh();
-        setPlanSuccess(`Piano ${plan === 'pro' ? 'Pro' : plan === 'starter' ? 'Starter' : 'Free'} attivato!`);
-        setTimeout(() => setPlanSuccess(null), 4000);
+        const { url } = await res.json();
+        window.location.href = url;
       }
     } finally {
       setChangingPlan(null);
@@ -773,31 +835,58 @@ function ImpostazioniPageInner() {
                 </div>
               )}
 
-              {/* Test mode banner */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-amber-800">Modalità test</p>
-                  <p className="text-xs text-amber-700 mt-0.5">I pagamenti non sono ancora attivi. Cambiare piano qui è gratuito e immediato per testare la logica dei crediti.</p>
+              {/* Gestisci abbonamento (solo per piani a pagamento) */}
+              {planInfo && planInfo.plan !== 'free' && (
+                <div className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between shadow-sm">
+                  <div>
+                    <p className="font-bold text-foreground">Gestisci abbonamento</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Modifica metodo di pagamento, scarica fatture o cancella.</p>
+                  </div>
+                  <Button
+                    onClick={handleManageSubscription}
+                    disabled={changingPlan === 'portal'}
+                    variant="outline"
+                    className="rounded-xl font-bold border-border shrink-0"
+                  >
+                    {changingPlan === 'portal' ? 'Attendere...' : 'Portale Fatturazione'}
+                  </Button>
+                </div>
+              )}
+
+              {/* Toggle mensile/annuale */}
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center gap-1 bg-muted rounded-xl p-1 border border-border">
+                  <button
+                    onClick={() => setBilling('monthly')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${billing === 'monthly' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    Mensile
+                  </button>
+                  <button
+                    onClick={() => setBilling('annual')}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    Annuale
+                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">-25%</span>
+                  </button>
                 </div>
               </div>
 
               {/* Plans grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {PLANS.map((p) => {
+                {PLANS(billing).map((p) => {
                   const isCurrent = planInfo?.plan === p.id;
                   const Icon = p.icon;
                   return (
                     <div
                       key={p.id}
-                      className={`bg-card rounded-2xl border-2 p-6 flex flex-col transition-all ${isCurrent ? 'border-primary shadow-lg shadow-primary/10' : p.color
-                        }`}
+                      className={`bg-card rounded-2xl border-2 p-6 flex flex-col transition-all ${isCurrent ? 'border-primary shadow-lg shadow-primary/10' : p.color}`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-primary" />
                         </div>
-                        {p.badge && (
+                        {p.badge && !isCurrent && (
                           <span className="text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                             {p.badge}
                           </span>
@@ -810,12 +899,14 @@ function ImpostazioniPageInner() {
                       </div>
 
                       <h3 className="text-lg font-black text-foreground">{p.name}</h3>
-                      <div className="flex items-baseline gap-1 mt-1 mb-3">
+                      <div className="flex items-baseline gap-1 mt-1">
                         <span className="text-3xl font-black text-foreground">{p.price}€</span>
                         <span className="text-sm text-muted-foreground font-medium">{p.period}</span>
                       </div>
-
-                      <p className="text-xs font-bold text-primary mb-4">{p.credits}</p>
+                      {p.perMonth && (
+                        <p className="text-xs text-muted-foreground mb-1">{p.perMonth}</p>
+                      )}
+                      <p className="text-xs font-bold text-primary mb-4 mt-1">{p.credits}</p>
 
                       <ul className="space-y-2 mb-6 flex-1">
                         {p.features.map((f) => (
@@ -827,20 +918,17 @@ function ImpostazioniPageInner() {
                       </ul>
 
                       <Button
-                        onClick={() => handleChangePlan(p.id)}
+                        onClick={() => p.id !== 'free' ? handleChangePlan(p.id) : handleChangePlan('free')}
                         disabled={isCurrent || changingPlan !== null}
                         variant={isCurrent ? "outline" : "default"}
-                        className={`w-full rounded-xl h-11 font-bold transition-all ${isCurrent
-                          ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                          : 'bg-primary hover:bg-primary/90'
-                          }`}
+                        className={`w-full rounded-xl h-11 font-bold transition-all ${isCurrent ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'bg-primary hover:bg-primary/90'}`}
                       >
                         {changingPlan === p.id
-                          ? 'Attivazione...'
+                          ? 'Attendere...'
                           : isCurrent
                             ? 'Piano attuale'
                             : p.id === 'free'
-                              ? 'Passa a Free'
+                              ? 'Gestisci abbonamento'
                               : `Attiva ${p.name}`
                         }
                       </Button>
@@ -850,6 +938,45 @@ function ImpostazioniPageInner() {
               </div>
             </>
           )}
+
+          {/* ── Zona pericolosa ─────────────────────────────── */}
+          <div className="mt-12 border-t border-red-200 pt-8">
+            <h2 className="text-lg font-black text-red-600 mb-1">Zona pericolosa</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              L&apos;eliminazione dell&apos;account e di tutti i dati associati &egrave; irreversibile.
+            </p>
+            <Button
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  'Sei sicuro di voler eliminare il tuo account? Tutti i tuoi dati (preventivi, clienti, aziende) verranno cancellati in modo permanente e l\'eventuale abbonamento attivo verrà annullato. Questa azione non può essere annullata.'
+                );
+                if (!confirmed) return;
+
+                const doubleConfirm = window.confirm(
+                  'ULTIMA CONFERMA: Vuoi davvero eliminare il tuo account e tutti i dati? Non sarà possibile recuperarli.'
+                );
+                if (!doubleConfirm) return;
+
+                try {
+                  const res = await fetch('/api/account/delete', { method: 'DELETE' });
+                  if (!res.ok) {
+                    const data = await res.json();
+                    alert(data.error || 'Errore durante la cancellazione');
+                    return;
+                  }
+                  const supabase = (await import('@/lib/supabase/client')).createClient();
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                } catch {
+                  alert('Errore di rete. Riprova.');
+                }
+              }}
+              variant="outline"
+              className="rounded-xl font-bold border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              Elimina account e tutti i dati
+            </Button>
+          </div>
 
         </div>
       </div>

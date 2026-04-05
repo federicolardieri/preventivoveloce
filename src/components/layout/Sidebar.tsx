@@ -98,6 +98,7 @@ export function Sidebar({ user }: SidebarProps) {
       <div className="px-5 pt-6 pb-5 border-b border-sidebar-foreground/10 flex justify-center">
         <Link href="/dashboard" className="group">
           <div className="w-52 h-32 rounded-[32px] bg-white flex items-center justify-center shadow-xl border border-transparent overflow-hidden transition-all group-hover:scale-105 group-active:scale-95">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
               alt="Logo"
@@ -232,6 +233,7 @@ export function Sidebar({ user }: SidebarProps) {
           <div className="flex flex-col gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-sidebar-foreground/10 flex items-center justify-center shrink-0 border border-sidebar-foreground/20 overflow-hidden shadow-md">
               {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-base font-black text-sidebar-foreground">{initials}</span>

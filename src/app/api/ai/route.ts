@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { checkQuota } from '@/lib/quota';
+import { checkAIRateLimit } from '@/lib/ratelimit';
+import { createClient } from '@/lib/supabase/server';
+import { z } from 'zod';
 
 // La chiave è letta solo server-side da variabile d'ambiente
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
@@ -67,28 +70,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'AI non configurata' }, { status: 500 });
     }
 
-    const { message, history, quoteId } = await req.json() as {
-      message: string;
-      history: { role: 'user' | 'model'; text: string }[];
-      quoteId?: string;
-    };
-
-    if (!message?.trim()) {
-      return NextResponse.json({ error: 'Messaggio vuoto' }, { status: 400 });
+    // ── Auth ─────────────────────────────────────────────────────────────────
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
     }
 
-    // ── Controllo quota server-side ──────────────────────────────────────────
-    // Blocca solo se il messaggio tenta di generare un preventivo (action fill_quote)
-    // Il controllo definitivo avviene anche in /api/pdf, ma blocchiamo qui per UX
-    if (quoteId !== undefined) {
-      const quota = await checkQuota(quoteId);
-      if (!quota.allowed) {
-        return NextResponse.json({
-          error: 'quota_exceeded',
-          plan: quota.plan,
-          message: quota.message ?? 'Limite raggiunto. Passa a un piano superiore.',
-        }, { status: 403 });
-      }
+    const aiSchema = z.object({
+      message: z.string().min(1, 'Messaggio vuoto').max(5000),
+      history: z.array(z.object({
+        role: z.enum(['user', 'model']),
+        text: z.string().max(5000),
+      })).max(50).default([]),
+      quoteId: z.string().uuid().optional(),
+    });
+
+    const parsed = aiSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Input non valido' }, { status: 400 });
+    }
+    const { message, history, quoteId } = parsed.data;
+
+    // ── Controllo quota + rate limit ─────────────────────────────────────────
+    const quota = quoteId !== undefined ? await checkQuota(quoteId) : null;
+
+    if (quota && !quota.allowed) {
+      return NextResponse.json({
+        error: 'quota_exceeded',
+        plan: quota.plan,
+        message: quota.message ?? 'Limite raggiunto. Passa a un piano superiore.',
+      }, { status: 403 });
+    }
+
+    // Rate limit applicato sempre, indipendentemente dal quoteId
+    const plan = quota?.plan ?? 'free';
+    const rl = await checkAIRateLimit(user.id, plan);
+    if (!rl.success) {
+      const resetIn = Math.ceil((rl.reset - Date.now()) / 1000);
+      return NextResponse.json({
+        error: 'rate_limit_exceeded',
+        message: `Troppe richieste. Riprova tra ${resetIn} secondi.`,
+        remaining: 0,
+        resetIn,
+      }, { status: 429 });
     }
 
     // Costruisce la cronologia per il contesto multi-turno
@@ -113,14 +138,14 @@ export async function POST(req: NextRequest) {
                       rawText.match(/\{[\s\S]*\}/);
     const jsonStr = jsonMatch ? (jsonMatch[1] ?? jsonMatch[0]) : rawText;
 
-    let parsed: Record<string, unknown>;
+    let aiResult: Record<string, unknown>;
     try {
-      parsed = JSON.parse(jsonStr.trim());
+      aiResult = JSON.parse(jsonStr.trim());
     } catch {
-      parsed = { action: 'chat', message: rawText };
+      aiResult = { action: 'chat', message: rawText };
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json(aiResult);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error('AI route error:', msg);

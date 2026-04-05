@@ -6,6 +6,10 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { Resend } from 'resend';
 import fs from 'fs/promises';
 import path from 'path';
+import { z } from 'zod';
+import { checkFirmaRateLimit } from '@/lib/ratelimit';
+
+const tokenSchema = z.string().regex(/^[0-9a-f]{64}$/, 'Token non valido');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@preventivoveloce.it';
@@ -73,7 +77,7 @@ async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
     notes: raw.notes || '',
     paymentTerms: raw.paymentTerms || '',
     itemCustomColumns: raw.itemCustomColumns ?? [],
-    attachments: [],
+    attachments: raw.attachments ?? [],
   };
 }
 
@@ -84,15 +88,67 @@ async function generatePDFBuffer(quote: Quote): Promise<Buffer> {
   for await (const chunk of stream) {
     chunks.push(Buffer.from(chunk));
   }
-  return Buffer.concat(chunks);
+  const baseBuffer = Buffer.concat(chunks);
+
+  // Merge allegati nel PDF
+  if (normalized.attachments && normalized.attachments.length > 0) {
+    try {
+      const pdfDoc = await PDFDocument.load(baseBuffer);
+
+      for (const att of normalized.attachments) {
+        try {
+          if (!att.data) continue;
+          const base64Parts = att.data.split(',');
+          if (base64Parts.length < 2) continue;
+
+          const base64Data = base64Parts[1];
+          const fileBytes = Buffer.from(base64Data, 'base64');
+
+          if (att.type === 'application/pdf') {
+            const externalPdf = await PDFDocument.load(fileBytes);
+            const copiedPages = await pdfDoc.copyPages(externalPdf, externalPdf.getPageIndices());
+            copiedPages.forEach((page) => pdfDoc.addPage(page));
+          } else if (att.type === 'image/jpeg' || att.type === 'image/png') {
+            let image;
+            if (att.type === 'image/jpeg') image = await pdfDoc.embedJpg(fileBytes);
+            else if (att.type === 'image/png') image = await pdfDoc.embedPng(fileBytes);
+
+            if (image) {
+              const page = pdfDoc.addPage([595.28, 841.89]);
+              const { width, height } = page.getSize();
+              const margin = 50;
+              const imgDims = image.scaleToFit(width - (margin * 2), height - (margin * 2));
+
+              page.drawImage(image, {
+                x: width / 2 - imgDims.width / 2,
+                y: height / 2 - imgDims.height / 2,
+                width: imgDims.width,
+                height: imgDims.height,
+              });
+            }
+          }
+        } catch (attError) {
+          console.error(`[firma] Failed to merge attachment ${att.name}`, attError);
+        }
+      }
+
+      const mergedPdfBytes = await pdfDoc.save();
+      return Buffer.from(mergedPdfBytes);
+    } catch (mergeError) {
+      console.error('[firma] PDF merge failed, returning base PDF', mergeError);
+      return baseBuffer;
+    }
+  }
+
+  return baseBuffer;
 }
 
 async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: Date): Promise<Buffer> {
   const pdfDoc = await PDFDocument.load(pdfBuffer);
   const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const pages = pdfDoc.getPages();
-  const lastPage = pages[pages.length - 1];
-  const { width } = lastPage.getSize();
+  const firstPage = pages[0];
+  const { width } = firstPage.getSize();
 
   const dateStr = acceptedAt.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const timeStr = acceptedAt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
@@ -101,7 +157,7 @@ async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: 
   const stampX = width - 200;
   const stampY = 60;
 
-  lastPage.drawRectangle({
+  firstPage.drawRectangle({
     x: stampX - 10,
     y: stampY - 10,
     width: 170,
@@ -112,7 +168,7 @@ async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: 
     opacity: 0.92,
   });
 
-  lastPage.drawText('ACCETTATO', {
+  firstPage.drawText('ACCETTATO', {
     x: stampX,
     y: stampY + 40,
     size: 14,
@@ -120,7 +176,7 @@ async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: 
     color: rgb(0.05, 0.6, 0.25),
   });
 
-  lastPage.drawText(clientName.substring(0, 24), {
+  firstPage.drawText(clientName.substring(0, 24), {
     x: stampX,
     y: stampY + 22,
     size: 9,
@@ -128,7 +184,7 @@ async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: 
     color: rgb(0.1, 0.4, 0.2),
   });
 
-  lastPage.drawText(`${dateStr} ${timeStr}`, {
+  firstPage.drawText(`${dateStr} ${timeStr}`, {
     x: stampX,
     y: stampY + 8,
     size: 8,
@@ -144,7 +200,22 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  const { token } = await params;
+  const { token: rawToken } = await params;
+  const tokenResult = tokenSchema.safeParse(rawToken);
+  if (!tokenResult.success) {
+    return NextResponse.json({ error: 'Link non valido' }, { status: 400 });
+  }
+  const token = tokenResult.data;
+
+  // Rate limit per IP: max 10/min
+  const ip = _req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || _req.headers.get('x-real-ip')
+    || 'unknown';
+  const rl = await checkFirmaRateLimit(ip);
+  if (!rl.success) {
+    return NextResponse.json({ error: 'Troppe richieste' }, { status: 429 });
+  }
+
   const admin = createAdminClient();
 
   const { data: tokenRow, error } = await admin
@@ -178,7 +249,22 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  const { token } = await params;
+  const { token: rawToken } = await params;
+  const tokenResult = tokenSchema.safeParse(rawToken);
+  if (!tokenResult.success) {
+    return NextResponse.json({ error: 'Link non valido' }, { status: 400 });
+  }
+  const token = tokenResult.data;
+
+  // Rate limit per IP: max 10/min
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || req.headers.get('x-real-ip')
+    || 'unknown';
+  const rl = await checkFirmaRateLimit(ip);
+  if (!rl.success) {
+    return NextResponse.json({ error: 'Troppe richieste' }, { status: 429 });
+  }
+
   const admin = createAdminClient();
 
   const { data: tokenRow, error } = await admin
@@ -198,10 +284,6 @@ export async function POST(
   if (tokenRow.accepted_at) {
     return NextResponse.json({ error: 'Preventivo già accettato' }, { status: 409 });
   }
-
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || req.headers.get('x-real-ip')
-    || 'unknown';
 
   const acceptedAt = new Date();
 
@@ -234,7 +316,7 @@ export async function POST(
     validityDays: Number(quoteRow.validity_days ?? 30),
     currency: (quoteRow.currency as Quote['currency']) ?? 'EUR',
     itemCustomColumns: (quoteRow.item_custom_columns as Quote['itemCustomColumns']) ?? [],
-    attachments: [],
+    attachments: (quoteRow.attachments as Quote['attachments']) ?? [],
     createdAt: String(quoteRow.created_at),
     updatedAt: String(quoteRow.updated_at),
   };
@@ -247,9 +329,7 @@ export async function POST(
   let stampedPdfBuffer: Buffer | null = null;
   try {
     const basePdf = await generatePDFBuffer(quote);
-    console.log('[firma/accept] base PDF size:', basePdf.length);
     stampedPdfBuffer = await stampAccepted(basePdf, clientName, acceptedAt);
-    console.log('[firma/accept] stamped PDF size:', stampedPdfBuffer.length);
   } catch (err) {
     console.error('[firma/accept] PDF stamp error:', err);
   }
@@ -287,7 +367,7 @@ export async function POST(
 }
 
 function escHtml(str: string) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function buildConfirmClientHtml({ clientName, senderName, quoteNumber, dateStr }: {

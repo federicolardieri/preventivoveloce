@@ -10,25 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
+import {
   ArrowLeft,
-  Plus,
-  Trash2,
   Download,
   Save,
-  ChevronLeft,
-  LayoutDashboard,
-  Calendar,
-  User,
-  Settings,
   Sparkles,
-  ChevronRight,
-  ClipboardList,
   Coins,
-  Wand2,
   FileText,
-  Copy,
-  CheckCircle2,
   Zap,
   Lock,
   Send,
@@ -50,7 +38,8 @@ import { SendQuoteDialog } from "./SendQuoteDialog";
 
 export function QuoteEditor() {
   const { currentQuote, updateDetails, saveQuote, saveToSupabase } = useQuoteStore();
-  const { setAiAssistantOpen, isAiAssistantOpen, setAiPrompt } = useUIStore();
+  const isProPlan = useQuoteStore(state => state.isProPlan);
+  const { setAiAssistantOpen } = useUIStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("dati");
   const [downloading, setDownloading] = useState(false);
@@ -59,20 +48,18 @@ export function QuoteEditor() {
   const [quotaBlocked, setQuotaBlocked] = useState(false);
   const [noCreditsEdit, setNoCreditsEdit] = useState(false);
   const [savedToDb, setSavedToDb] = useState(false);
-  const [magicInput, setMagicInput] = useState("");
   const [mobilePreview, setMobilePreview] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const isNewQuote = currentQuote?.items.length === 0 && !currentQuote?.client.name;
-  const [showMagic, setShowMagic] = useState(isNewQuote);
 
   // Auto-open AI for new quotes ONLY when it becomes a new quote
   useEffect(() => {
     if (isNewQuote) {
       setAiAssistantOpen(true);
     }
-  }, [isNewQuote]); // Remove isAiAssistantOpen from dependencies to allow closing
+  }, [isNewQuote]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Controlla quota al mount per bloccare preview e download se limite esaurito
   // Se la quote esiste già nel DB, segna savedToDb = true (evita duplicati)
@@ -91,11 +78,10 @@ export function QuoteEditor() {
         }
       })
       .catch(() => {});
-  }, [currentQuote?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentQuote?.id]);
 
   if (!currentQuote) return null;
 
-  const isProPlan = useQuoteStore(state => state.isProPlan);
   const isProTemplate = PRO_TEMPLATES.includes(currentQuote.template);
   const isLocked = isProTemplate && !isProPlan;
 

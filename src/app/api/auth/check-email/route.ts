@@ -1,36 +1,49 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { z } from 'zod';
+import { checkCheckEmailRateLimit } from '@/lib/ratelimit';
+
+const checkEmailSchema = z.object({
+  email: z.string().email().max(255),
+});
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
-
-    if (!email || typeof email !== 'string') {
+    // Rate limit per IP: max 5/min
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+    const rl = await checkCheckEmailRateLimit(ip);
+    if (!rl.success) {
       return NextResponse.json({ exists: false, confirmed: false });
     }
 
+    const parsed = checkEmailSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ exists: false, confirmed: false });
+    }
+    const { email } = parsed.data;
+
     const admin = createAdminClient();
-    const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
+    const { data, error } = await admin.rpc('check_email_exists', {
+      p_email: email.trim().toLowerCase(),
+    });
 
     if (error) {
-      console.error('[check-email] listUsers error:', error);
-      return NextResponse.json({ debug: error.message, error: 'Errore interno' }, { status: 500 });
+      console.error('[check-email] rpc error:', error);
+      return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
     }
 
-    const user = data.users.find(
-      (u) => u.email?.toLowerCase() === email.trim().toLowerCase()
-    );
-
-    if (!user) {
+    if (!data) {
       return NextResponse.json({ exists: false, confirmed: false });
     }
 
     return NextResponse.json({
-      exists: true,
-      confirmed: !!user.email_confirmed_at,
+      exists: data.user_exists,
+      confirmed: data.email_confirmed,
     });
   } catch (err) {
     console.error('[check-email] exception:', err);
-    return NextResponse.json({ debug: String(err), error: 'Errore interno' }, { status: 500 });
+    return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
   }
 }
