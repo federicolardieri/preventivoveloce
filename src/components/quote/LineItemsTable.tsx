@@ -62,208 +62,230 @@ export function LineItemsTable() {
   const customCols = currentQuote.itemCustomColumns || [];
 
   return (
-    <Card className="shadow-sm border-border bg-card transition-colors">
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-lg font-bold text-card-foreground tracking-tight">Voci Preventivo</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {currentQuote.items.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground font-medium italic border border-dashed border-border rounded-xl">
-            Nessuna voce aggiunta. Inizia a compilare o chiedi all&apos;AI.
+    <div className="space-y-6">
+      {currentQuote.items.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-muted/30 border-2 border-dashed border-border rounded-3xl flex flex-col items-center justify-center">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+             <Plus className="w-8 h-8 text-primary" />
           </div>
-        ) : (
-          <div className="space-y-3">
-            {currentQuote.items.map((item, index) => {
-              const lineBase = item.unitPrice * item.quantity;
-              const discountVal = item.discountType === 'fixed' ? (item.discount || 0) : lineBase * ((item.discount || 0) / 100);
-              const lineSubtotal = Math.max(0, lineBase - discountVal);
-              return (
-                <div
-                  key={item.id}
-                  className="group relative rounded-xl border border-border bg-card/50 p-4 transition-colors hover:border-primary/20"
-                >
-                  {/* Header riga: numero + totale + elimina */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
-                      Voce {index + 1}
+          <p className="text-muted-foreground font-medium text-lg">Nessuna voce aggiunta.</p>
+          <p className="text-sm text-muted-foreground/80 mt-1">Clicca su Aggiungi Riga o chiedi all'IA di compilarlo per te.</p>
+        </div>
+      ) : (
+        <div className="space-y-4 md:space-y-5">
+          {currentQuote.items.map((item, index) => {
+            const lineBase = item.unitPrice * item.quantity;
+            const discountVal = item.discountType === 'fixed' ? (item.discount || 0) : lineBase * ((item.discount || 0) / 100);
+            const lineSubtotal = Math.max(0, lineBase - discountVal);
+            return (
+              <div
+                key={item.id}
+                className="group relative rounded-2xl md:rounded-3xl border border-border/60 bg-muted/10 p-5 md:p-6 transition-all duration-300 hover:border-primary/30 hover:bg-muted/30 hover:shadow-sm"
+              >
+                {/* Header riga: numero + totale + elimina */}
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-border/50">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-[10px]">
+                      {index + 1}
                     </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-black text-card-foreground">
-                        Totale: {formatCurrency(lineSubtotal)}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeItem(item.id)}
-                        className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                      Voce Preventivo
+                    </span>
                   </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Totale Riga</p>
+                      <p className="text-sm md:text-base font-black text-card-foreground leading-none">
+                        {formatCurrency(lineSubtotal)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeItem(item.id)}
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-100 transition-all"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
 
-                  {/* Descrizione — larghezza piena */}
-                  <div className="mb-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
+                {/* Grid Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-12 gap-4">
+                  {/* Descrizione */}
+                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-12">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Descrizione
                     </Label>
                     <Input
                       value={item.description}
                       onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
-                      placeholder="Descrizione servizio/prodotto"
-                      className="h-9 border-border bg-card focus-visible:ring-primary/20 font-medium"
+                      placeholder="Descrivi il servizio o prodotto..."
+                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium px-4 text-base shadow-sm w-full"
                     />
                   </div>
 
-                  {/* Campi numerici in griglia responsive */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
-                        Quantità
-                      </Label>
-                      <Input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={item.quantity || ''}
-                        onChange={(e) => handleUpdate(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                        className="h-9 text-right"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
-                        Prezzo Unit. ({getCurrencySymbol(currentQuote.currency)})
-                      </Label>
+                  {/* Quantità */}
+                  <div className="xl:col-span-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
+                      Quantità
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={item.quantity || ''}
+                      onChange={(e) => handleUpdate(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 px-4 shadow-sm font-semibold w-full"
+                    />
+                  </div>
+
+                  {/* Prezzo Unit. */}
+                  <div className="xl:col-span-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
+                      Prezzo Unit. ({getCurrencySymbol(currentQuote.currency)})
+                    </Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.unitPrice / 100 || ''}
+                      onChange={(e) => handleUpdate(item.id, 'unitPrice', Math.round((parseFloat(e.target.value) || 0) * 100))}
+                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 px-4 shadow-sm font-semibold w-full"
+                    />
+                  </div>
+
+                  {/* Sconto */}
+                  <div className="xl:col-span-4">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
+                      Sconto
+                    </Label>
+                    <div className="flex items-center gap-1.5 w-full">
                       <Input
                         type="number"
                         min="0"
-                        step="0.01"
-                        value={item.unitPrice / 100 || ''}
-                        onChange={(e) => handleUpdate(item.id, 'unitPrice', Math.round((parseFloat(e.target.value) || 0) * 100))}
-                        className="h-9 text-right"
+                        step={item.discountType === 'fixed' ? "0.01" : "1"}
+                        value={item.discountType === 'fixed' ? (item.discount / 100 || '') : (item.discount || '')}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          handleUpdate(item.id, 'discount', item.discountType === 'fixed' ? Math.round(val * 100) : val);
+                        }}
+                        className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 px-4 shadow-sm font-semibold flex-1 min-w-0"
                       />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
-                        Sconto
-                      </Label>
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          min="0"
-                          step={item.discountType === 'fixed' ? "0.01" : "1"}
-                          value={item.discountType === 'fixed' ? (item.discount / 100 || '') : (item.discount || '')}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 0;
-                            handleUpdate(item.id, 'discount', item.discountType === 'fixed' ? Math.round(val * 100) : val);
-                          }}
-                          className="h-9 text-right"
-                        />
-                        <Select
-                          value={item.discountType || 'percentage'}
-                          onValueChange={(val: 'percentage' | 'fixed') => {
-                            handleUpdate(item.id, 'discountType', val);
-                            handleUpdate(item.id, 'discount', 0);
-                          }}
-                        >
-                          <SelectTrigger className="h-9 w-[55px] px-2 font-black text-[10px] bg-muted/50 border-border shrink-0">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage"> % </SelectItem>
-                            <SelectItem value="fixed">{getCurrencySymbol(currentQuote.currency)}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 block">
-                        IVA
-                      </Label>
                       <Select
-                        value={item.vatRate.toString()}
-                        onValueChange={(val: string) => handleUpdate(item.id, 'vatRate', parseInt(val, 10) as VatRate)}
+                        value={item.discountType || 'percentage'}
+                        onValueChange={(val: 'percentage' | 'fixed') => {
+                          handleUpdate(item.id, 'discountType', val);
+                          handleUpdate(item.id, 'discount', 0);
+                        }}
                       >
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-11 w-[70px] rounded-xl px-2.5 font-bold text-xs bg-muted/50 border-border/80 shrink-0">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="22">22%</SelectItem>
-                          <SelectItem value="10">10%</SelectItem>
-                          <SelectItem value="4">4%</SelectItem>
-                          <SelectItem value="0">0%</SelectItem>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="percentage"> % </SelectItem>
+                          <SelectItem value="fixed">{getCurrencySymbol(currentQuote.currency)}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  {/* Colonne personalizzate */}
-                  {customCols.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-border/50">
-                      {customCols.map(col => (
-                        <div key={col.id}>
-                          <div className="flex items-center justify-between mb-1">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                              {col.label}
-                            </Label>
-                            {index === 0 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeCustomColumn(col.id)}
-                                className="h-4 w-4 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                              >
-                                <X className="h-2.5 w-2.5" />
-                              </Button>
-                            )}
-                          </div>
-                          <Input
-                            value={item.customFields?.[col.id] || ''}
-                            onChange={(e) => handleCustomFieldUpdate(item.id, col.id, e.target.value)}
-                            placeholder={col.label}
-                            className="h-9 border-primary/10 bg-primary/5 focus-visible:ring-primary/20 text-card-foreground"
-                          />
+                  {/* IVA */}
+                  <div className="xl:col-span-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
+                      IVA
+                    </Label>
+                    <Select
+                      value={item.vatRate.toString()}
+                      onValueChange={(val: string) => handleUpdate(item.id, 'vatRate', parseInt(val, 10) as VatRate)}
+                    >
+                      <SelectTrigger className="h-11 rounded-xl border-border/80 bg-background shadow-sm font-semibold w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="22">22%</SelectItem>
+                        <SelectItem value="10">10%</SelectItem>
+                        <SelectItem value="4">4%</SelectItem>
+                        <SelectItem value="0">0%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Colonne personalizzate */}
+                {customCols.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-4 gap-4 mt-5 pt-5 border-t border-border/50">
+                    {customCols.map(col => (
+                      <div key={col.id}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                            {col.label}
+                          </Label>
+                          {index === 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeCustomColumn(col.id)}
+                              className="h-5 w-5 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors flex items-center justify-center -mr-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="flex items-center gap-3">
-          <Button onClick={handleAddNewItem} variant="outline" className="flex-1 border-dashed border-2 py-6 text-[#5c32e6] hover:text-white hover:bg-[#5c32e6] hover:border-[#5c32e6] transition-all font-bold">
-            <Plus className="mr-2 h-4 w-4" /> Aggiungi Riga
-          </Button>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="h-full py-6 px-6 border-dashed border-2 text-primary hover:bg-primary hover:text-primary-foreground border-primary/50 transition-all font-black group rounded-xl">
-                <Settings2 className="mr-2 h-5 w-5" /> Aggiungi Colonna
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-5 bg-card border-border shadow-2xl rounded-2xl" align="end">
-              <div className="space-y-4">
-                <h4 className="font-black text-card-foreground tracking-tight text-lg">Nuova Colonna</h4>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed italic">Aggiungi un campo dati extra ad ogni singola riga di questo preventivo.</p>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nome Colonna</Label>
-                  <Input id="newColLabel" placeholder="Es. Codice Articolo" className="h-10 rounded-xl" />
-                </div>
-                <Button className="w-full bg-primary hover:opacity-90 font-black h-11 rounded-xl shadow-lg shadow-primary/20" onClick={() => {
-                  const input = document.getElementById('newColLabel') as HTMLInputElement;
-                  addCustomColumn(input.value);
-                  input.value = '';
-                }}>
-                  Conferma
-                </Button>
+                        <Input
+                          value={item.customFields?.[col.id] || ''}
+                          onChange={(e) => handleCustomFieldUpdate(item.id, col.id, e.target.value)}
+                          placeholder="..."
+                          className="h-11 rounded-xl border-primary/20 bg-primary/5 focus-visible:ring-primary/40 text-card-foreground font-medium w-full"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </PopoverContent>
-          </Popover>
+            );
+          })}
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Pulsanti Azione */}
+      <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 mt-8">
+        <Button 
+          onClick={handleAddNewItem} 
+          className="flex-1 h-14 rounded-2xl border-dashed border-2 bg-transparent text-[#5c32e6] hover:text-white hover:bg-[#5c32e6] border-[#5c32e6]/50 hover:border-[#5c32e6] transition-all shadow-none font-bold text-base group"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Nuova Riga
+        </Button>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="flex-1 h-14 rounded-2xl border-dashed border-2 text-muted-foreground hover:bg-muted/50 transition-all font-bold group">
+              <Settings2 className="mr-2 h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+              Aggiungi Colonna
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-6 bg-card border-border shadow-2xl rounded-3xl" align="end" sideOffset={10}>
+            <div className="space-y-5">
+              <div>
+                <h4 className="font-black text-card-foreground tracking-tight text-xl">Nuova Colonna</h4>
+                <p className="text-xs text-muted-foreground font-medium mt-1">Un campo extra per ogni riga (es. "Codice EAN").</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nome Colonna</Label>
+                <Input id="newColLabel" placeholder="Es. Codice Articolo" className="h-11 rounded-xl bg-muted/30 focus-visible:ring-primary/20" />
+              </div>
+              <Button className="w-full bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-black h-12 rounded-xl shadow-lg shadow-primary/20 transition-all" onClick={() => {
+                const input = document.getElementById('newColLabel') as HTMLInputElement;
+                addCustomColumn(input.value);
+                input.value = '';
+              }}>
+                Conferma Aggiunta
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
   );
 }

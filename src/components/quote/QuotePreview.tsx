@@ -74,20 +74,26 @@ export function QuotePreview({
     }
 
     timeoutRef.current = setTimeout(async () => {
-      try {
+      const fetchPdf = async (attempt: number): Promise<void> => {
         const response = await fetch("/api/pdf", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           // _preview: true → il server salta il check quota e applica solo il watermark
           // _view: true → indica che siamo nella schermata di dettaglio, non nell'editor
-          body: JSON.stringify({ 
-            ...currentQuote, 
+          body: JSON.stringify({
+            ...currentQuote,
             _preview: true,
             _view: mode === 'view'
           }),
         });
 
-        if (!response.ok) throw new Error("Failed to generate PDF");
+        if (!response.ok) {
+          if (attempt < 2) {
+            await new Promise(r => setTimeout(r, 1000));
+            return fetchPdf(attempt + 1);
+          }
+          throw new Error("Failed to generate PDF");
+        }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
@@ -97,6 +103,10 @@ export function QuotePreview({
 
         setPdfUrl(url);
         await renderPdfToImages(url);
+      };
+
+      try {
+        await fetchPdf(0);
       } catch (err) {
         console.error(err);
         setError(true);

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { checkCheckEmailRateLimit } from '@/lib/ratelimit';
+import { logError } from '@/lib/logger';
 
 const checkEmailSchema = z.object({
   email: z.string().email().max(255),
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error('[check-email] rpc error:', error);
+      logError('check-email.rpc', error);
       return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
     }
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
       confirmed: data.email_confirmed,
     });
   } catch (err) {
-    console.error('[check-email] exception:', err);
+    logError('check-email', err);
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
   }
 }

@@ -8,6 +8,8 @@ import { Check, X, Zap, Sparkles } from 'lucide-react';
 
 type Billing = 'monthly' | 'annual';
 
+const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
+
 const PLANS = (billing: Billing) => [
   {
     name: 'Free',
@@ -80,7 +82,9 @@ export default function PrezziPage() {
   const [billing, setBilling] = useState<Billing>('monthly');
   const [loading, setLoading] = useState<string | null>(null);
 
-  const plans = PLANS(billing);
+  const plans = PAID_PLANS_ENABLED
+    ? PLANS(billing)
+    : PLANS(billing).filter((p) => p.name === 'Free');
 
   async function handleUpgrade(priceId: string | null | undefined, planName: string) {
     if (!priceId) {
@@ -137,27 +141,29 @@ export default function PrezziPage() {
             </p>
 
             {/* Toggle mensile/annuale */}
-            <div className="inline-flex items-center gap-1 bg-white/[0.05] border border-white/10 rounded-xl p-1">
-              <button
-                onClick={() => setBilling('monthly')}
-                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${billing === 'monthly' ? 'bg-[#5c32e6] text-white shadow' : 'text-white/50 hover:text-white'}`}
-              >
-                Mensile
-              </button>
-              <button
-                onClick={() => setBilling('annual')}
-                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-[#5c32e6] text-white shadow' : 'text-white/50 hover:text-white'}`}
-              >
-                Annuale
-                <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
-                  -25%
-                </span>
-              </button>
-            </div>
+            {PAID_PLANS_ENABLED && (
+              <div className="inline-flex items-center gap-1 bg-white/[0.05] border border-white/10 rounded-xl p-1">
+                <button
+                  onClick={() => setBilling('monthly')}
+                  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${billing === 'monthly' ? 'bg-[#5c32e6] text-white shadow' : 'text-white/50 hover:text-white'}`}
+                >
+                  Mensile
+                </button>
+                <button
+                  onClick={() => setBilling('annual')}
+                  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-[#5c32e6] text-white shadow' : 'text-white/50 hover:text-white'}`}
+                >
+                  Annuale
+                  <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
+                    -25%
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className={`grid gap-6 ${PAID_PLANS_ENABLED ? 'md:grid-cols-3' : 'max-w-md mx-auto'}`}>
             {plans.map((plan) => (
               <div
                 key={plan.name}
@@ -222,9 +228,21 @@ export default function PrezziPage() {
             ))}
           </div>
 
-          <p className="text-center text-white/30 text-sm mt-10">
-            Pagamenti sicuri con Stripe · IVA inclusa · Cancelli quando vuoi
-          </p>
+          {PAID_PLANS_ENABLED ? (
+            <p className="text-center text-white/30 text-sm mt-10">
+              Pagamenti sicuri con Stripe · IVA inclusa · Cancelli quando vuoi
+            </p>
+          ) : (
+            <div className="mt-12 max-w-xl mx-auto text-center bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+              <p className="text-[#a78bfa] text-xs font-black uppercase tracking-widest mb-2">In arrivo</p>
+              <p className="text-white/75 text-sm font-semibold mb-1">
+                Piani Starter e Pro disponibili a breve
+              </p>
+              <p className="text-white/45 text-xs">
+                Stiamo ultimando l'attivazione dei pagamenti. Intanto inizia gratis con il piano Free — tutte le funzionalità core sono già disponibili.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

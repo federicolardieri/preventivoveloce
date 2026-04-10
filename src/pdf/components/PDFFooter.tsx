@@ -123,6 +123,51 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
       fontFamily: font,
       color: '#94a3b8',
     },
+    // Acceptance stamp
+    stampContainer: {
+      marginTop: 16,
+      alignSelf: 'flex-end' as const,
+      borderWidth: 2,
+      borderColor: '#22c55e',
+      backgroundColor: '#f0fdf4',
+      padding: 10,
+      width: 170,
+    },
+    stampTitle: {
+      fontSize: 14,
+      fontFamily: bold,
+      color: '#16a34a',
+      marginBottom: 4,
+    },
+    stampName: {
+      fontSize: 9,
+      fontFamily: bold,
+      color: '#15803d',
+      marginBottom: 2,
+    },
+    stampDate: {
+      fontSize: 8,
+      fontFamily: font,
+      color: '#4ade80',
+    },
+    // Fixed badge "ACCETTATO" visibile in alto a destra su ogni pagina
+    fixedBadge: {
+      position: 'absolute' as const,
+      top: 12,
+      right: 12,
+      backgroundColor: '#f0fdf4',
+      borderWidth: 1,
+      borderColor: '#22c55e',
+      borderRadius: 3,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    fixedBadgeText: {
+      fontSize: 7,
+      fontFamily: bold,
+      color: '#16a34a',
+      letterSpacing: 0.5,
+    },
   });
 
   return (
@@ -172,19 +217,40 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
       </View>
     </View>
 
-    {/* Signature section */}
-    <View style={signatureStyles.signatureSection}>
-      <View style={signatureStyles.signatureBox}>
-        <Text style={signatureStyles.signatureLabel}>Timbro e Firma Fornitore</Text>
-        <View style={signatureStyles.signatureLine} />
-        <Text style={signatureStyles.signatureSubLabel}>Data: _______________</Text>
+    {/* Signature + stamp block — wrap={false} keeps it on the same page */}
+    <View wrap={false}>
+      <View style={signatureStyles.signatureSection}>
+        <View style={signatureStyles.signatureBox}>
+          <Text style={signatureStyles.signatureLabel}>Timbro e Firma Fornitore</Text>
+          <View style={signatureStyles.signatureLine} />
+          <Text style={signatureStyles.signatureSubLabel}>Data: _______________</Text>
+        </View>
+        <View style={signatureStyles.signatureBox}>
+          <Text style={signatureStyles.signatureLabel}>Timbro e Firma Cliente</Text>
+          <View style={signatureStyles.signatureLine} />
+          <Text style={signatureStyles.signatureSubLabel}>Data: _______________</Text>
+        </View>
       </View>
-      <View style={signatureStyles.signatureBox}>
-        <Text style={signatureStyles.signatureLabel}>Timbro e Firma Cliente</Text>
-        <View style={signatureStyles.signatureLine} />
-        <Text style={signatureStyles.signatureSubLabel}>Data: _______________</Text>
-      </View>
+
+      {/* Acceptance stamp */}
+      {quote.acceptanceStamp && (
+        <View style={signatureStyles.stampContainer}>
+          <Text style={signatureStyles.stampTitle}>ACCETTATO</Text>
+          <Text style={signatureStyles.stampName}>{quote.acceptanceStamp.clientName.substring(0, 24)}</Text>
+          <Text style={signatureStyles.stampDate}>
+            {new Date(quote.acceptanceStamp.acceptedAt).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })}{' '}
+            {new Date(quote.acceptanceStamp.acceptedAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+      )}
     </View>
+
+    {/* Fixed badge on every page — shows "ACCETTATO" in top-right corner */}
+    {quote.acceptanceStamp && (
+      <View fixed style={signatureStyles.fixedBadge}>
+        <Text style={signatureStyles.fixedBadgeText}>ACCETTATO</Text>
+      </View>
+    )}
     </>
   );
 };

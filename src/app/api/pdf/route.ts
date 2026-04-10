@@ -7,6 +7,7 @@ import path from 'path';
 import { checkQuota } from '@/lib/quota';
 import { createClient } from '@/lib/supabase/server';
 import { checkPDFRateLimit } from '@/lib/ratelimit';
+import { logError } from '@/lib/logger';
 
 async function normalizeQuote(raw: Quote): Promise<Quote> {
   const now = new Date().toISOString();
@@ -19,7 +20,7 @@ async function normalizeQuote(raw: Quote): Promise<Quote> {
       const logoBuffer = await fs.readFile(logoPath);
       logo = `data:image/png;base64,${logoBuffer.toString('base64')}`;
     } catch (e) {
-      console.error("Failed to load default logo", e);
+      logError('pdf.default-logo', e);
     }
   }
 
@@ -154,7 +155,9 @@ export async function POST(req: NextRequest) {
     const parsedParams = quoteSchema.safeParse(body);
     
     if (!parsedParams.success) {
-      console.error('[api/pdf] Validation errors:', parsedParams.error.issues);
+      logError('pdf.validation', new Error('Quote payload validation failed'), {
+        issues: parsedParams.error.issues.map((i) => ({ path: i.path, code: i.code })),
+      });
       return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
     }
 
@@ -195,7 +198,7 @@ export async function POST(req: NextRequest) {
     try {
       quota = await checkQuota(raw.id ?? '');
     } catch (e) {
-      console.error("[api/pdf] checkQuota error:", e);
+      logError('pdf.check-quota', e);
     }
 
     quote = await normalizeQuote(raw as Quote);
@@ -284,7 +287,7 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (attError) {
-          console.error(`Failed to merge attachment ${att.name}`, attError);
+          logError('pdf.attachment-merge', attError, { attachment_type: att.type });
           // Continue with next attachment on error
         }
       }
@@ -300,7 +303,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error("[api/pdf] Errore imprevisto:", error);
+    logError('pdf', error);
     return NextResponse.json({
       error: "Si è verificato un errore durante la generazione del documento."
     }, { status: 500 });

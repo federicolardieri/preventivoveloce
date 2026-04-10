@@ -7,6 +7,18 @@ import { Image as ImageIcon, Trash2, Maximize2, Circle, Square, Image as FullIma
 import { Button } from "@/components/ui/button";
 import { LogoShape } from "@/types/quote";
 
+// Formati accettati dal browser e convertibili in PNG per il PDF
+const ACCEPTED_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.heic', '.heif'];
+const ACCEPTED_MIME_PREFIXES = ['image/'];
+const ACCEPT_STRING = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/bmp,image/heic,image/heif,.heic,.heif';
+
+function isAllowedImage(file: File): boolean {
+  const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+  if (ACCEPTED_EXTENSIONS.includes(ext)) return true;
+  if (ACCEPTED_MIME_PREFIXES.some(p => file.type.startsWith(p))) return true;
+  return false;
+}
+
 export function LogoUpload() {
   const { currentQuote, updateSender, updateTheme } = useQuoteStore();
 
@@ -104,18 +116,54 @@ export function LogoUpload() {
     if (!file) return;
     e.target.value = '';
 
+    if (!isAllowedImage(file)) {
+      alert(
+        'Formato non supportato.\n\n' +
+        'Formati accettati: PNG, JPG, WEBP, GIF, SVG, BMP, HEIC, HEIF.\n\n' +
+        'Seleziona un\'immagine in uno di questi formati.'
+      );
+      return;
+    }
+
     if (file.size > 6 * 1024 * 1024) {
-      alert("Il file è troppo grande. Il limite massimo è 6MB.");
+      alert('Il file è troppo grande. Il limite massimo è 6 MB.');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      if (dataUrl) {
-        updateSender({ logoOriginal: dataUrl });
-        updateTheme({ logoScale: 1 });
-      }
+      if (!dataUrl) return;
+
+      // Verifica che il browser riesca effettivamente a decodificare l'immagine.
+      // Se riesce, la converte in PNG così il generatore PDF non avrà mai problemi.
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas context non disponibile');
+          ctx.drawImage(img, 0, 0);
+          const pngDataUrl = canvas.toDataURL('image/png');
+          updateSender({ logoOriginal: pngDataUrl });
+          updateTheme({ logoScale: 1 });
+        } catch {
+          alert(
+            'Impossibile elaborare questa immagine.\n\n' +
+            'Prova a convertirla in PNG o JPG prima di caricarla.'
+          );
+        }
+      };
+      img.onerror = () => {
+        alert(
+          'Impossibile leggere il file selezionato.\n\n' +
+          'Il browser non riesce a decodificare l\'immagine.\n' +
+          'Prova a convertirla in PNG o JPG prima di caricarla.'
+        );
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   };
@@ -278,7 +326,7 @@ export function LogoUpload() {
               <label className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl border-2 border-dashed border-slate-200 text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-primary/5 cursor-pointer text-xs font-black uppercase tracking-tight transition-all">
                 <ImageIcon className="w-5 h-5" />
                 Cambia Immagine
-                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                <input type="file" className="hidden" accept={ACCEPT_STRING} onChange={handleFileChange} />
               </label>
             </div>
 
@@ -299,8 +347,8 @@ export function LogoUpload() {
             <ImageIcon className="w-8 h-8 text-primary" />
           </div>
           <p className="text-sm text-slate-900 font-black uppercase tracking-tight">Carica il tuo Logo</p>
-          <p className="text-[11px] text-slate-400 mt-2 font-medium">Formato PNG, JPG o SVG · max 6MB</p>
-          <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+          <p className="text-[11px] text-slate-400 mt-2 font-medium">Formato PNG, JPG, HEIF, WEBP o SVG · max 6MB</p>
+          <input type="file" className="hidden" accept={ACCEPT_STRING} onChange={handleFileChange} />
         </label>
       )}
     </div>

@@ -43,10 +43,14 @@ export default function PrivacyPolicyPage() {
         {/* Sections */}
         <Section title="1. Titolare del Trattamento">
           <p>
-            Il titolare del trattamento dei dati personali è <strong className="text-white/80">Preventivo Veloce</strong>.
-            Per qualsiasi questione relativa alla privacy puoi contattarci all'indirizzo:{' '}
-            <a href="mailto:privacy@preventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
-              privacy@preventivoveloce.it
+            Il titolare del trattamento dei dati personali è <strong className="text-white/80">Federico Lardieri</strong>,
+            C.F. <span className="text-white/75">LRDFRC02D22B745R</span>, residente in Via Sebastiano Satta 308,
+            09013 Carbonia (SU), Italia, titolare del progetto <strong className="text-white/80">Preventivo Veloce</strong>.
+          </p>
+          <p>
+            Per qualsiasi questione relativa alla privacy o per esercitare i tuoi diritti puoi contattarci all'indirizzo:{' '}
+            <a href="mailto:privacy@ilpreventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
+              privacy@ilpreventivoveloce.it
             </a>
           </p>
         </Section>
@@ -160,8 +164,8 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className="mt-3">
             Per esercitare i tuoi diritti scrivi a{' '}
-            <a href="mailto:privacy@preventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
-              privacy@preventivoveloce.it
+            <a href="mailto:privacy@ilpreventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
+              privacy@ilpreventivoveloce.it
             </a>.
             Puoi inoltre proporre reclamo al Garante Privacy (garanteprivacy.it).
           </p>

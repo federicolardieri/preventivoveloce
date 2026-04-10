@@ -1,42 +1,16 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ChevronDown, User, Settings, LogOut, Loader2, AlertTriangle, AlertCircle, Send, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, User, Settings, LogOut, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { DashboardUser } from "@/app/(dashboard)/layout";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "./NotificationBell";
 
-interface Notification {
-  id: string;
-  type: 'credits_low' | 'credits_empty' | 'quote_sent' | 'quote_accepted';
-  title: string;
-  message: string;
-  read: boolean;
-  quote_id: string | null;
-  created_at: string;
-}
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Adesso';
-  if (mins < 60) return `${mins}m fa`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h fa`;
-  return `${Math.floor(hours / 24)}g fa`;
-}
-
-function NotificationIcon({ type }: { type: Notification['type'] }) {
-  if (type === 'credits_low') return <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0" />;
-  if (type === 'credits_empty') return <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />;
-  if (type === 'quote_sent') return <Send className="w-4 h-4 text-blue-500 flex-shrink-0" />;
-  if (type === 'quote_accepted') return <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />;
-  return null;
-}
 
 interface DashboardHeaderProps {
   user: DashboardUser;
@@ -49,32 +23,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Notifications state
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications');
-      const data = await res.json();
-      setNotifications(data.notifications ?? []);
-    } catch {
-      // silently fail
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setNotifOpen(false);
-      }
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
@@ -83,24 +33,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleNotifOpen = async () => {
-    const wasOpen = notifOpen;
-    setNotifOpen(!wasOpen);
-    if (!wasOpen && notifications.some(n => !n.read)) {
-      // Mark all as read
-      await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    }
-  };
-
-  const hasUnread = notifications.some(n => !n.read);
-
   const handleLogout = async () => {
     setLoggingOut(true);
     const supabase = createClient();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     router.push('/login');
-    router.refresh();
   };
 
   const getPageTitle = () => {
@@ -156,54 +93,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3 md:gap-6 relative z-10">
-        <div className="flex items-center gap-2">
-<div className="relative" ref={notifRef}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleNotifOpen}
-              className="group rounded-xl relative bg-white/20 hover:bg-primary/10 border border-white/30 text-muted-foreground hover:text-primary transition-all shadow-sm"
-            >
-              <Bell className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              {hasUnread && (
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
-              )}
-            </Button>
-
-            <AnimatePresence>
-              {notifOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-3 w-80 bg-white/80 backdrop-blur-2xl border border-white/50 rounded-[24px] shadow-[0_20px_50px_-12px_rgba(92,50,230,0.25)] p-2 z-[100]"
-                >
-                  <div className="px-4 py-3 border-b border-primary/5">
-                    <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em]">Notifiche</p>
-                  </div>
-                  <div className="py-2 max-h-80 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6 font-medium">Nessuna notifica</p>
-                    ) : (
-                      notifications.map(n => (
-                        <div key={n.id} className={cn("flex items-start gap-3 px-4 py-3 rounded-xl transition-colors", !n.read && "bg-primary/5")}>
-                          <div className="mt-0.5">
-                            <NotificationIcon type={n.type} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-foreground leading-tight">{n.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
-                            <p className="text-[10px] text-primary/40 font-semibold mt-1">{relativeTime(n.created_at)}</p>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+          <NotificationBell />
 
         <div className="hidden sm:block h-8 w-px bg-border"></div>
 

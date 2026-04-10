@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://preventivoveloce.it';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ilpreventivoveloce.it';
 
 export default function robots(): MetadataRoute.Robots {
   return {

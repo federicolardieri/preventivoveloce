@@ -4,9 +4,9 @@ const jsonLdSoftware = {
   "name": "Preventivo Veloce",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
-  "url": "https://preventivoveloce.it",
+  "url": "https://ilpreventivoveloce.it",
   "description": "Generatore di preventivi online con AI. Crea preventivi professionali in 20 secondi: template PDF, IVA automatica, storico clienti. Gratis.",
-  "screenshot": "https://preventivoveloce.it/og-image.png",
+  "screenshot": "https://ilpreventivoveloce.it/logo.png",
   "offers": [
     {
       "@type": "Offer",
@@ -88,8 +88,8 @@ const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Preventivo Veloce",
-  "url": "https://preventivoveloce.it",
-  "logo": "https://preventivoveloce.it/logo.png",
+  "url": "https://ilpreventivoveloce.it",
+  "logo": "https://ilpreventivoveloce.it/logo.png",
   "description": "Generatore di preventivi online con AI per professionisti e piccole imprese italiane.",
   "foundingDate": "2026",
   "areaServed": "IT"

@@ -37,7 +37,7 @@ import { AIAssistant } from "./AIAssistant";
 import { SendQuoteDialog } from "./SendQuoteDialog";
 
 export function QuoteEditor() {
-  const { currentQuote, updateDetails, saveQuote, saveToSupabase } = useQuoteStore();
+  const { currentQuote, updateDetails, saveQuote, saveToSupabase, changeStatus } = useQuoteStore();
   const isProPlan = useQuoteStore(state => state.isProPlan);
   const { setAiAssistantOpen } = useUIStore();
   const router = useRouter();
@@ -148,6 +148,9 @@ export function QuoteEditor() {
         setSendError(body.error ?? 'Errore invio email');
         return false;
       }
+      // Aggiorna lo stato locale a 'inviato' prima del redirect
+      const quoteId = useQuoteStore.getState().currentQuote?.id ?? currentQuote.id;
+      changeStatus(quoteId, 'inviato');
       router.push('/preventivi?success=sent');
       return true;
     } catch {

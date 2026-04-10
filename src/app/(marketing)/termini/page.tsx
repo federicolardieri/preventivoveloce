@@ -106,8 +106,8 @@ export default function TerminiPage() {
           </p>
           <p>
             Per esercitare il recesso contatta:{' '}
-            <a href="mailto:support@preventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
-              support@preventivoveloce.it
+            <a href="mailto:support@ilpreventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
+              support@ilpreventivoveloce.it
             </a>
           </p>
         </Section>
@@ -169,11 +169,17 @@ export default function TerminiPage() {
           </p>
         </Section>
 
-        <Section title="12. Contatti">
+        <Section title="12. Titolare e Contatti">
           <p>
-            Per domande o segnalazioni:{' '}
-            <a href="mailto:support@preventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
-              support@preventivoveloce.it
+            Il Servizio <strong className="text-white/80">Preventivo Veloce</strong> è gestito da{' '}
+            <strong className="text-white/80">Federico Lardieri</strong>, C.F.{' '}
+            <span className="text-white/75">LRDFRC02D22B745R</span>, residente in Via Sebastiano Satta 308,
+            09013 Carbonia (SU), Italia.
+          </p>
+          <p>
+            Per domande, segnalazioni o esercizio del diritto di recesso:{' '}
+            <a href="mailto:support@ilpreventivoveloce.it" className="text-[#a78bfa] hover:text-white transition-colors underline underline-offset-2">
+              support@ilpreventivoveloce.it
             </a>
           </p>
         </Section>

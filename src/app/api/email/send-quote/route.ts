@@ -9,9 +9,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
 import { checkEmailRateLimit } from '@/lib/ratelimit';
+import { logError } from '@/lib/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@preventivoveloce.it';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@ilpreventivoveloce.it';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
@@ -128,14 +129,14 @@ async function generatePDFBuffer(quote: Quote): Promise<Buffer> {
             }
           }
         } catch (attError) {
-          console.error(`[send-quote] Failed to merge attachment ${att.name}`, attError);
+          logError('send-quote.attachment-merge', attError, { attachment_type: att.type });
         }
       }
-      
+
       const mergedPdfBytes = await pdfDoc.save();
       return Buffer.from(mergedPdfBytes);
     } catch (mergeError) {
-      console.error('[send-quote] PDF merge failed, returning base PDF', mergeError);
+      logError('send-quote.pdf-merge', mergeError);
       return baseBuffer;
     }
   }
@@ -219,7 +220,7 @@ export async function POST(req: NextRequest) {
       .insert({ quote_id: quoteId, token, expires_at: expiresAt.toISOString() });
 
     if (tokenErr) {
-      console.error('[send-quote] token insert error:', tokenErr);
+      logError('send-quote.token-insert', tokenErr);
       return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
     }
 
@@ -243,7 +244,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (emailErr) {
-      console.error('[send-quote] resend error:', emailErr);
+      logError('send-quote.resend', emailErr);
       return NextResponse.json({ error: 'Errore invio email' }, { status: 500 });
     }
 
@@ -255,7 +256,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[send-quote] exception:', err);
+    logError('send-quote', err);
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
   }
 }

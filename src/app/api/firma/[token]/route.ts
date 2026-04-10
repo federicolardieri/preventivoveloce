@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { generatePDF } from '@/pdf/generatePDF';
 import { Quote } from '@/types/quote';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { Resend } from 'resend';
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
 import { checkFirmaRateLimit } from '@/lib/ratelimit';
+import { logError } from '@/lib/logger';
 
 const tokenSchema = z.string().regex(/^[0-9a-f]{64}$/, 'Token non valido');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@preventivoveloce.it';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@ilpreventivoveloce.it';
 
 async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
   const now = new Date().toISOString();
@@ -128,71 +129,19 @@ async function generatePDFBuffer(quote: Quote): Promise<Buffer> {
             }
           }
         } catch (attError) {
-          console.error(`[firma] Failed to merge attachment ${att.name}`, attError);
+          logError('firma.attachment-merge', attError, { attachment_type: att.type });
         }
       }
 
       const mergedPdfBytes = await pdfDoc.save();
       return Buffer.from(mergedPdfBytes);
     } catch (mergeError) {
-      console.error('[firma] PDF merge failed, returning base PDF', mergeError);
+      logError('firma.pdf-merge', mergeError);
       return baseBuffer;
     }
   }
 
   return baseBuffer;
-}
-
-async function stampAccepted(pdfBuffer: Buffer, clientName: string, acceptedAt: Date): Promise<Buffer> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer);
-  const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const pages = pdfDoc.getPages();
-  const firstPage = pages[0];
-  const { width } = firstPage.getSize();
-
-  const dateStr = acceptedAt.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  const timeStr = acceptedAt.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-
-  // Timbro verde "ACCETTATO" in basso a destra
-  const stampX = width - 200;
-  const stampY = 60;
-
-  firstPage.drawRectangle({
-    x: stampX - 10,
-    y: stampY - 10,
-    width: 170,
-    height: 70,
-    color: rgb(0.94, 1, 0.96),
-    borderColor: rgb(0.13, 0.77, 0.37),
-    borderWidth: 2,
-    opacity: 0.92,
-  });
-
-  firstPage.drawText('ACCETTATO', {
-    x: stampX,
-    y: stampY + 40,
-    size: 14,
-    font,
-    color: rgb(0.05, 0.6, 0.25),
-  });
-
-  firstPage.drawText(clientName.substring(0, 24), {
-    x: stampX,
-    y: stampY + 22,
-    size: 9,
-    font,
-    color: rgb(0.1, 0.4, 0.2),
-  });
-
-  firstPage.drawText(`${dateStr} ${timeStr}`, {
-    x: stampX,
-    y: stampY + 8,
-    size: 8,
-    font,
-    color: rgb(0.3, 0.5, 0.35),
-  });
-
-  return Buffer.from(await pdfDoc.save());
 }
 
 // ── GET /api/firma/[token] → restituisce i dati del preventivo (per la pagina pubblica)
@@ -301,9 +250,15 @@ export async function POST(
 
   // Carica dati quote e genera PDF timbrato
   const quoteRow = tokenRow.quotes as Record<string, unknown>;
+  const clientName = (quoteRow.client as Record<string, string>)?.name || 'Cliente';
+  const clientEmail = (quoteRow.client as Record<string, string>)?.email || '';
+  const senderName = (quoteRow.sender as Record<string, string>)?.name || 'Mittente';
+  const senderEmail = (quoteRow.sender as Record<string, string>)?.email || '';
+  const quoteNumber = String(quoteRow.number);
+
   const quote: Quote = {
     id: String(quoteRow.id),
-    number: String(quoteRow.number),
+    number: quoteNumber,
     status: String(quoteRow.status) as Quote['status'],
     template: quoteRow.template as Quote['template'],
     theme: quoteRow.theme as Quote['theme'],
@@ -317,21 +272,16 @@ export async function POST(
     currency: (quoteRow.currency as Quote['currency']) ?? 'EUR',
     itemCustomColumns: (quoteRow.item_custom_columns as Quote['itemCustomColumns']) ?? [],
     attachments: (quoteRow.attachments as Quote['attachments']) ?? [],
+    acceptanceStamp: { clientName, acceptedAt: acceptedAt.toISOString() },
     createdAt: String(quoteRow.created_at),
     updatedAt: String(quoteRow.updated_at),
   };
-  const clientName = quote.client?.name || 'Cliente';
-  const clientEmail = quote.client?.email || '';
-  const senderName = quote.sender?.name || 'Mittente';
-  const senderEmail = quote.sender?.email || '';
-  const quoteNumber = quote.number;
 
   let stampedPdfBuffer: Buffer | null = null;
   try {
-    const basePdf = await generatePDFBuffer(quote);
-    stampedPdfBuffer = await stampAccepted(basePdf, clientName, acceptedAt);
+    stampedPdfBuffer = await generatePDFBuffer(quote);
   } catch (err) {
-    console.error('[firma/accept] PDF stamp error:', err);
+    logError('firma.pdf-stamp', err);
   }
 
   const fileName = `Preventivo-${quoteNumber}-ACCETTATO.pdf`;

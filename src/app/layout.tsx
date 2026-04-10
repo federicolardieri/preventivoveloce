@@ -10,7 +10,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://preventivoveloce.it";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ilpreventivoveloce.it";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -50,21 +50,12 @@ export const metadata: Metadata = {
     title: "Preventivo Veloce — Generatore di Preventivi Online Gratis con AI",
     description:
       "Genera preventivi professionali in 20 secondi con l'AI. Template PDF, IVA automatica, storico clienti. Gratis, nessuna carta richiesta.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Preventivo Veloce — Generatore di Preventivi con AI",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Preventivo Veloce — Generatore di Preventivi Online con AI",
     description:
       "Crea preventivi professionali in 20 secondi con l'AI. Gratis, nessuna carta richiesta.",
-    images: ["/og-image.png"],
   },
   alternates: {
     canonical: siteUrl,

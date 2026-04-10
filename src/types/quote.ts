@@ -56,6 +56,11 @@ export interface QuoteAttachment {
   type: 'application/pdf' | 'image/jpeg' | 'image/png';
 }
 
+export interface AcceptanceStamp {
+  clientName: string;
+  acceptedAt: string; // ISO string
+}
+
 export interface Quote {
   id: string;
   number: string;        // "PRV-2026-001"
@@ -74,6 +79,7 @@ export interface Quote {
   attachments?: QuoteAttachment[]; // Up to 7
   clientId?: string;     // UUID del cliente salvato in rubrica (se selezionato)
   archived?: boolean;    // true = archiviato (non compare nello storico normale)
+  acceptanceStamp?: AcceptanceStamp; // Timbro accettazione (solo per PDF timbrati)
   createdAt: string;     // ISO string
   updatedAt: string;
 }

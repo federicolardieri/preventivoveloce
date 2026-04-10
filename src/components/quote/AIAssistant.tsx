@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { QuoteItem, VatRate } from "@/types/quote";
 import { Sparkles, X, Send, Loader2, Bot, User, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fetchNextQuoteNumber } from "@/lib/quote-number";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -54,7 +55,7 @@ export function AIAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { updateClient, updateSender, updateDetails, addItem, currentQuote, setCurrentQuote, quotesList } = useQuoteStore();
+  const { updateClient, updateSender, updateDetails, addItem, currentQuote, setCurrentQuote } = useQuoteStore();
 
   // Watch for external prompts (Magic Box)
   useEffect(() => {
@@ -64,13 +65,11 @@ export function AIAssistant() {
     }
   }, [aiPrompt, open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startNewQuote = () => {
-    const year = new Date().getFullYear();
-    const nextNumber = quotesList.length + 1;
-    const padded = nextNumber.toString().padStart(3, "0");
+  const startNewQuote = async () => {
+    const number = await fetchNextQuoteNumber();
     const newQuote = {
       id: crypto.randomUUID(),
-      number: `PRV-${year}-${padded}`,
+      number,
       status: "bozza" as const,
       template: "classic" as const,
       theme: {

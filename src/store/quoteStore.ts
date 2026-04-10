@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Quote, QuoteItem, QuoteStatus, QuoteTheme, ContactInfo, QuoteAttachment } from '@/types/quote';
+import { fetchNextQuoteNumber } from '@/lib/quote-number';
 
 interface QuoteStoreState {
   currentQuote: Quote | null;
@@ -15,7 +16,7 @@ interface QuoteStoreState {
   clearCurrentQuote: () => void;
   saveQuote: () => void;
   deleteQuote: (id: string) => void;
-  duplicateQuote: (id: string) => void;
+  duplicateQuote: (id: string) => Promise<void>;
   changeStatus: (id: string, status: QuoteStatus) => void;
 
   // Archive
@@ -221,14 +222,12 @@ export const useQuoteStore = create<QuoteStoreState>()(
 
       // ─────────────────────────────────────────────────────────────────────────
 
-      duplicateQuote: (id) => set((state) => {
+      duplicateQuote: async (id) => {
+        const state = get();
         const quoteToDuplicate = state.quotesList.find(q => q.id === id);
-        if (!quoteToDuplicate) return state;
+        if (!quoteToDuplicate) return;
 
-        const newNumberCount = state.quotesList.length + 1;
-        const year = new Date().getFullYear();
-        const paddedSequence = newNumberCount.toString().padStart(3, '0');
-        const newNumber = `PRV-${year}-${paddedSequence}`;
+        const newNumber = await fetchNextQuoteNumber();
 
         const newQuote: Quote = {
           ...quoteToDuplicate,
@@ -240,8 +239,8 @@ export const useQuoteStore = create<QuoteStoreState>()(
           updatedAt: new Date().toISOString()
         };
 
-        return { quotesList: [...state.quotesList, newQuote], currentQuote: newQuote };
-      }),
+        set({ quotesList: [...get().quotesList, newQuote], currentQuote: newQuote });
+      },
 
       changeStatus: (id, status) => set((state) => ({
         quotesList: state.quotesList.map(q =>
@@ -329,7 +328,11 @@ export const useQuoteStore = create<QuoteStoreState>()(
           .order('created_at', { ascending: false })
           .limit(200);
 
-        if (error || !rows) return;
+        if (error) {
+          console.error('loadFromSupabase error:', error.message);
+          return;
+        }
+        if (!rows) return;
         const all = rows.map((row: Record<string, unknown>) => dbToQuote({ ...row, attachments: [] }));
         set({
           quotesList: all.filter(q => !q.archived),

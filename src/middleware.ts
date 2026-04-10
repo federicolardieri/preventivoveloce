@@ -12,8 +12,9 @@ export const config = {
      * - _next/static (file statici)
      * - _next/image (ottimizzazione immagini)
      * - favicon.ico, sitemap.xml, robots.txt
+     * - opengraph-image (generata dinamicamente, deve essere pubblica per i crawler social)
      * - file con estensione (es. logo.png)
      */
-    '/((?!monitoring|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!monitoring|sentry-debug|opengraph-image|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

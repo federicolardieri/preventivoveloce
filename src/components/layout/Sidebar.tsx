@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useQuoteStore } from "@/store/quoteStore";
 import { useUIStore } from "@/store/uiStore";
 import { createClient } from "@/lib/supabase/client";
+
 import {
   FileText,
   LayoutDashboard,
@@ -22,6 +23,8 @@ import {
   Clock,
 } from "lucide-react";
 import type { DashboardUser } from "@/app/(dashboard)/layout";
+
+const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
 
 interface SidebarProps {
   user: DashboardUser;
@@ -87,15 +90,14 @@ export function Sidebar({ user }: SidebarProps) {
   const handleLogout = async () => {
     setLoggingOut(true);
     const supabase = createClient();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     router.push('/login');
-    router.refresh();
   };
 
   return (
     <div className="flex flex-col min-h-full md:h-full w-full md:w-64 shadow-2xl z-20 relative bg-sidebar text-sidebar-foreground transition-colors duration-300">
       {/* Logo Section */}
-      <div className="px-5 pt-6 pb-5 border-b border-sidebar-foreground/10 flex justify-center">
+      <div className="relative px-5 pt-6 pb-5 border-b border-sidebar-foreground/10 flex justify-center">
         <Link href="/dashboard" className="group">
           <div className="w-52 h-32 rounded-[32px] bg-white flex items-center justify-center shadow-xl border border-transparent overflow-hidden transition-all group-hover:scale-105 group-active:scale-95">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,6 +108,7 @@ export function Sidebar({ user }: SidebarProps) {
             />
           </div>
         </Link>
+
       </div>
 
       {/* Primary Action Button */}
@@ -130,7 +133,7 @@ export function Sidebar({ user }: SidebarProps) {
               Smetti di compilare manualmenta. L'AI crea tutto per te.
             </p>
             <Button
-              onClick={() => setAiAssistantOpen(true)}
+              onClick={() => { router.push('/nuovo'); setAiAssistantOpen(true); }}
               className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 font-black text-[11px] h-9 rounded-xl shadow-lg border-b-2 border-black/10 uppercase tracking-wider"
             >
               Genera con AI ✨
@@ -214,9 +217,11 @@ export function Sidebar({ user }: SidebarProps) {
                 <span className="text-[11px] text-sidebar-foreground/60 font-bold">
                   {user.creditsRemaining ?? 0} / {user.creditsTotal} crediti
                 </span>
-                <Link href="/impostazioni" className="text-[11px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors font-black">
-                  Upgrade →
-                </Link>
+                {PAID_PLANS_ENABLED && (
+                  <Link href="/impostazioni" className="text-[11px] text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors font-black">
+                    Upgrade →
+                  </Link>
+                )}
               </div>
             </>
           )}

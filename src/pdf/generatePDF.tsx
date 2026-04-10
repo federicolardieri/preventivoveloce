@@ -1,5 +1,9 @@
-import { renderToStream } from '@react-pdf/renderer';
+import { renderToStream, Font } from '@react-pdf/renderer';
 import { Quote } from '@/types/quote';
+
+// Disable automatic hyphenation globally — prevents ugly word-breaks
+// like "CODICE ARTICO-LO" in table headers
+Font.registerHyphenationCallback((word) => [word]);
 import { ClassicTemplate } from './templates/ClassicTemplate';
 import { ModernTemplate } from './templates/ModernTemplate';
 import { MinimalTemplate } from './templates/MinimalTemplate';

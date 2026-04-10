@@ -401,9 +401,9 @@ export default function DashboardHome() {
     <DuplicateDialog
       open={duplicateDialogOpen}
       onOpenChange={setDuplicateDialogOpen}
-      onConfirm={() => {
+      onConfirm={async () => {
         if (!lastQuote) return;
-        duplicateQuote(lastQuote.id);
+        await duplicateQuote(lastQuote.id);
         const newId = useQuoteStore.getState().currentQuote?.id;
         if (newId) router.push(`/preventivi/${newId}`);
       }}

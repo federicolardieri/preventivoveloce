@@ -14,9 +14,12 @@ export const PDFItemsTable = ({ quote }: { quote: Quote }) => {
   const tableStyle = theme.tableStyle ?? 'striped';
   const primary = theme.primaryColor ?? '#5c32e6';
 
-  // Compute desc width: shrinks by 10% per custom column (min 20%)
+  // Compute widths dynamically based on number of custom columns
+  // Fixed columns take ~56%, leaving ~44% for desc + customs
   const customCount = (itemCustomColumns || []).length;
-  const descPct = Math.max(20, 40 - customCount * 10);
+  // Each custom column gets 14%, desc gets what remains (min 14%)
+  const customPct = 14;
+  const descPct = Math.max(14, 44 - customCount * customPct);
 
   const styles = StyleSheet.create({
     tableContainer: { flexDirection: 'column', marginTop: 20 },
@@ -29,10 +32,10 @@ export const PDFItemsTable = ({ quote }: { quote: Quote }) => {
     },
     headerText: {
       color: '#ffffff',
-      fontSize: 9,
+      fontSize: customCount > 0 ? 7.5 : 9,
       fontFamily: bold,
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: 0.3,
     },
     tableRow: {
       flexDirection: 'row',
@@ -47,19 +50,19 @@ export const PDFItemsTable = ({ quote }: { quote: Quote }) => {
       backgroundColor: tableStyle === 'striped' ? '#f8fafc' : 'transparent',
     },
     rowText: { fontSize: 9.5, fontFamily: font, color: '#334155' },
-    // Fixed columns (static widths that sum to 60% leaving 40% for desc + customs)
-    colQty:   { width: '10%', textAlign: 'right' },
-    colPrice: { width: '14%', textAlign: 'right' },
-    colDisc:  { width: '10%', textAlign: 'right' },
-    colVat:   { width: '8%',  textAlign: 'right' },
-    colTotal: { width: '18%', textAlign: 'right', fontFamily: bold },
+    // Fixed columns (static widths that sum to ~56% leaving ~44% for desc + customs)
+    colQty:   { width: '7%',  textAlign: 'right' },
+    colPrice: { width: '15%', textAlign: 'right' },
+    colDisc:  { width: '7%',  textAlign: 'right' },
+    colVat:   { width: '7%',  textAlign: 'right' },
+    colTotal: { width: '20%', textAlign: 'right', fontFamily: bold },
   });
 
   const symbol = currency === 'USD' ? '$' : currency === 'GBP' ? '£' : currency === 'CHF' ? 'CHF' : '€';
   const fmt = (cents: number) => `${symbol} ${(cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const colDesc = { width: `${descPct}%` };
-  const colCustom = { width: '10%', textAlign: 'left' as const };
+  const colCustom = { width: `${customPct}%`, textAlign: 'left' as const };
 
   return (
     <View style={styles.tableContainer}>

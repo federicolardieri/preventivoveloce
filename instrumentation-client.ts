@@ -1,9 +1,10 @@
 import * as Sentry from '@sentry/nextjs';
+import { scrubSentryEvent } from '@/lib/sentry-scrub';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  sendDefaultPii: true,
+  sendDefaultPii: false,
 
   // 100% in dev, 10% in produzione
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
@@ -15,8 +16,13 @@ Sentry.init({
   enableLogs: true,
 
   integrations: [
-    Sentry.replayIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
   ],
+
+  beforeSend: (event) => scrubSentryEvent(event),
 
   enabled: process.env.NODE_ENV === 'production',
 });

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useQuoteStore, createEmptyQuote } from "@/store/quoteStore";
 import { QuoteEditor } from "@/components/quote/QuoteEditor";
-import { generateQuoteNumber } from "@/lib/utils";
+import { fetchNextQuoteNumber } from "@/lib/quote-number";
 import { useSearchParams } from "next/navigation";
 
 function NuovoPreventivoContent() {
@@ -32,10 +32,11 @@ function NuovoPreventivoContent() {
     }
 
     // Altrimenti creiamo un nuovo preventivo vuoto
-    const sequence = quotesList.length + 1;
-    const newQuote = createEmptyQuote(generateQuoteNumber(sequence));
-    setCurrentQuote(newQuote);
-    setMounted(true);
+    fetchNextQuoteNumber().then((number) => {
+      const newQuote = createEmptyQuote(number);
+      setCurrentQuote(newQuote);
+      setMounted(true);
+    });
   }, [editId, setCurrentQuote]);
 
   if (!mounted) return null;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { createAdminClient } from '@/lib/supabase/server';
 import { sendSubscriptionConfirmation } from '@/lib/email';
+import { logError } from '@/lib/logger';
 import type Stripe from 'stripe';
 
 const PLAN_BY_PRICE: Record<string, 'starter' | 'pro'> = {
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
               to: email,
               plan,
               periodEnd: new Date(periodEnd * 1000),
-            }).catch((err) => console.error('[webhook] email error:', err));
+            }).catch((err) => logError('stripe-webhook.confirmation-email', err));
           }
         }
         break;
@@ -163,7 +164,7 @@ export async function POST(request: Request) {
       }
     }
   } catch (err) {
-    console.error('Webhook handler error:', err);
+    logError('stripe-webhook', err, { event_type: event.type, event_id: event.id });
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 });
   }
 

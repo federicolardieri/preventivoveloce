@@ -10,6 +10,8 @@ import {
   Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
 } from 'lucide-react';
 
+const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: string }) {
@@ -215,7 +217,7 @@ function DashboardMockup() {
           </div>
           <div className="flex-1 mx-4 flex justify-center">
             <div className="bg-[#1a1a24] rounded h-5 flex items-center px-3 w-64">
-              <span className="text-[10px] text-white/25">app.preventivoveloce.it/dashboard</span>
+              <span className="text-[10px] text-white/25">app.ilpreventivoveloce.it/dashboard</span>
             </div>
           </div>
         </div>
@@ -656,7 +658,7 @@ function EmailFlowDemo() {
                 <div className="bg-[#0a0a0f] rounded-xl border border-white/10 overflow-hidden">
                   <div className="px-3 py-2 border-b border-white/5 flex items-center gap-2">
                     <div className="flex-1 bg-[#1a1a24] rounded h-5 flex items-center px-2">
-                      <span className="text-[8px] text-white/25">preventivoveloce.it/firma/a8f3...</span>
+                      <span className="text-[8px] text-white/25">ilpreventivoveloce.it/firma/a8f3...</span>
                     </div>
                   </div>
                   <div className="p-4 flex flex-col items-center text-center gap-2.5">
@@ -880,7 +882,7 @@ function Testimonials() {
 function Pricing() {
   const [annual, setAnnual] = useState(false);
 
-  const plans = [
+  const allPlans = [
     {
       name: 'Free',
       price: '€0',
@@ -935,6 +937,10 @@ function Pricing() {
     },
   ];
 
+  const plans = PAID_PLANS_ENABLED
+    ? allPlans
+    : allPlans.filter((p) => p.name === 'Free');
+
   return (
     <section id="pricing" className="py-28 px-6">
       <div className="max-w-5xl mx-auto">
@@ -947,21 +953,23 @@ function Pricing() {
           <p className="text-white/45 text-lg max-w-lg mx-auto mb-8">
             Inizia gratis. Nessuna carta di credito richiesta.
           </p>
-          <div className="inline-flex bg-white/5 border border-white/10 rounded-xl p-1">
-            {[false, true].map(a => (
-              <button
-                key={String(a)}
-                onClick={() => setAnnual(a)}
-                className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${annual === a ? 'bg-white text-black shadow' : 'text-white/45 hover:text-white'}`}
-              >
-                {a ? 'Annuale' : 'Mensile'}
-                {a && <span className="text-[10px] font-black bg-emerald-400 text-black px-1.5 py-0.5 rounded-md">-16%</span>}
-              </button>
-            ))}
-          </div>
+          {PAID_PLANS_ENABLED && (
+            <div className="inline-flex bg-white/5 border border-white/10 rounded-xl p-1">
+              {[false, true].map(a => (
+                <button
+                  key={String(a)}
+                  onClick={() => setAnnual(a)}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${annual === a ? 'bg-white text-black shadow' : 'text-white/45 hover:text-white'}`}
+                >
+                  {a ? 'Annuale' : 'Mensile'}
+                  {a && <span className="text-[10px] font-black bg-emerald-400 text-black px-1.5 py-0.5 rounded-md">-16%</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </FadeIn>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className={`grid gap-5 ${PAID_PLANS_ENABLED ? 'md:grid-cols-3' : 'max-w-md mx-auto'}`}>
           {plans.map((plan, i) => (
             <FadeIn key={plan.name} delay={i * 0.08}>
               <motion.div
@@ -1009,6 +1017,20 @@ function Pricing() {
             </FadeIn>
           ))}
         </div>
+
+        {!PAID_PLANS_ENABLED && (
+          <FadeIn>
+            <div className="mt-10 max-w-xl mx-auto text-center bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+              <p className="text-[#a78bfa] text-[10px] font-black uppercase tracking-widest mb-2">In arrivo</p>
+              <p className="text-white/75 text-sm font-semibold mb-1">
+                Piani Starter e Pro disponibili a breve
+              </p>
+              <p className="text-white/45 text-xs">
+                Stiamo ultimando l&apos;attivazione dei pagamenti. Intanto inizia gratis con il piano Free.
+              </p>
+            </div>
+          </FadeIn>
+        )}
       </div>
     </section>
   );

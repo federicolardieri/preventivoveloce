@@ -1,5 +1,19 @@
 import { z } from 'zod';
 
+// Valida un data URL di immagine (PNG/JPEG/GIF/WEBP) con limite di dimensione.
+// Il client ammette fino a 6MB di file: base64 ≈ 4/3 ⇒ limite stringa ~8.5MB.
+const MAX_LOGO_DATA_URL_LEN = 8_500_000;
+const LOGO_DATA_URL_PREFIX = /^data:image\/(png|jpe?g|gif|webp);base64,/i;
+
+const logoDataUrlSchema = z
+  .string()
+  .max(MAX_LOGO_DATA_URL_LEN, 'Logo troppo grande')
+  .refine(
+    (val) => val === '' || LOGO_DATA_URL_PREFIX.test(val),
+    { message: 'Formato logo non valido (PNG, JPG, GIF o WEBP)' },
+  )
+  .optional();
+
 export const quoteThemeSchema = z.object({
   primaryColor: z.string(),
   accentColor: z.string(),
@@ -25,8 +39,8 @@ export const contactInfoSchema = z.object({
   vatNumber: z.string(),
   email: z.string(),
   phone: z.string(),
-  logo: z.string().optional(),
-  logoOriginal: z.string().optional(),
+  logo: logoDataUrlSchema,
+  logoOriginal: logoDataUrlSchema,
   customFields: z.array(z.object({ id: z.string(), label: z.string(), value: z.string() })).optional(),
 });
 

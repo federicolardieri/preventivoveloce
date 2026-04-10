@@ -160,6 +160,9 @@ function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quoteId: quote.id, customMessage }),
       });
+      if (res.ok) {
+        changeStatus(quote.id, 'inviato');
+      }
       setSendResult({ id: quote.id, ok: res.ok });
       return res.ok;
     } catch {
@@ -440,9 +443,9 @@ function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
       <DuplicateDialog
         open={duplicateDialogOpen}
         onOpenChange={setDuplicateDialogOpen}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (!pendingDuplicateId) return;
-          duplicateQuote(pendingDuplicateId);
+          await duplicateQuote(pendingDuplicateId);
           const newId = useQuoteStore.getState().currentQuote?.id;
           if (newId) router.push(`/preventivi/${newId}`);
           setPendingDuplicateId(null);

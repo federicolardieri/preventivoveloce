@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 const INPUT_CLASS =
   "w-full h-11 rounded-xl border border-border px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground font-medium bg-muted/30 text-sm transition-colors";
 
+const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
+
 type FormData = Omit<CompanyProfile, 'id'>;
 
 interface UserInfo {
@@ -854,27 +856,42 @@ function ImpostazioniPageInner() {
               )}
 
               {/* Toggle mensile/annuale */}
-              <div className="flex items-center gap-3">
-                <div className="inline-flex items-center gap-1 bg-muted rounded-xl p-1 border border-border">
-                  <button
-                    onClick={() => setBilling('monthly')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${billing === 'monthly' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    Mensile
-                  </button>
-                  <button
-                    onClick={() => setBilling('annual')}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    Annuale
-                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">-25%</span>
-                  </button>
+              {PAID_PLANS_ENABLED && (
+                <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center gap-1 bg-muted rounded-xl p-1 border border-border">
+                    <button
+                      onClick={() => setBilling('monthly')}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${billing === 'monthly' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Mensile
+                    </button>
+                    <button
+                      onClick={() => setBilling('annual')}
+                      className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      Annuale
+                      <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">-25%</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Banner "In arrivo" quando i piani a pagamento sono disabilitati */}
+              {!PAID_PLANS_ENABLED && (
+                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5">In arrivo</p>
+                  <p className="font-bold text-foreground text-sm mb-1">
+                    Piani Starter e Pro disponibili a breve
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Stiamo ultimando l&apos;attivazione dei pagamenti. Nel frattempo puoi continuare a usare il piano Free.
+                  </p>
+                </div>
+              )}
 
               {/* Plans grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {PLANS(billing).map((p) => {
+              <div className={`grid gap-4 ${PAID_PLANS_ENABLED ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 max-w-md'}`}>
+                {(PAID_PLANS_ENABLED ? PLANS(billing) : PLANS(billing).filter((p) => p.id === 'free')).map((p) => {
                   const isCurrent = planInfo?.plan === p.id;
                   const Icon = p.icon;
                   return (
