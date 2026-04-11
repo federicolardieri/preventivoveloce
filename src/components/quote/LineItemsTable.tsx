@@ -80,7 +80,7 @@ export function LineItemsTable() {
             return (
               <div
                 key={item.id}
-                className="group relative rounded-2xl md:rounded-3xl border border-border/60 bg-muted/10 p-5 md:p-6 transition-all duration-300 hover:border-primary/30 hover:bg-muted/30 hover:shadow-sm"
+                className="group relative rounded-2xl md:rounded-3xl border border-border/60 bg-muted/10 p-4 sm:p-5 md:p-6 transition-all duration-300 hover:border-primary/30 hover:bg-muted/30 hover:shadow-sm"
               >
                 {/* Header riga: numero + totale + elimina */}
                 <div className="flex items-center justify-between mb-5 pb-3 border-b border-border/50">
@@ -103,7 +103,7 @@ export function LineItemsTable() {
                       variant="ghost"
                       size="icon"
                       onClick={() => removeItem(item.id)}
-                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-100 transition-all"
+                      className="h-11 w-11 sm:h-9 sm:w-9 rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-100 transition-all"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

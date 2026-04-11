@@ -248,27 +248,28 @@ export function QuoteEditor() {
         <div className={`w-full lg:w-[40%] flex flex-col h-full overflow-y-auto custom-scrollbar px-4 md:px-6 lg:px-10 py-6 md:py-10 transition-all ${isLocked || noCreditsEdit ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
           
           <div className="w-full max-w-2xl mx-auto space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <Link href="/preventivi">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-semibold gap-2 border border-transparent hover:border-border transition-all">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-semibold gap-2 border border-transparent hover:border-border transition-all h-11 px-3 sm:px-4 text-xs sm:text-sm">
                   <ArrowLeft className="w-4 h-4" />
-                  Torna allo Storico
+                  <span className="hidden sm:inline">Torna allo Storico</span>
+                  <span className="sm:hidden">Storico</span>
                 </Button>
               </Link>
-              <div className="bg-primary/10 text-primary px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
+              <div className="bg-primary/10 text-primary px-3 sm:px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase whitespace-nowrap">
                 Step {getStepNumber()} di 3
               </div>
             </div>
 
             <div>
               <h1 className="text-2xl md:text-4xl font-black tracking-tight text-foreground mb-2">Configura Preventivo</h1>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">N° Documento</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-1.5 shadow-sm max-w-full">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap">N° Documento</span>
                   <Input
                     value={currentQuote.number}
                     onChange={(e) => updateDetails({ number: e.target.value })}
-                    className="border-0 p-0 h-auto font-mono font-bold text-[#5c32e6] text-sm focus-visible:ring-0 bg-transparent w-32"
+                    className="border-0 p-0 h-auto font-mono font-bold text-[#5c32e6] text-sm focus-visible:ring-0 bg-transparent w-28 sm:w-32 min-w-0"
                   />
                 </div>
               </div>
@@ -302,22 +303,22 @@ export function QuoteEditor() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               {/* Modern Pill Tabs Navigation (cmotive style) */}
               <div className="bg-card p-1.5 md:p-2 rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border mb-6 md:mb-10 inline-flex w-full md:w-auto transition-colors">
-                <TabsList className="flex w-full justify-start gap-1 md:gap-2 bg-transparent p-0 h-10 md:h-12 rounded-full">
+                <TabsList className="flex w-full justify-start gap-1 md:gap-2 bg-transparent p-0 h-11 md:h-12 rounded-full">
                   <TabsTrigger
                     value="dati"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[10px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[11px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
                   >
                     DATI
                   </TabsTrigger>
                   <TabsTrigger
                     value="voci"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[10px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[11px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
                   >
                     VOCI
                   </TabsTrigger>
                   <TabsTrigger
                     value="fine"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[10px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[11px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"
                   >
                     RIEPILOGO
                   </TabsTrigger>
@@ -424,21 +425,21 @@ export function QuoteEditor() {
                     </Select>
                   </div>
                   
-                  <div className="space-y-4 mb-10 bg-muted/30 p-6 rounded-2xl">
-                    <div className="flex justify-between items-baseline pb-4 border-b border-border">
+                  <div className="space-y-4 mb-10 bg-muted/30 p-4 md:p-6 rounded-2xl">
+                    <div className="flex justify-between items-baseline gap-3 pb-4 border-b border-border">
                       <span className="font-semibold text-muted-foreground">Imponibile</span>
-                      <span className="font-bold text-card-foreground text-lg">{formatCurrency(calculateSubtotal())}</span>
+                      <span className="font-bold text-card-foreground text-lg break-all text-right">{formatCurrency(calculateSubtotal())}</span>
                     </div>
-                    <div className="flex justify-between items-baseline pb-4 border-b border-border">
+                    <div className="flex justify-between items-baseline gap-3 pb-4 border-b border-border">
                       <span className="font-semibold text-muted-foreground">IVA (Totale)</span>
-                      <span className="font-bold text-card-foreground text-lg">{formatCurrency(calculateTax())}</span>
+                      <span className="font-bold text-card-foreground text-lg break-all text-right">{formatCurrency(calculateTax())}</span>
                     </div>
-                    
+
                     <div className="pt-2">
                       <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Totale Documento</p>
-                      <div className="flex items-end justify-between">
-                        <span className="text-3xl md:text-5xl font-black text-card-foreground tracking-tighter shrink-0">{formatCurrency(calculateTotal())}</span>
-                        <span className="bg-emerald-100 dark:bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-md shadow-sm">INC. IVA</span>
+                      <div className="flex items-end justify-between gap-3 flex-wrap">
+                        <span className="text-2xl sm:text-3xl md:text-5xl font-black text-card-foreground tracking-tighter break-all">{formatCurrency(calculateTotal())}</span>
+                        <span className="bg-emerald-100 dark:bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-md shadow-sm whitespace-nowrap">INC. IVA</span>
                       </div>
                     </div>
                   </div>
@@ -568,18 +569,18 @@ export function QuoteEditor() {
 
         {/* No-credits edit overlay */}
         {noCreditsEdit && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center lg:w-[40%] pointer-events-auto">
-            <div className="bg-white/80 backdrop-blur-md p-10 rounded-[3rem] border-2 border-red-200 shadow-2xl flex flex-col items-center text-center max-w-sm m-6 animate-in fade-in zoom-in duration-500">
-              <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-6 border-2 border-red-100">
-                <Lock className="w-10 h-10 text-red-400" />
+          <div className="absolute inset-0 z-50 flex items-center justify-center w-full lg:w-[40%] pointer-events-auto px-4">
+            <div className="bg-white/80 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] border-2 border-red-200 shadow-2xl flex flex-col items-center text-center max-w-sm mx-auto animate-in fade-in zoom-in duration-500">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-4 md:mb-6 border-2 border-red-100">
+                <Lock className="w-8 h-8 md:w-10 md:h-10 text-red-400" />
               </div>
-              <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Crediti esauriti</h3>
-              <p className="text-slate-600 font-medium leading-relaxed">
+              <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-3 tracking-tight">Crediti esauriti</h3>
+              <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">
                 Non puoi modificare o salvare questo preventivo. Passa a Starter o Pro per continuare a lavorare sui tuoi preventivi.
               </p>
               <button
                 onClick={() => router.push('/impostazioni?tab=piano')}
-                className="mt-8 bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-black px-10 py-4 rounded-2xl transition-all shadow-xl shadow-indigo-400/20 active:scale-95"
+                className="mt-6 md:mt-8 bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-black px-8 md:px-10 py-3 md:py-4 rounded-2xl transition-all shadow-xl shadow-indigo-400/20 active:scale-95 min-h-[44px]"
               >
                 Vedi i piani →
               </button>
@@ -589,18 +590,18 @@ export function QuoteEditor() {
 
         {/* Locked Editor Overlay */}
         {isLocked && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center lg:w-[40%] pointer-events-auto">
-             <div className="bg-white/80 backdrop-blur-md p-10 rounded-[3rem] border-2 border-amber-200 shadow-2xl flex flex-col items-center text-center max-w-sm m-6 animate-in fade-in zoom-in duration-500">
-               <div className="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-6 border-2 border-amber-100">
-                  <Lock className="w-10 h-10 text-amber-500" />
+          <div className="absolute inset-0 z-50 flex items-center justify-center w-full lg:w-[40%] pointer-events-auto px-4">
+             <div className="bg-white/80 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-[2rem] md:rounded-[3rem] border-2 border-amber-200 shadow-2xl flex flex-col items-center text-center max-w-sm mx-auto animate-in fade-in zoom-in duration-500">
+               <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-4 md:mb-6 border-2 border-amber-100">
+                  <Lock className="w-8 h-8 md:w-10 md:h-10 text-amber-500" />
                </div>
-               <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Editor Bloccato</h3>
-               <p className="text-slate-600 font-medium leading-relaxed">
+               <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-3 tracking-tight">Editor Bloccato</h3>
+               <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">
                  Hai selezionato un template **PRO**. Per compilare i dati e scaricare il documento con questo stile, è necessario attivare il piano Pro.
                </p>
-               <button 
+               <button
                  onClick={() => router.push('/impostazioni?tab=piano')}
-                 className="mt-8 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-10 py-4 rounded-2xl transition-all shadow-xl shadow-amber-400/20 active:scale-95"
+                 className="mt-6 md:mt-8 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-8 md:px-10 py-3 md:py-4 rounded-2xl transition-all shadow-xl shadow-amber-400/20 active:scale-95 min-h-[44px]"
                >
                  Sblocca Ora
                </button>
