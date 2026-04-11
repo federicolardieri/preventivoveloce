@@ -27,6 +27,14 @@ export async function updateSession(request: NextRequest) {
   // Refresh sessione — NON rimuovere
   const { data: { user } } = await supabase.auth.getUser();
 
+  // PKCE flow: Supabase redirige a Site URL con ?code= — intercetta e manda al callback
+  const code = request.nextUrl.searchParams.get('code');
+  if (code && !request.nextUrl.pathname.startsWith('/auth')) {
+    const callbackUrl = new URL('/auth/callback', request.nextUrl.origin);
+    callbackUrl.searchParams.set('code', code);
+    return NextResponse.redirect(callbackUrl);
+  }
+
   const { pathname } = request.nextUrl;
 
   const isPublicPath =
