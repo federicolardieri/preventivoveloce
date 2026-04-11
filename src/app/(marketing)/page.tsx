@@ -120,14 +120,14 @@ function Navbar() {
         ? 'bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-white/5 shadow-2xl shadow-black/40'
         : 'bg-transparent'
     }`}>
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center group bg-white px-4 py-2 rounded-2xl shadow-xl border border-white/5 transition-all hover:shadow-2xl">
-          <Image 
-            src="/logo.png" 
-            alt="Preventivo Veloce" 
-            width={180} 
-            height={36} 
-            className="h-8 w-auto group-hover:scale-105 transition-transform"
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+        <Link href="/" className="flex items-center group bg-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl border border-white/5 transition-all hover:shadow-2xl shrink-0">
+          <Image
+            src="/logo.png"
+            alt="Preventivo Veloce"
+            width={180}
+            height={36}
+            className="h-7 sm:h-8 w-auto group-hover:scale-105 transition-transform"
           />
         </Link>
 
@@ -144,15 +144,16 @@ function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-semibold text-white/45 hover:text-white transition-colors px-3 py-2">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <Link href="/login" className="text-xs sm:text-sm font-semibold text-white/45 hover:text-white transition-colors px-2 sm:px-3 py-2 min-h-[40px] flex items-center">
             Accedi
           </Link>
           <Link
             href="/register"
-            className="text-sm font-bold bg-[#5c32e6] hover:bg-[#4f2bcc] text-white px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-[#5c32e6]/25 hover:-translate-y-0.5 hover:shadow-[#5c32e6]/40"
+            className="text-xs sm:text-sm font-bold bg-[#5c32e6] hover:bg-[#4f2bcc] text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all shadow-lg shadow-[#5c32e6]/25 hover:-translate-y-0.5 hover:shadow-[#5c32e6]/40 whitespace-nowrap min-h-[40px] flex items-center"
           >
-            Inizia Gratis →
+            <span className="hidden sm:inline">Inizia Gratis →</span>
+            <span className="sm:hidden">Inizia →</span>
           </Link>
         </div>
       </div>
@@ -205,7 +206,7 @@ function SpeedBar({ label, minutes, max, color, delay }: {
 
 function DashboardMockup() {
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
+    <div className="relative w-full max-w-4xl mx-auto origin-top scale-[0.78] sm:scale-90 md:scale-100 -mb-[18%] sm:-mb-[8%] md:mb-0">
       <div className="absolute -inset-6 bg-[#5c32e6]/18 rounded-3xl blur-3xl" />
       <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-[0_40px_140px_-20px_rgba(0,0,0,0.9)]">
         {/* Browser bar */}
@@ -812,15 +813,15 @@ function Testimonials() {
   }, []);
 
   return (
-    <section className="py-28 px-6 relative overflow-hidden">
+    <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#5c32e6]/3 to-transparent pointer-events-none" />
       <div className="relative z-10 max-w-5xl mx-auto">
-        <FadeIn className="text-center mb-14">
+        <FadeIn className="text-center mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold px-3 py-1.5 rounded-full mb-5">
             <Star className="w-3.5 h-3.5 fill-current" />
             Già usato da centinaia di professionisti
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
             Chi l'ha provato
             <br />
             <span className="bg-gradient-to-r from-[#7c52ff] to-[#c4b5fd] bg-clip-text text-transparent">non torna indietro.</span>
@@ -828,7 +829,7 @@ function Testimonials() {
         </FadeIn>
 
         {/* Featured testimonial */}
-        <div className="relative h-56 mb-8">
+        <div className="relative min-h-[260px] sm:h-56 mb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={active}
@@ -838,7 +839,7 @@ function Testimonials() {
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="absolute inset-0"
             >
-              <div className="bg-[#111118] border border-white/8 rounded-2xl p-8 h-full flex flex-col justify-between relative overflow-hidden">
+              <div className="bg-[#111118] border border-white/8 rounded-2xl p-5 sm:p-8 h-full flex flex-col justify-between relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#5c32e6]/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
                 <div className="relative z-10">
                   <div className="flex gap-1 mb-4">
@@ -942,10 +943,10 @@ function Pricing() {
     : allPlans.filter((p) => p.name === 'Free');
 
   return (
-    <section id="pricing" className="py-28 px-6">
+    <section id="pricing" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
-        <FadeIn className="text-center mb-14">
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+        <FadeIn className="text-center mb-10 sm:mb-14">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
             Un preventivo chiuso
             <br />
             <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">paga mesi di abbonamento.</span>
@@ -973,7 +974,7 @@ function Pricing() {
           {plans.map((plan, i) => (
             <FadeIn key={plan.name} delay={i * 0.08}>
               <motion.div
-                className={`relative bg-[#111118] rounded-2xl border p-7 flex flex-col h-full transition-all ${
+                className={`relative bg-[#111118] rounded-2xl border p-5 sm:p-7 flex flex-col h-full transition-all ${
                   plan.highlight
                     ? 'border-[#5c32e6] ring-1 ring-[#5c32e6]/40 shadow-2xl shadow-[#5c32e6]/10'
                     : 'border-white/8'
@@ -1049,7 +1050,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* ── HERO ── */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-10 px-6 overflow-hidden">
+      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center pt-24 pb-10 px-4 sm:px-6 overflow-hidden">
         {/* Animated background */}
         <FloatingOrb className="top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[#5c32e6]/14" delay={0} />
         <FloatingOrb className="top-10 right-10 w-72 h-72 bg-indigo-600/10" delay={2} />
@@ -1079,7 +1080,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.1 }}
-            className="text-5xl md:text-7xl lg:text-[88px] font-black tracking-tight leading-[0.95] mb-6"
+            className="text-[44px] sm:text-5xl md:text-7xl lg:text-[88px] font-black tracking-tight leading-[0.95] mb-6"
           >
             Basta preventivi
             <br />
@@ -1128,15 +1129,15 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-16 sm:mb-20"
           >
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
               <Link
                 href="/register"
-                className="flex items-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-8 py-4 rounded-2xl text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50"
+                className="flex items-center justify-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-6 sm:px-8 py-4 rounded-2xl text-sm sm:text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px] text-center"
               >
-                <Sparkles className="w-5 h-5" />
-                Crea il tuo primo preventivo in 20 secondi
+                <Sparkles className="w-5 h-5 shrink-0" />
+                <span>Crea il tuo primo preventivo in 20 secondi</span>
               </Link>
             </motion.div>
             <a
@@ -1163,7 +1164,7 @@ export default function LandingPage() {
       <Marquee />
 
       {/* ── STATS ── */}
-      <section className="py-16 px-6 bg-white/[0.01]">
+      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-white/[0.01]">
         <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
           {[
             { value: 20, suffix: 's', label: 'Dal brief al PDF professionale', icon: Zap, color: 'text-amber-400' },
@@ -1183,10 +1184,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── PROBLEMA / SOLUZIONE ── */}
-      <section className="py-28 px-6">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          <FadeIn className="text-center mb-14">
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+          <FadeIn className="text-center mb-10 sm:mb-14">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
               Ogni preventivo lento
               <br />
               <span className="bg-gradient-to-r from-red-400 to-rose-400 bg-clip-text text-transparent">è un cliente perso.</span>
@@ -1199,7 +1200,7 @@ export default function LandingPage() {
 
           {/* Speed bars comparison */}
           <FadeIn className="mb-10">
-            <div className="bg-[#111118] border border-white/6 rounded-2xl p-8 mb-5">
+            <div className="bg-[#111118] border border-white/6 rounded-2xl p-5 sm:p-8 mb-5">
               <p className="text-xs font-black text-white/30 uppercase tracking-widest mb-6">Tempo medio per creare un preventivo</p>
               <div className="space-y-5">
                 <SpeedBar label="Excel / Word" minutes={35} max={40} color="bg-gradient-to-r from-red-500/80 to-red-400/60" delay={0} />
@@ -1211,7 +1212,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-5">
             <FadeIn direction="left">
-              <div className="bg-[#111118] rounded-2xl border border-white/6 p-8 h-full">
+              <div className="bg-[#111118] rounded-2xl border border-white/6 p-5 sm:p-8 h-full">
                 <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-400 text-[11px] font-black px-3 py-1.5 rounded-full mb-7 uppercase tracking-widest">
                   ✗ Prima — con Excel
                 </div>
@@ -1234,7 +1235,7 @@ export default function LandingPage() {
             </FadeIn>
 
             <FadeIn direction="right">
-              <div className="bg-[#111118] rounded-2xl border border-[#5c32e6]/35 p-8 h-full relative overflow-hidden">
+              <div className="bg-[#111118] rounded-2xl border border-[#5c32e6]/35 p-5 sm:p-8 h-full relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-[#5c32e6]/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
                 <div className="relative z-10">
                   <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 text-[11px] font-black px-3 py-1.5 rounded-full mb-7 uppercase tracking-widest">
@@ -1263,17 +1264,17 @@ export default function LandingPage() {
       </section>
 
       {/* ── AI SECTION ── */}
-      <section id="come-funziona" className="py-28 px-6 relative overflow-hidden">
+      <section id="come-funziona" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#5c32e6]/5 via-transparent to-transparent pointer-events-none" />
         <FloatingOrb className="top-1/2 right-0 w-96 h-96 bg-[#5c32e6]/8" delay={1} />
         <div className="relative z-10 max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-14 items-center">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
             <FadeIn direction="left">
               <div className="inline-flex items-center gap-2 bg-[#5c32e6]/12 border border-[#5c32e6]/20 text-[#a78bfa] text-sm font-bold px-3 py-1.5 rounded-full mb-6">
                 <Sparkles className="w-3.5 h-3.5" />
                 AI integrata — in italiano
               </div>
-              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
                 Scrivi una frase.
                 <br />
                 <span className="text-[#a78bfa]">Il resto lo fa lui.</span>
@@ -1312,16 +1313,16 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-28 px-6 bg-white/[0.015] border-y border-white/5">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 bg-white/[0.015] border-y border-white/5">
         <div className="max-w-5xl mx-auto">
-          <FadeIn className="text-center mb-14">
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+          <FadeIn className="text-center mb-10 sm:mb-14">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
               In 4 passi, il cliente accetta
             </h2>
             <p className="text-white/35 text-base">Dal brief alla firma digitale — tutto automatico.</p>
           </FadeIn>
 
-          <div className="grid md:grid-cols-4 gap-6 relative">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 relative">
             {/* Connector line */}
             <div className="hidden md:block absolute top-7 left-[calc(12.5%+28px)] right-[calc(12.5%+28px)] h-px bg-gradient-to-r from-[#5c32e6]/30 via-[#5c32e6]/60 to-emerald-500/30" />
 
@@ -1374,15 +1375,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" className="py-28 px-6">
+      <section id="features" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          <FadeIn className="text-center mb-14">
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+          <FadeIn className="text-center mb-10 sm:mb-14">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
               Tutto quello che ti serve,<br />niente di superfluo
             </h2>
           </FadeIn>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
             {[
               {
                 icon: Sparkles, title: 'AI che lavora per te',
@@ -1453,11 +1454,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── EMAIL FLOW ── */}
-      <section id="email-flow" className="py-28 px-6 relative overflow-hidden">
+      <section id="email-flow" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/3 to-transparent pointer-events-none" />
         <FloatingOrb className="top-1/2 left-0 w-80 h-80 bg-emerald-500/6" delay={2} />
         <div className="relative z-10 max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-14 items-center">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
 
             {/* Left: demo */}
             <FadeIn direction="left">
@@ -1470,7 +1471,7 @@ export default function LandingPage() {
                 <MailCheck className="w-3.5 h-3.5" />
                 Nuova funzione — Invio automatico
               </div>
-              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
                 Invia. Il cliente
                 <br />
                 <span className="text-emerald-300">accetta. Tu vinci.</span>
@@ -1540,12 +1541,12 @@ export default function LandingPage() {
       <Pricing />
 
       {/* ── FINAL CTA ── */}
-      <section className="py-28 px-6">
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <FadeIn>
             <div className="relative text-center">
               <FloatingOrb className="inset-0 w-full h-full bg-[#5c32e6]/10 blur-3xl rounded-3xl" delay={0} />
-              <div className="relative bg-gradient-to-br from-[#5c32e6]/18 to-[#7c3aed]/8 border border-[#5c32e6]/25 rounded-3xl p-14 overflow-hidden">
+              <div className="relative bg-gradient-to-br from-[#5c32e6]/18 to-[#7c3aed]/8 border border-[#5c32e6]/25 rounded-3xl p-6 sm:p-10 md:p-14 overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#a78bfa]/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#5c32e6]/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
                 <div className="relative z-10">
@@ -1556,22 +1557,22 @@ export default function LandingPage() {
                   >
                     🚀
                   </motion.div>
-                  <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
                     Il prossimo cliente
                     <br />
                     <span className="bg-gradient-to-r from-[#a78bfa] to-[#c4b5fd] bg-clip-text text-transparent">lo chiudi tu.</span>
                   </h2>
-                  <p className="text-white/40 text-lg mb-10">
+                  <p className="text-white/40 text-base sm:text-lg mb-8 sm:mb-10">
                     Crea il tuo primo preventivo in 20 secondi. Gratis, nessuna carta.
                   </p>
-                  <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                  <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block w-full sm:w-auto">
                     <Link
                       href="/register"
-                      className="inline-flex items-center gap-3 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-10 py-5 rounded-2xl text-lg transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50"
+                      className="flex sm:inline-flex items-center justify-center gap-2 sm:gap-3 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-6 sm:px-10 py-4 sm:py-5 rounded-2xl text-sm sm:text-lg transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px]"
                     >
-                      <Sparkles className="w-5 h-5" />
-                      Crea il tuo primo preventivo in 20s
-                      <ArrowRight className="w-5 h-5" />
+                      <Sparkles className="w-5 h-5 shrink-0" />
+                      <span>Crea il tuo primo preventivo in 20s</span>
+                      <ArrowRight className="w-5 h-5 shrink-0" />
                     </Link>
                   </motion.div>
                   <p className="text-white/25 text-sm mt-5">
@@ -1585,8 +1586,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-white/5 py-10 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-white/5 py-10 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-black tracking-tight text-white/60">Preventivo</span>
             <span className="text-sm font-black tracking-tight text-[#a78bfa]">Veloce</span>
