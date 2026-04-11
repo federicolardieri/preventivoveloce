@@ -64,7 +64,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       {/* Background elements to match landing page */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5c32e6]/10 rounded-full blur-[120px] pointer-events-none" />
       <div 
@@ -79,12 +79,12 @@ function LoginForm() {
           transition={{ duration: 0.5 }}
         >
           {/* Back button */}
-          <Link href="/" className="inline-flex items-center gap-2 text-white/30 hover:text-white transition-colors mb-8 text-sm font-medium group">
+          <Link href="/" className="inline-flex items-center gap-2 text-white/30 hover:text-white transition-colors mb-6 sm:mb-8 text-sm font-medium group min-h-[44px] py-2 -mt-2">
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             Torna alla Home
           </Link>
 
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 sm:mb-10">
             <Link href="/" className="inline-block mb-8 group bg-white p-2 rounded-2xl shadow-2xl shadow-white/5 border border-white/10">
               <Image 
                 src="/logo.png" 
@@ -99,7 +99,7 @@ function LoginForm() {
           </div>
 
           {/* Card */}
-          <div className="bg-[#111118]/60 border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] relative overflow-hidden">
+          <div className="bg-[#111118]/60 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] relative overflow-hidden">
             {/* Subtle glow inside card */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#5c32e6]/10 rounded-full blur-3xl pointer-events-none" />
             
@@ -152,7 +152,7 @@ function LoginForm() {
                     <label className="block text-[11px] font-black text-white/40 uppercase tracking-widest ml-1">
                       Password
                     </label>
-                    <Link href="/forgot-password" className="text-[11px] font-bold text-[#5c32e6] hover:text-[#7c52ff] transition-colors">
+                    <Link href="/forgot-password" className="text-[11px] font-bold text-[#5c32e6] hover:text-[#7c52ff] transition-colors py-2 -my-2">
                       Dimenticata?
                     </Link>
                   </div>
