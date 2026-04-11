@@ -2,7 +2,6 @@ import '@/env';
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import CookieBanner from "@/components/CookieBanner";
-import AnalyticsProvider from "@/components/AnalyticsProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -77,7 +76,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         {children}
         <CookieBanner />
-        <AnalyticsProvider />
         <SpeedInsights />
         <Analytics />
       </body>

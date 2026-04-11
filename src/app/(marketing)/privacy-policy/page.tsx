@@ -126,7 +126,7 @@ export default function PrivacyPolicyPage() {
               ['Upstash', 'rate limiting — memorizza temporaneamente l\'indirizzo IP per prevenire abusi'],
               ['Sentry', 'monitoraggio errori applicativi — può raccogliere informazioni tecniche sul contesto in cui l\'errore si è verificato'],
               ['Google (Gemini)', 'assistente AI — i testi che inserisci nell\'assistente vengono elaborati dai modelli Gemini di Google'],
-              ['Plausible Analytics', 'statistiche di utilizzo anonime e aggregate (solo se presti il consenso ai cookie analitici)'],
+              ['Vercel Analytics', 'statistiche di utilizzo anonime e aggregate (pageview, dispositivi, paesi — nessun cookie, nessun dato personale)'],
             ].map(([label, desc]) => (
               <li key={label} className="flex gap-2">
                 <span className="text-[#a78bfa] mt-0.5">·</span>
