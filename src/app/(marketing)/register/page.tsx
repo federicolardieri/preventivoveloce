@@ -67,7 +67,7 @@ export default function RegisterPage() {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/welcome?type=register')}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -89,7 +89,7 @@ export default function RegisterPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { 
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/welcome?type=register')}` 
+        redirectTo: `${window.location.origin}/auth/callback`
       },
     });
   };
