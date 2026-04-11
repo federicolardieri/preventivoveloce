@@ -50,7 +50,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api/firma/') ||
     pathname.startsWith('/firma/') ||
     pathname.startsWith('/privacy-policy') ||
-    pathname.startsWith('/termini');
+    pathname.startsWith('/termini') ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/robots.txt';
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
