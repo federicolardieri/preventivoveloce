@@ -6,7 +6,7 @@ import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'fra
 import { Navbar } from './_components/Navbar';
 import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
-  Play, Star, Clock, Download, Palette, ChevronRight,
+  Play, Star, Clock, Download, Palette, ChevronDown, ChevronRight,
   Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
   HardHat, Code2, Briefcase, Wrench, Camera, PenTool, Eye,
 } from 'lucide-react';
@@ -15,6 +15,39 @@ import { categories } from '@/lib/category-config';
 const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-white/10 last:border-0 relative overflow-hidden group">
+      <button 
+        type="button"
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex w-full items-center justify-between py-6 min-h-[72px] text-left transition-colors"
+      >
+        <span className="text-base sm:text-lg font-bold text-white pr-4 group-hover:text-emerald-400 transition-colors">{question}</span>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${isOpen ? 'bg-[#5c32e6]/20' : 'bg-transparent group-hover:bg-white/5'}`}>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#a78bfa]' : 'text-white/40 group-hover:text-white/80'}`} />
+        </div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <p className="pb-6 text-white/50 text-base leading-relaxed max-w-3xl pr-8">
+              {answer}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function AnimatedNumber({ target, suffix = '' }: { target: number; suffix?: string }) {
   const [current, setCurrent] = useState(0);
@@ -1377,7 +1410,7 @@ export default function LandingPage() {
             </h2>
           </FadeIn>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
                 icon: Sparkles, title: 'AI che lavora per te',
@@ -1392,6 +1425,20 @@ export default function LandingPage() {
                 glow: 'hover:border-indigo-500/40 hover:shadow-indigo-500/10',
                 iconBg: 'bg-indigo-500/15', iconColor: 'text-indigo-300',
                 glowBg: 'group-hover:bg-indigo-500/5',
+              },
+              {
+                icon: PenTool, title: 'Firma Digitale',
+                desc: 'Invia il preventivo. Il cliente lo approva legalmente dallo smartphone in 1 click.',
+                glow: 'hover:border-teal-500/40 hover:shadow-teal-500/10',
+                iconBg: 'bg-teal-500/15', iconColor: 'text-teal-300',
+                glowBg: 'group-hover:bg-teal-500/5',
+              },
+              {
+                icon: Eye, title: 'Tracking Aperture',
+                desc: 'Sai il secondo esatto in cui vede l\'email. Trova il momento perfetto per il follow-up.',
+                glow: 'hover:border-cyan-500/40 hover:shadow-cyan-500/10',
+                iconBg: 'bg-cyan-500/15', iconColor: 'text-cyan-300',
+                glowBg: 'group-hover:bg-cyan-500/5',
               },
               {
                 icon: Zap, title: 'Rispondi prima degli altri',
@@ -1740,6 +1787,35 @@ export default function LandingPage() {
                 </FadeIn>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5c32e6]/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10 w-full">
+          <FadeIn className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+              Domande Frequenti
+            </h2>
+            <p className="text-white/40 text-lg sm:text-xl max-w-2xl mx-auto">
+              Tutto quello che devi sapere su Preventivo Veloce.
+            </p>
+          </FadeIn>
+
+          <div className="bg-[#111118] border border-white/6 rounded-3xl p-6 sm:p-10 shadow-2xl">
+            {[
+              { q: 'Come funziona la firma digitale da mobile?', a: 'Il cliente riceve il preventivo via email e può firmarlo legalmente direttamente dal suo smartphone tracciando la propria firma sullo schermo. La firma viene poi integrata nel PDF finale timbrato.' },
+              { q: 'Cos\'è il "Tracking apertura email"?', a: 'Quando invii un preventivo, noi tracciamo le interazioni. Appena il cliente apre la mail, tu ricevi in tempo reale sia una notifica visiva nell\'app che un riepilogo per email, per contattarlo nel momento perfetto.' },
+              { q: 'I miei clienti devono scaricare un\'app per accedere e firmare?', a: 'No, assolutamente nessuna app o registrazione richiesta! Il cliente riceve un link sicuro via email e in un click visualizza il PDF con la possibilità di approvarlo al volo.' },
+              { q: 'Posso aggiungere il mio logo aziendale?', a: 'Sì! Preventivo Veloce applica in automatico il tuo logo e il tema colore aziendale a tutti i tuoi PDF per darti un\'immagine estremamente professionale.' },
+              { q: 'Cosa succede se termino i crediti gratuiti?', a: 'Il piano gratuito include un numero fisso di preventivi gratuiti generabili ogni mese. Passando al piano PRO avrai spazio illimitato e sbloccherai l\'intero arsenale, dai template premium al tracking avanzato per i follow-up.' }
+            ].map((faq, i) => (
+              <FAQItem key={i} question={faq.q} answer={faq.a} />
+            ))}
           </div>
         </div>
       </section>
