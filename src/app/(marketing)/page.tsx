@@ -8,7 +8,9 @@ import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
   Play, Star, Clock, Download, Palette, ChevronRight,
   Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
+  HardHat, Code2, Briefcase, Wrench, Camera,
 } from 'lucide-react';
+import { categories } from '@/lib/category-config';
 
 const PAID_PLANS_ENABLED = process.env.NEXT_PUBLIC_PAID_PLANS_ENABLED === 'true';
 
@@ -1477,6 +1479,57 @@ export default function LandingPage() {
                 </div>
               </div>
             </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PER SETTORE ── */}
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#5c32e6]/12 border border-[#5c32e6]/20 text-[#a78bfa] text-sm font-bold px-3 py-1.5 rounded-full mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              Per ogni settore
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+              Preventivi per il tuo<br />settore professionale
+            </h2>
+            <p className="text-white/40 text-base max-w-xl mx-auto">
+              Che tu sia un artigiano, un freelance o una PMI — Preventivo Veloce si adatta al tuo lavoro.
+            </p>
+          </FadeIn>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {categories.map((cat, i) => {
+              const Icon = cat.icon;
+              return (
+                <FadeIn key={cat.slug} delay={i * 0.05}>
+                  <motion.a
+                    href={`/${cat.slug}`}
+                    className="group flex flex-col items-start gap-3 bg-[#111118] border border-white/6 rounded-2xl p-5 hover:border-white/14 transition-all relative overflow-hidden hover:shadow-xl"
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      style={{ background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${cat.color}08, transparent)` }}
+                    />
+                    <div
+                      className="relative w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: cat.colorMuted }}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: cat.color }} />
+                    </div>
+                    <div className="relative flex-1">
+                      <p className="text-sm font-black text-white group-hover:text-white/90">{cat.title}</p>
+                    </div>
+                    <ChevronRight
+                      className="relative w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all"
+                    />
+                  </motion.a>
+                </FadeIn>
+              );
+            })}
           </div>
         </div>
       </section>
