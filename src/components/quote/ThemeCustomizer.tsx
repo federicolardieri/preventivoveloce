@@ -13,6 +13,8 @@ export function ThemeCustomizer() {
 
   if (!currentQuote) return null;
 
+  const hasUserLogo = Boolean(currentQuote.sender?.logo);
+
   return (
     <Card className="shadow-sm border-slate-200 mt-6">
       <CardContent className="pt-6">
@@ -67,6 +69,20 @@ export function ThemeCustomizer() {
               />
             </div>
           </div>
+          {!hasUserLogo && (
+            <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+              <input
+                type="checkbox"
+                id="hideLogo"
+                checked={currentQuote.theme.hideLogo ?? false}
+                onChange={(e) => updateTheme({ hideLogo: e.target.checked })}
+                className="w-4 h-4 accent-[#5c32e6] cursor-pointer"
+              />
+              <Label htmlFor="hideLogo" className="cursor-pointer text-sm font-medium text-slate-600">
+                Nascondi logo Preventivo Veloce nel PDF
+              </Label>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
