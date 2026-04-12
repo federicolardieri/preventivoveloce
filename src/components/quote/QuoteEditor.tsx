@@ -303,7 +303,7 @@ export function QuoteEditor() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               {/* Modern Pill Tabs Navigation (cmotive style) */}
               <div className="bg-card p-1.5 md:p-2 rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border mb-6 md:mb-10 inline-flex w-full md:w-auto transition-colors">
-                <TabsList className="flex w-full justify-start gap-1 md:gap-2 bg-transparent p-0 h-11 md:h-12 rounded-full">
+                <TabsList className="flex w-full justify-start gap-1 md:gap-2 bg-transparent p-0 !h-11 md:!h-12 rounded-full">
                   <TabsTrigger
                     value="dati"
                     className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-full px-3 md:px-6 h-full uppercase tracking-wider font-bold text-[11px] md:text-[11px] text-card-foreground/60 data-[state=active]:text-primary-foreground transition-all flex-1 md:flex-initial"

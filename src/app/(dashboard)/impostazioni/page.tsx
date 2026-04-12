@@ -989,7 +989,7 @@ function ImpostazioniPageInner() {
                 }
               }}
               variant="outline"
-              className="rounded-xl font-bold border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="rounded-xl font-bold border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700 min-h-[44px]"
             >
               Elimina account e tutti i dati
             </Button>

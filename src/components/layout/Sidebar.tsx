@@ -134,7 +134,7 @@ export function Sidebar({ user }: SidebarProps) {
             </p>
             <Button
               onClick={() => { router.push('/nuovo'); setAiAssistantOpen(true); }}
-              className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 font-black text-[11px] h-9 rounded-xl shadow-lg border-b-2 border-black/10 uppercase tracking-wider"
+              className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:opacity-90 font-black text-[11px] h-11 md:h-9 rounded-xl shadow-lg border-b-2 border-black/10 uppercase tracking-wider"
             >
               Genera con AI ✨
             </Button>
@@ -258,7 +258,7 @@ export function Sidebar({ user }: SidebarProps) {
             <Link
               href="/impostazioni"
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-[11px] font-black uppercase tracking-wider group/set",
+                "flex items-center gap-2 px-3 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg transition-all text-[11px] font-black uppercase tracking-wider group/set",
                 pathname === "/impostazioni" ? "text-sidebar-foreground bg-sidebar-foreground/10" : "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-foreground/5"
               )}
             >
@@ -268,7 +268,7 @@ export function Sidebar({ user }: SidebarProps) {
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-[11px] font-black uppercase tracking-wider text-sidebar-foreground/40 hover:text-rose-400 hover:bg-rose-400/5"
+              className="flex items-center gap-2 px-3 py-3 md:py-2 min-h-[44px] md:min-h-0 rounded-lg transition-all text-[11px] font-black uppercase tracking-wider text-sidebar-foreground/40 hover:text-rose-400 hover:bg-rose-400/5"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Esci</span>
