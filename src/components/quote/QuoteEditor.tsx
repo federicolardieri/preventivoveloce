@@ -274,33 +274,65 @@ export function QuoteEditor() {
                 </div>
               </div>
             </div>
-            {/* AI Magic Banner - Simplified trigger for Virtual Assistant */}
-            <div className="bg-gradient-to-r from-[#5c32e6] to-[#7c3aed] rounded-2xl md:rounded-[32px] p-5 md:p-10 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group mb-8 md:mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl -mr-32 -mt-32 group-hover:scale-110 transition-transform duration-700" />
-              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-8">
-                <div className="flex items-start gap-3 md:gap-6">
-                  <div className="w-10 h-10 md:w-16 md:h-16 rounded-2xl md:rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner flex-shrink-0">
-                    <Sparkles className="w-5 h-5 md:w-9 md:h-9 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg md:text-3xl font-black leading-tight mb-1 md:mb-2">Genera in meno di 20 secondi ✨</h3>
-                    <p className="text-white/80 text-sm md:text-lg font-medium max-w-xl">
-                      Usa il nostro Agente Virtuale per compilare tutto automaticamente parlando o scrivendo in chat.
-                    </p>
+            {/* Guide Section */}
+            <div className="mb-8 md:mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
+              <h2 className="text-lg md:text-xl font-black text-foreground/80 mb-4 tracking-tight">Come vuoi procedere?</h2>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                {/* AI Option */}
+                <div 
+                  className="bg-gradient-to-br from-[#5c32e6] to-[#7c3aed] rounded-2xl md:rounded-3xl p-5 md:p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group cursor-pointer transition-transform hover:-translate-y-1" 
+                  onClick={() => setAiAssistantOpen(true)}
+                >
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-700" />
+                  <div className="relative z-10 flex flex-col h-full justify-between">
+                    <div>
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner mb-5">
+                        <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-white" />
+                      </div>
+                      <h3 className="text-xl md:text-2xl font-black mb-2 leading-tight">Usa l'Agente AI ✨</h3>
+                      <p className="text-white/85 text-sm md:text-base font-medium mb-6 leading-relaxed">
+                        Il metodo più veloce. Scrivi o dettaci il lavoro: l'intelligenza artificiale capirà e compilerà tutti i campi (voci, prezzi, dati) per te in 20 secondi.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); setAiAssistantOpen(true); }}
+                      className="w-full bg-white text-[#5c32e6] hover:bg-slate-50 font-black rounded-xl md:rounded-2xl h-12 md:h-14 shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] text-sm md:text-base"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                      Avvia Assistente Veloce
+                    </Button>
                   </div>
                 </div>
 
-                <Button
-                  onClick={() => setAiAssistantOpen(true)}
-                  className="bg-white text-[#5c32e6] hover:bg-slate-50 font-black rounded-2xl h-11 md:h-16 px-6 md:px-10 text-base md:text-xl shadow-lg flex items-center gap-3 transition-all hover:scale-[1.05] flex-shrink-0"
+                {/* Manual Option */}
+                <div 
+                  className="bg-card rounded-2xl md:rounded-3xl p-5 md:p-8 border-2 border-border hover:border-primary/30 transition-all shadow-sm relative group cursor-pointer flex flex-col justify-between" 
+                  onClick={() => document.getElementById('tabs-navigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
-                  <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
-                  Inizia ora
-                </Button>
+                  <div className="relative z-10">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
+                      <FileText className="w-6 h-6 md:w-7 md:h-7 text-primary" />
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-black text-foreground mb-2 leading-tight">Compila Manualmente</h3>
+                    <p className="text-muted-foreground text-sm md:text-base font-medium mb-6 leading-relaxed">
+                      Il metodo classico. Segui le tre schede in basso per inserire in autonomia tutti i dettagli del preventivo passo dopo passo.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 md:gap-3 w-full bg-muted/40 p-3 md:p-4 rounded-xl border border-muted">
+                     <span className="text-[10px] md:text-xs font-black bg-background border border-border shadow-sm px-2 md:px-3 py-1.5 rounded-lg text-foreground">1. DATI</span>
+                     <span className="text-muted-foreground/40 text-[10px] md:text-xs">→</span>
+                     <span className="text-[10px] md:text-xs font-black bg-background border border-border shadow-sm px-2 md:px-3 py-1.5 rounded-lg text-foreground">2. VOCI</span>
+                     <span className="text-muted-foreground/40 text-[10px] md:text-xs">→</span>
+                     <span className="text-[10px] md:text-xs font-black bg-background border border-border shadow-sm px-2 md:px-3 py-1.5 rounded-lg text-foreground">3. RIEPILOGO</span>
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div id="tabs-navigation" className="scroll-mt-8">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               {/* Modern Pill Tabs Navigation (cmotive style) */}
               <div className="bg-card p-1.5 md:p-2 rounded-full shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-border mb-6 md:mb-10 inline-flex w-full md:w-auto transition-colors">
                 <TabsList className="flex w-full justify-start gap-1 md:gap-2 bg-transparent p-0 !h-11 md:!h-12 rounded-full">
@@ -519,6 +551,7 @@ export function QuoteEditor() {
                 </div>
               </TabsContent>
             </Tabs>
+            </div>
           </div>
         </div>
 

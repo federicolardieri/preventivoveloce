@@ -206,9 +206,10 @@ function SpeedBar({ label, minutes, max, color, delay }: {
 
 function DashboardMockup() {
   return (
-    <div className="relative w-full max-w-4xl mx-auto origin-top scale-[0.78] sm:scale-90 md:scale-100 -mb-[18%] sm:-mb-[8%] md:mb-0">
-      <div className="absolute -inset-6 bg-[#5c32e6]/18 rounded-3xl blur-3xl" />
-      <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-[0_40px_140px_-20px_rgba(0,0,0,0.9)]">
+    <div className="w-full h-[200px] sm:h-[300px] md:h-[400px] relative overflow-hidden pointer-events-none sm:pointer-events-auto">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] sm:w-[800px] md:w-[860px] origin-top scale-[0.5] sm:scale-[0.8] md:scale-100">
+        <div className="absolute -inset-6 bg-[#5c32e6]/18 rounded-3xl blur-3xl opacity-50 sm:opacity-100" />
+        <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-[0_40px_140px_-20px_rgba(0,0,0,0.9)]">
         {/* Browser bar */}
         <div className="h-9 bg-[#0d0d14] border-b border-white/5 flex items-center px-4 gap-2">
           <div className="flex gap-1.5">
@@ -303,6 +304,7 @@ function DashboardMockup() {
               ))}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -1134,10 +1136,11 @@ export default function LandingPage() {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
               <Link
                 href="/register"
-                className="flex items-center justify-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-5 sm:px-8 py-4 rounded-2xl text-[13px] sm:text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px] text-center"
+                className="flex items-center justify-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-4 sm:px-8 py-4 rounded-2xl text-[13px] sm:text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px] text-center"
               >
                 <Sparkles className="w-5 h-5 shrink-0" />
-                <span className="text-center">Crea il tuo primo preventivo in 20 secondi</span>
+                <span className="text-center whitespace-normal leading-tight hidden sm:inline">Crea il tuo primo preventivo in 20 secondi</span>
+                <span className="text-center whitespace-normal leading-tight sm:hidden">Crea preventivo in 20 secondi</span>
               </Link>
             </motion.div>
             <a
@@ -1151,9 +1154,10 @@ export default function LandingPage() {
 
           {/* Mockup */}
           <motion.div
-            initial={{ opacity: 0, y: 70, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full"
           >
             <DashboardMockup />
           </motion.div>
