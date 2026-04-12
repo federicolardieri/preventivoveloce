@@ -148,7 +148,7 @@ export function LineItemsTable() {
                         placeholder="Descrivi il servizio o prodotto..."
                         className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium pl-4 pr-24 text-base shadow-sm w-full transition-all"
                       />
-                      <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1">
+                      <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1 z-10">
                         <Button
                           type="button"
                           variant="ghost" 
@@ -162,7 +162,7 @@ export function LineItemsTable() {
                           ) : (
                             <Sparkles className="h-3 w-3" />
                           )}
-                          <span className="hidden xs:inline">Migliora</span>
+                          <span className="hidden sm:inline">Migliora</span>
                         </Button>
                       </div>
                     </div>
