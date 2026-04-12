@@ -63,6 +63,24 @@ export const PDFHeader = ({ quote }: { quote: Quote }) => {
     clientBlock: { marginTop: 20, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#e2e8f0' },
     clientLabel: { fontSize: 10, fontFamily: bold, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 },
     clientName: { fontSize: 14, fontFamily: bold, color: textColor, marginBottom: 4 },
+    // Fixed badge "ACCETTATO" visibile in alto a destra su ogni pagina
+    fixedBadge: {
+      position: 'absolute' as const,
+      top: -12,
+      right: 0,
+      backgroundColor: '#f0fdf4',
+      borderWidth: 1,
+      borderColor: '#22c55e',
+      borderRadius: 3,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    fixedBadgeText: {
+      fontSize: 7,
+      fontFamily: bold,
+      color: '#16a34a',
+      letterSpacing: 0.5,
+    },
   });
 
   // Con logoPosition='right': colonna sinistra ha titolo+cliente, colonna destra ha logo+mittente
@@ -120,13 +138,21 @@ export const PDFHeader = ({ quote }: { quote: Quote }) => {
   );
 
   return (
-    <View style={styles.headerRow}>
-      <View style={styles.leftColumn}>
-        {isLogoRight ? titleClientContent : senderContent}
+    <>
+      {/* Fixed badge on every page — shows "ACCETTATO" in top-right corner */}
+      {quote.acceptanceStamp && (
+        <View fixed style={styles.fixedBadge}>
+          <Text style={styles.fixedBadgeText}>ACCETTATO</Text>
+        </View>
+      )}
+      <View style={styles.headerRow}>
+        <View style={styles.leftColumn}>
+          {isLogoRight ? titleClientContent : senderContent}
+        </View>
+        <View style={styles.rightColumn}>
+          {isLogoRight ? senderContent : titleClientContent}
+        </View>
       </View>
-      <View style={styles.rightColumn}>
-        {isLogoRight ? senderContent : titleClientContent}
-      </View>
-    </View>
+    </>
   );
 };

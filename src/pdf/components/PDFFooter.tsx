@@ -125,12 +125,12 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
     },
     // Acceptance stamp
     stampContainer: {
-      marginTop: 16,
+      marginTop: 12,
       alignSelf: 'flex-end' as const,
       borderWidth: 2,
       borderColor: '#22c55e',
       backgroundColor: '#f0fdf4',
-      padding: 10,
+      padding: 8,
       width: 170,
     },
     stampTitle: {
@@ -149,24 +149,6 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
       fontSize: 8,
       fontFamily: font,
       color: '#4ade80',
-    },
-    // Fixed badge "ACCETTATO" visibile in alto a destra su ogni pagina
-    fixedBadge: {
-      position: 'absolute' as const,
-      top: 12,
-      right: 12,
-      backgroundColor: '#f0fdf4',
-      borderWidth: 1,
-      borderColor: '#22c55e',
-      borderRadius: 3,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-    },
-    fixedBadgeText: {
-      fontSize: 7,
-      fontFamily: bold,
-      color: '#16a34a',
-      letterSpacing: 0.5,
     },
     signatureImage: {
       width: 150,
@@ -257,13 +239,6 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
         </View>
       )}
     </View>
-
-    {/* Fixed badge on every page — shows "ACCETTATO" in top-right corner */}
-    {quote.acceptanceStamp && (
-      <View fixed style={signatureStyles.fixedBadge}>
-        <Text style={signatureStyles.fixedBadgeText}>ACCETTATO</Text>
-      </View>
-    )}
     </>
   );
 };
