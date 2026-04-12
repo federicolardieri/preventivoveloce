@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { categories } from '@/lib/category-config';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ilpreventivoveloce.it';
 
@@ -40,5 +41,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
+    ...categories.map(cat => ({
+      url: `${siteUrl}/${cat.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
   ];
 }
