@@ -323,7 +323,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
           </ScrollArea>
 
           {/* ── Right: live PDF preview ── */}
-          <div className="flex-1 bg-slate-100 p-8 min-w-0 flex items-center justify-center overflow-hidden">
+          <div className="flex-1 bg-slate-100 p-8 min-w-0 flex items-start justify-center overflow-y-auto w-full">
             <QuotePreview compact />
           </div>
         </div>

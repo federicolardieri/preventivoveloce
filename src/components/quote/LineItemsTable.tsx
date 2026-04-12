@@ -111,9 +111,9 @@ export function LineItemsTable() {
                 </div>
 
                 {/* Grid Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Descrizione */}
-                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-12">
+                  <div className="sm:col-span-2">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Descrizione
                     </Label>
@@ -126,7 +126,7 @@ export function LineItemsTable() {
                   </div>
 
                   {/* Quantità */}
-                  <div className="xl:col-span-3">
+                  <div className="col-span-1">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Quantità
                     </Label>
@@ -141,7 +141,7 @@ export function LineItemsTable() {
                   </div>
 
                   {/* Prezzo Unit. */}
-                  <div className="xl:col-span-3">
+                  <div className="col-span-1">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Prezzo Unit. ({getCurrencySymbol(currentQuote.currency)})
                     </Label>
@@ -156,7 +156,7 @@ export function LineItemsTable() {
                   </div>
 
                   {/* Sconto */}
-                  <div className="xl:col-span-4">
+                  <div className="col-span-1">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Sconto
                     </Label>
@@ -191,7 +191,7 @@ export function LineItemsTable() {
                   </div>
 
                   {/* IVA */}
-                  <div className="xl:col-span-2">
+                  <div className="col-span-1">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       IVA
                     </Label>
@@ -214,7 +214,7 @@ export function LineItemsTable() {
 
                 {/* Colonne personalizzate */}
                 {customCols.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-4 gap-4 mt-5 pt-5 border-t border-border/50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 mt-5 pt-5 border-t border-border/50">
                     {customCols.map(col => (
                       <div key={col.id}>
                         <div className="flex items-center justify-between mb-1.5">

@@ -272,7 +272,7 @@ export function TemplateSelector({ variant = "full" }: TemplateSelectorProps) {
   if (variant === "mini") {
     return (
       <>
-        <div className="flex flex-col items-center gap-6 py-6 w-full h-full custom-scrollbar">
+        <div className="flex flex-col items-center gap-6 py-6 w-full custom-scrollbar">
           <div className="flex flex-col items-center gap-2 mb-2">
             <Button
               variant="ghost"
