@@ -27,6 +27,7 @@ export default function FirmaPage() {
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [wantsToSign, setWantsToSign] = useState(false);
 
   useEffect(() => {
     fetch(`/api/firma/${token}`)
@@ -45,14 +46,14 @@ export default function FirmaPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const handleAccept = async () => {
-    if (!signatureData) return;
+  const handleAccept = async (withSignature: boolean) => {
+    if (withSignature && !signatureData) return;
     setAccepting(true);
     try {
       const res = await fetch(`/api/firma/${token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatureData }),
+        body: JSON.stringify(withSignature && signatureData ? { signatureData } : {}),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -66,6 +67,8 @@ export default function FirmaPage() {
       setAccepting(false);
     }
   };
+
+  const didSign = wantsToSign && signatureData;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
@@ -140,12 +143,14 @@ export default function FirmaPage() {
                 >
                   <CheckCircle2 className="w-10 h-10 text-emerald-400" />
                 </motion.div>
-                <h2 className="text-2xl font-black mb-2">Accettato e Firmato!</h2>
+                <h2 className="text-2xl font-black mb-2">
+                  {didSign ? 'Accettato e Firmato!' : 'Accettato!'}
+                </h2>
                 <p className="text-white/55 text-sm leading-relaxed mb-4">
-                  Hai accettato e firmato il preventivo <strong className="text-white/80">{info?.quoteNumber}</strong>.
+                  Hai accettato il preventivo <strong className="text-white/80">{info?.quoteNumber}</strong>.
                 </p>
                 <p className="text-white/40 text-xs leading-relaxed">
-                  Riceverai una email di conferma con il documento timbrato e la tua firma.
+                  Riceverai una email di conferma con il documento timbrato{didSign ? ' e la tua firma' : ''}.
                   {info?.senderName && <> <strong className="text-white/60">{info.senderName}</strong> riceverà una notifica.</>}
                 </p>
               </motion.div>
@@ -178,33 +183,81 @@ export default function FirmaPage() {
                   </div>
                 </div>
 
-                {/* Signature Pad */}
-                <div className="mb-5 sm:mb-6">
-                  <SignaturePad onSignatureChange={setSignatureData} />
-                </div>
+                {/* Signature toggle */}
+                {!wantsToSign ? (
+                  <div className="mb-5 sm:mb-6">
+                    <button
+                      type="button"
+                      onClick={() => setWantsToSign(true)}
+                      className="w-full flex items-center gap-3 bg-white/[0.03] border border-dashed border-white/10 rounded-2xl p-4 hover:border-[#5c32e6]/30 hover:bg-[#5c32e6]/[0.03] transition-all group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#5c32e6]/10 border border-[#5c32e6]/15 flex items-center justify-center shrink-0 group-hover:bg-[#5c32e6]/15 transition-colors">
+                        <PenTool className="w-5 h-5 text-[#a78bfa]" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white/70 group-hover:text-white/90 transition-colors">Vuoi firmare il preventivo?</p>
+                        <p className="text-[11px] text-white/35">Opzionale — clicca per aggiungere la firma autografa al documento</p>
+                      </div>
+                    </button>
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-5 sm:mb-6"
+                  >
+                    <SignaturePad onSignatureChange={setSignatureData} />
+                    <button
+                      type="button"
+                      onClick={() => { setWantsToSign(false); setSignatureData(null); }}
+                      className="mt-2 text-[11px] text-white/30 hover:text-white/50 transition-colors"
+                    >
+                      ← Procedi senza firma
+                    </button>
+                  </motion.div>
+                )}
 
                 <p className="text-[10px] sm:text-xs text-white/30 text-center leading-relaxed mb-5 sm:mb-6">
-                  Il preventivo è allegato all'email che hai ricevuto.
-                  Firmando e cliccando &quot;Accetta e Firma&quot; confermi di aver letto e approvato il documento.
-                  L'accettazione sarà registrata con data, ora, firma e indirizzo IP.
+                  Il preventivo è allegato all&apos;email che hai ricevuto.
+                  Cliccando il pulsante confermi di aver letto e approvato il documento.
+                  L&apos;accettazione sarà registrata con data, ora{wantsToSign && signatureData ? ', firma' : ''} e indirizzo IP.
                 </p>
 
-                <button
-                  onClick={handleAccept}
-                  disabled={accepting || !signatureData}
-                  className={`w-full h-14 rounded-xl font-extrabold text-sm sm:text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl ${
-                    signatureData
-                      ? 'bg-[#5c32e6] text-white hover:bg-[#4f2bcc] shadow-[#5c32e6]/25'
-                      : 'bg-white/5 text-white/25 cursor-not-allowed shadow-none border border-white/10'
-                  }`}
-                >
-                  {accepting ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <PenTool className="w-5 h-5" />
-                  )}
-                  {accepting ? 'Registrazione…' : signatureData ? 'Accetta e Firma' : 'Firma sopra per procedere'}
-                </button>
+                {/* CTAs */}
+                {wantsToSign ? (
+                  /* Firma + Accetta */
+                  <button
+                    onClick={() => handleAccept(true)}
+                    disabled={accepting || !signatureData}
+                    className={`w-full h-14 rounded-xl font-extrabold text-sm sm:text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl ${
+                      signatureData
+                        ? 'bg-[#5c32e6] text-white hover:bg-[#4f2bcc] shadow-[#5c32e6]/25'
+                        : 'bg-white/5 text-white/25 cursor-not-allowed shadow-none border border-white/10'
+                    }`}
+                  >
+                    {accepting ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <PenTool className="w-5 h-5" />
+                    )}
+                    {accepting ? 'Registrazione…' : signatureData ? 'Accetta e Firma' : 'Firma sopra per procedere'}
+                  </button>
+                ) : (
+                  /* Solo Accetta */
+                  <button
+                    onClick={() => handleAccept(false)}
+                    disabled={accepting}
+                    className="w-full h-14 rounded-xl bg-[#5c32e6] text-white font-extrabold text-sm sm:text-base hover:bg-[#4f2bcc] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-xl shadow-[#5c32e6]/25"
+                  >
+                    {accepting ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5" />
+                    )}
+                    {accepting ? 'Registrazione…' : 'Accetto il preventivo'}
+                  </button>
+                )}
               </motion.div>
             )}
 

@@ -7,12 +7,21 @@ interface SignaturePadProps {
   onSignatureChange: (dataUrl: string | null) => void;
 }
 
+const INK_COLOR = "#1e293b";
+
 export function SignaturePad({ onSignatureChange }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const lastPos = useRef<{ x: number; y: number } | null>(null);
+
+  const applyStyle = (ctx: CanvasRenderingContext2D) => {
+    ctx.strokeStyle = INK_COLOR;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  };
 
   // Resize canvas to match container width (retina-aware)
   const resizeCanvas = useCallback(() => {
@@ -47,11 +56,7 @@ export function SignaturePad({ onSignatureChange }: SignaturePadProps) {
       ctx.restore();
     }
 
-    // Set drawing style
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    applyStyle(ctx);
   }, [hasDrawn]);
 
   useEffect(() => {
@@ -126,10 +131,7 @@ export function SignaturePad({ onSignatureChange }: SignaturePadProps) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    applyStyle(ctx);
 
     setHasDrawn(false);
     onSignatureChange(null);
@@ -150,15 +152,23 @@ export function SignaturePad({ onSignatureChange }: SignaturePadProps) {
         </div>
       </div>
 
-      {/* Canvas container */}
+      {/* Canvas container — light background like a real signature pad */}
       <div
         ref={containerRef}
-        className="relative rounded-2xl border-2 border-dashed border-white/15 bg-white/[0.03] overflow-hidden transition-colors"
-        style={isDrawing ? { borderColor: "rgba(167, 139, 250, 0.4)" } : {}}
+        className="relative rounded-2xl border-2 overflow-hidden transition-colors"
+        style={{
+          borderColor: isDrawing
+            ? "rgba(167, 139, 250, 0.4)"
+            : "rgba(255,255,255,0.12)",
+          borderStyle: "dashed",
+        }}
       >
+        {/* White paper background for visibility on dark page + correct PDF export */}
+        <div className="absolute inset-0 bg-white/95 rounded-2xl" />
+
         <canvas
           ref={canvasRef}
-          className="touch-none cursor-crosshair w-full"
+          className="relative touch-none cursor-crosshair w-full"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
@@ -171,14 +181,14 @@ export function SignaturePad({ onSignatureChange }: SignaturePadProps) {
         {/* Placeholder text when empty */}
         {!hasDrawn && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-white/15 text-sm font-medium select-none">
+            <p className="text-gray-300 text-sm font-medium select-none">
               Disegna la tua firma qui
             </p>
           </div>
         )}
 
         {/* Baseline */}
-        <div className="absolute bottom-10 left-6 right-6 border-b border-white/10 pointer-events-none" />
+        <div className="absolute bottom-10 left-6 right-6 border-b border-gray-200 pointer-events-none" />
       </div>
 
       {/* Clear button */}
