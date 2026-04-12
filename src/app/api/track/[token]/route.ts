@@ -31,8 +31,8 @@ export async function GET(
     },
   });
 
-  // Fire-and-forget: record the open event
-  recordOpen(token).catch((err) => logError('track-open', err));
+  // Await the tracking logic so Vercel doesn't kill the function early
+  await recordOpen(token).catch((err) => logError('track-open', err));
 
   return pixelResponse;
 }

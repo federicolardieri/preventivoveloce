@@ -230,7 +230,11 @@ export async function POST(req: NextRequest) {
     const fileName = `Preventivo-${quoteRow.number}.pdf`;
 
     // Derive tracking URL from acceptUrl token
-    const trackUrl = `${SITE_URL}/api/track/${token}`;
+    // Email clients drop 307 redirects for images, we must ensure 'www.' is used in production
+    const trackBaseUrl = SITE_URL.includes('https://ilpreventivoveloce.it') 
+      ? 'https://www.ilpreventivoveloce.it' 
+      : SITE_URL;
+    const trackUrl = `${trackBaseUrl}/api/track/${token}`;
 
     // Invia email al cliente
     const { error: emailErr } = await resend.emails.send({
