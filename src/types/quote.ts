@@ -60,6 +60,7 @@ export interface QuoteAttachment {
 export interface AcceptanceStamp {
   clientName: string;
   acceptedAt: string; // ISO string
+  signatureImage?: string; // Base64 PNG della firma autografa
 }
 
 export interface Quote {

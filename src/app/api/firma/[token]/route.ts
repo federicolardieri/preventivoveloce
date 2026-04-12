@@ -12,6 +12,13 @@ import { logError } from '@/lib/logger';
 
 const tokenSchema = z.string().regex(/^[0-9a-f]{64}$/, 'Token non valido');
 
+const acceptBodySchema = z.object({
+  signatureData: z.string()
+    .max(500_000, 'Firma troppo grande')
+    .refine(s => s.startsWith('data:image/png;base64,'), 'Firma in formato non valido')
+    .optional(),
+});
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@ilpreventivoveloce.it';
 
@@ -205,6 +212,16 @@ export async function POST(
   }
   const token = tokenResult.data;
 
+  // Parse body (signature)
+  let signatureData: string | undefined;
+  try {
+    const body = await req.json().catch(() => ({}));
+    const parsed = acceptBodySchema.safeParse(body);
+    if (parsed.success) {
+      signatureData = parsed.data.signatureData;
+    }
+  } catch { /* body opzionale per retrocompatibilità */ }
+
   // Rate limit per IP: max 10/min
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     || req.headers.get('x-real-ip')
@@ -236,10 +253,14 @@ export async function POST(
 
   const acceptedAt = new Date();
 
-  // Registra accettazione
+  // Registra accettazione + firma
   await admin
     .from('quote_tokens')
-    .update({ accepted_at: acceptedAt.toISOString(), accepted_ip: ip })
+    .update({
+      accepted_at: acceptedAt.toISOString(),
+      accepted_ip: ip,
+      ...(signatureData ? { signature_data: signatureData } : {}),
+    })
     .eq('token', token);
 
   // Aggiorna status preventivo
@@ -272,7 +293,7 @@ export async function POST(
     currency: (quoteRow.currency as Quote['currency']) ?? 'EUR',
     itemCustomColumns: (quoteRow.item_custom_columns as Quote['itemCustomColumns']) ?? [],
     attachments: (quoteRow.attachments as Quote['attachments']) ?? [],
-    acceptanceStamp: { clientName, acceptedAt: acceptedAt.toISOString() },
+    acceptanceStamp: { clientName, acceptedAt: acceptedAt.toISOString(), signatureImage: signatureData },
     createdAt: String(quoteRow.created_at),
     updatedAt: String(quoteRow.updated_at),
   };

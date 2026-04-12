@@ -8,7 +8,7 @@ import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
   Play, Star, Clock, Download, Palette, ChevronRight,
   Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
-  HardHat, Code2, Briefcase, Wrench, Camera,
+  HardHat, Code2, Briefcase, Wrench, Camera, PenTool,
 } from 'lucide-react';
 import { categories } from '@/lib/category-config';
 
@@ -79,6 +79,7 @@ const MARQUEE_ITEMS = [
   { icon: Download, text: 'PDF da inviare subito' },
   { icon: Mail, text: 'Invio email diretto al cliente' },
   { icon: MailCheck, text: 'Accettazione in un click' },
+  { icon: PenTool, text: 'Firma digitale da mobile' },
   { icon: Bell, text: 'Notifica quando accetta' },
   { icon: Users, text: 'Storico clienti completo' },
 ];
@@ -600,7 +601,7 @@ function EmailFlowDemo() {
               </motion.div>
             )}
 
-            {/* Phase 2 — Pagina di accettazione */}
+            {/* Phase 2 — Pagina di accettazione con firma */}
             {phase === 2 && (
               <motion.div key="p2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
                 <div className="bg-[#0a0a0f] rounded-xl border border-white/10 overflow-hidden">
@@ -627,20 +628,41 @@ function EmailFlowDemo() {
                         <span className="text-white/40">Importo</span>
                         <span className="text-white/70 font-semibold">€8.534</span>
                       </div>
-                      <div className="flex justify-between text-[9px]">
-                        <span className="text-white/40">Validità</span>
-                        <span className="text-white/70 font-semibold">30 giorni</span>
+                    </div>
+                    {/* Firma pad demo */}
+                    <div className="w-full">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <div className="w-5 h-5 rounded-md bg-[#5c32e6]/15 flex items-center justify-center">
+                          <PenTool className="w-2.5 h-2.5 text-[#a78bfa]" />
+                        </div>
+                        <span className="text-[9px] font-bold text-white/50">Firma qui sotto</span>
+                      </div>
+                      <div className="relative w-full h-12 rounded-lg border border-dashed border-white/15 bg-white/[0.02] overflow-hidden">
+                        {/* Animated signature line */}
+                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 48" preserveAspectRatio="none">
+                          <motion.path
+                            d="M 20 30 C 30 10, 40 40, 55 25 S 75 35, 90 20 S 110 30, 125 15 S 145 25, 160 20 S 175 30, 185 22"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: phaseProgress > 0.2 ? 1 : 0, opacity: phaseProgress > 0.2 ? 0.8 : 0 }}
+                            transition={{ duration: 1.5, ease: 'easeOut' }}
+                          />
+                        </svg>
+                        <div className="absolute bottom-2 left-4 right-4 border-b border-white/8" />
                       </div>
                     </div>
                     <motion.button
-                      animate={phaseProgress > 0.5 ? { scale: [1, 1.05, 1], boxShadow: ['0 0 0 0 rgba(92,50,230,0)', '0 0 0 10px rgba(92,50,230,0.3)', '0 0 0 0 rgba(92,50,230,0)'] } : {}}
+                      animate={phaseProgress > 0.6 ? { scale: [1, 1.05, 1], boxShadow: ['0 0 0 0 rgba(92,50,230,0)', '0 0 0 10px rgba(92,50,230,0.3)', '0 0 0 0 rgba(92,50,230,0)'] } : {}}
                       transition={{ duration: 1.2, repeat: Infinity }}
-                      className="w-full bg-[#5c32e6] rounded-lg py-2.5 text-white text-[11px] font-black flex items-center justify-center gap-1.5"
+                      className="w-full bg-[#5c32e6] rounded-lg py-2 text-white text-[11px] font-black flex items-center justify-center gap-1.5"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      Accetto il preventivo
+                      <PenTool className="w-3 h-3" />
+                      Accetta e Firma
                     </motion.button>
-                    <p className="text-[7px] text-white/25 leading-relaxed">L'accettazione viene registrata con data, ora e IP. Nessun account richiesto.</p>
+                    <p className="text-[7px] text-white/25 leading-relaxed">La firma digitale, data, ora e IP vengono registrati e inseriti nel PDF timbrato.</p>
                   </div>
                 </div>
               </motion.div>
@@ -1476,6 +1498,165 @@ export default function LandingPage() {
                 <div>
                   <p className="text-sm font-black text-white/80">Dal primo invio all'accettazione</p>
                   <p className="text-xs text-white/40">I preventivi inviati via email vengono accettati in media <span className="text-emerald-400 font-black">7 minuti</span> dopo l'apertura.</p>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FIRMA DIGITALE ── */}
+      <section className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden border-y border-white/5 bg-white/[0.01]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#5c32e6]/3 to-transparent pointer-events-none" />
+        <FloatingOrb className="top-1/3 right-10 w-72 h-72 bg-[#5c32e6]/6" delay={3} />
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
+
+            {/* Left: copy */}
+            <FadeIn direction="left">
+              <div className="inline-flex items-center gap-2 bg-[#5c32e6]/12 border border-[#5c32e6]/20 text-[#a78bfa] text-sm font-bold px-3 py-1.5 rounded-full mb-6">
+                <PenTool className="w-3.5 h-3.5" />
+                Nuova funzione — Firma Digitale
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+                Firmato col dito.
+                <br />
+                <span className="text-[#a78bfa]">Valido per legge.</span>
+              </h2>
+              <p className="text-white/45 text-base leading-relaxed mb-8">
+                Il tuo cliente riceve il preventivo via email, lo apre dal telefono,{' '}
+                <span className="text-white/75 font-semibold">disegna la firma col dito</span>{' '}
+                e clicca &quot;Accetta e Firma&quot;. La firma viene inserita nel PDF timbrato — che ricevi istantaneamente nella tua inbox.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {[
+                  {
+                    icon: PenTool,
+                    color: 'bg-[#5c32e6]/15 text-[#a78bfa]',
+                    title: 'Firma con il dito o il mouse',
+                    desc: 'Un canvas touch-friendly: funziona su iPhone, Android, tablet e desktop.',
+                  },
+                  {
+                    icon: FileText,
+                    color: 'bg-emerald-500/15 text-emerald-300',
+                    title: 'PDF con firma autografa',
+                    desc: 'La firma del cliente viene stampata direttamente nel PDF timbrato "ACCETTATO".',
+                  },
+                  {
+                    icon: Shield,
+                    color: 'bg-amber-500/15 text-amber-300',
+                    title: 'Registrazione legale completa',
+                    desc: 'Data, ora, indirizzo IP e firma autografa — tutto tracciato e allegato al documento.',
+                  },
+                ].map(({ icon: Icon, color, title, desc }) => (
+                  <motion.div
+                    key={title}
+                    className="flex items-start gap-3"
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white/80 mb-0.5">{title}</p>
+                      <p className="text-sm text-white/40 leading-relaxed">{desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </FadeIn>
+
+            {/* Right: interactive demo */}
+            <FadeIn delay={0.15} direction="right">
+              <div className="relative">
+                <div className="absolute -inset-3 bg-[#5c32e6]/8 rounded-3xl blur-3xl" />
+                <div className="relative bg-[#0a0a0f] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                  {/* Browser bar */}
+                  <div className="h-8 bg-[#0d0d14] border-b border-white/5 flex items-center px-3 gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-[#ff5f57]" />
+                      <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                      <div className="w-2 h-2 rounded-full bg-[#28c840]" />
+                    </div>
+                    <div className="flex-1 bg-[#1a1a24] rounded h-4 flex items-center px-2 ml-2">
+                      <span className="text-[7px] text-white/20">ilpreventivoveloce.it/firma/...</span>
+                    </div>
+                  </div>
+
+                  <div className="p-5 sm:p-6 space-y-4">
+                    {/* Header */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#5c32e6]/15 border border-[#5c32e6]/20 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-[#a78bfa]" />
+                      </div>
+                      <div>
+                        <p className="text-[8px] text-white/30 uppercase tracking-widest font-black">Preventivo</p>
+                        <p className="text-sm font-black text-white">PRV-2026-042</p>
+                        <p className="text-[10px] text-white/40">da <span className="text-white/60 font-semibold">Studio Ferretti</span></p>
+                      </div>
+                    </div>
+
+                    {/* Info box */}
+                    <div className="bg-white/5 rounded-xl border border-white/8 p-3 space-y-1.5">
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-white/35">Destinatario</span>
+                        <span className="text-white/70 font-semibold">Laura Bianchi</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-white/35">Importo</span>
+                        <span className="text-white/70 font-semibold">€4.250,00</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-white/35">Validità</span>
+                        <span className="text-white/70 font-semibold">30 giorni</span>
+                      </div>
+                    </div>
+
+                    {/* Signature pad */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#5c32e6]/15 border border-[#5c32e6]/20 flex items-center justify-center">
+                          <PenTool className="w-3 h-3 text-[#a78bfa]" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-white/70">Firma qui sotto</p>
+                          <p className="text-[8px] text-white/30">Usa il dito o il mouse</p>
+                        </div>
+                      </div>
+                      <div className="relative w-full h-20 rounded-xl border-2 border-dashed border-white/15 bg-white/[0.02] overflow-hidden">
+                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 300 80" preserveAspectRatio="none">
+                          <motion.path
+                            d="M 30 50 C 45 20, 60 55, 80 35 S 110 50, 135 30 S 165 45, 185 25 S 210 40, 230 30 Q 245 25, 260 35"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            whileInView={{ pathLength: 1, opacity: 0.85 }}
+                            transition={{ duration: 2, ease: 'easeOut' }}
+                            viewport={{ once: false }}
+                          />
+                        </svg>
+                        <div className="absolute bottom-3 left-5 right-5 border-b border-white/8" />
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <motion.button
+                      className="w-full bg-[#5c32e6] rounded-xl py-3 text-white text-[12px] font-black flex items-center justify-center gap-2 shadow-lg shadow-[#5c32e6]/30"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <PenTool className="w-4 h-4" />
+                      Accetta e Firma
+                    </motion.button>
+
+                    <p className="text-[8px] text-white/20 text-center leading-relaxed">
+                      Firma, data, ora e IP registrati nel documento timbrato
+                    </p>
+                  </div>
                 </div>
               </div>
             </FadeIn>

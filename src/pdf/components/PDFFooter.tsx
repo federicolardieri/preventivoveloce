@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from '@react-pdf/renderer';
+import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
 import { Quote, FontFamily } from '@/types/quote';
 import { calculateTotals } from '@/lib/utils';
 
@@ -168,6 +168,12 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
       color: '#16a34a',
       letterSpacing: 0.5,
     },
+    signatureImage: {
+      width: 150,
+      height: 55,
+      objectFit: 'contain' as const,
+      marginBottom: 4,
+    },
   });
 
   return (
@@ -227,6 +233,13 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
         </View>
         <View style={signatureStyles.signatureBox}>
           <Text style={signatureStyles.signatureLabel}>Timbro e Firma Cliente</Text>
+          {/* Firma autografa digitale */}
+          {quote.acceptanceStamp?.signatureImage && (
+            <Image
+              src={quote.acceptanceStamp.signatureImage}
+              style={signatureStyles.signatureImage}
+            />
+          )}
           <View style={signatureStyles.signatureLine} />
           <Text style={signatureStyles.signatureSubLabel}>Data: _______________</Text>
         </View>
