@@ -28,20 +28,23 @@ export function QuotePreview({
   // Render PDF pages to canvas images using pdfjs-dist
   const renderPdfToImages = useCallback(async (url: string) => {
     try {
-      // Use legacy build for Safari/iOS compatibility (Map.getOrInsertComputed)
-      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      // Use legacy build on mobile for Safari/iOS compatibility (Map.getOrInsertComputed)
+      // Standard build on desktop for best performance
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
 
-      // Set the worker source to legacy copy
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.legacy.min.mjs`;
+      const pdfjsLib = isMobile
+        ? await import("pdfjs-dist/legacy/build/pdf.mjs")
+        : await import("pdfjs-dist");
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = isMobile
+        ? `/pdf.worker.legacy.min.mjs`
+        : `/pdf.worker.min.mjs`;
 
       const loadingTask = pdfjsLib.getDocument(url);
       const pdf = await loadingTask.promise;
       setTotalPages(pdf.numPages);
 
       const images: string[] = [];
-
-      // Use lower scale on mobile to avoid iOS canvas memory limits
-      const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
       const scale = isMobile ? 1.5 : 2;
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
