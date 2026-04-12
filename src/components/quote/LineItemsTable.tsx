@@ -138,34 +138,32 @@ export function LineItemsTable() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Descrizione */}
                   <div className="sm:col-span-2">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
-                      Descrizione
-                    </Label>
-                    <div className="relative group/desc">
-                      <Input
-                        value={item.description}
-                        onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
-                        placeholder="Descrivi il servizio o prodotto..."
-                        className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium pl-4 pr-24 text-base shadow-sm w-full transition-all"
-                      />
-                      <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1 z-10">
-                        <Button
-                          type="button"
-                          variant="ghost" 
-                          size="sm"
-                          disabled={improvingId === item.id || !item.description || item.description.length < 3}
-                          onClick={() => handleImproveCopy(item.id, item.description)}
-                          className="h-8 rounded-lg text-[10px] font-black uppercase tracking-tighter bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5 px-2.5 transition-all shadow-sm"
-                        >
-                          {improvingId === item.id ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-3 w-3" />
-                          )}
-                          <span className="hidden sm:inline">Migliora</span>
-                        </Button>
-                      </div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                        Descrizione
+                      </Label>
+                      <Button
+                        type="button"
+                        variant="secondary" 
+                        size="sm"
+                        disabled={improvingId === item.id || !item.description || item.description.trim().length < 3}
+                        onClick={() => handleImproveCopy(item.id, item.description)}
+                        className="h-6 rounded-lg text-[9px] font-black uppercase tracking-tighter bg-[#5c32e6]/10 text-[#5c32e6] hover:bg-[#5c32e6] hover:text-white flex items-center gap-1 px-2 transition-all"
+                      >
+                        {improvingId === item.id ? (
+                          <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-2.5 w-2.5" />
+                        )}
+                        Migliora con AI
+                      </Button>
                     </div>
+                    <Input
+                      value={item.description}
+                      onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
+                      placeholder="Descrivi il servizio o prodotto..."
+                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium px-4 text-base shadow-sm w-full transition-all"
+                    />
                   </div>
 
                   {/* Quantità */}
