@@ -11,7 +11,9 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const SYSTEM_PROMPT = `Sei un assistente per la compilazione di preventivi professionali italiani.
 L'utente descrive i dati in linguaggio naturale, tu li estrai e restituisci SOLO un JSON valido.
 
-FORMATO RISPOSTA OBBLIGATORIO (nessun testo fuori dal JSON):
+Hai 3 azioni disponibili:
+
+═══ 1. AGGIUNGERE/COMPILARE DATI ═══
 {
   "action": "fill_quote",
   "message": "Breve risposta amichevole (max 2 frasi)",
@@ -54,15 +56,52 @@ FORMATO RISPOSTA OBBLIGATORIO (nessun testo fuori dal JSON):
   }
 }
 
+═══ 2. MODIFICARE VOCI ESISTENTI ═══
+Quando l'utente vuole cambiare prezzo, quantità, descrizione o altri campi di una voce già inserita.
+Usa l'indice della voce (partendo da 0) dal contesto QUOTE_ITEMS fornito.
+{
+  "action": "update_items",
+  "message": "Breve risposta amichevole",
+  "updates": [
+    {
+      "index": 0,
+      "fields": {
+        "description": "nuova descrizione",
+        "quantity": 2,
+        "unitPrice": 15000,
+        "discount": 10,
+        "discountType": "percentage",
+        "vatRate": 22
+      }
+    }
+  ]
+}
+Includi in "fields" SOLO i campi da modificare, ometti quelli che restano invariati.
+
+═══ 3. RIMUOVERE VOCI ═══
+Quando l'utente vuole eliminare una o più voci dal preventivo.
+Usa l'indice della voce (partendo da 0) dal contesto QUOTE_ITEMS fornito.
+{
+  "action": "remove_items",
+  "message": "Breve risposta amichevole",
+  "indices": [0, 2]
+}
+
+═══ CHAT GENERICA ═══
+Se l'utente saluta o fa domande generiche:
+{"action":"chat","message":"la tua risposta"}
+
 REGOLE CRITICHE:
 1. Usa ESATTAMENTE questi nomi di campo: name, address, city, postalCode, country, vatNumber, email, phone
 2. NON usare: company, vat, cap, indirizzo, piva o qualsiasi altro nome alternativo
 3. unitPrice è in CENTESIMI interi (€100 = 10000, €1500 = 150000, €80,50 = 8050)
 4. vatRate deve essere SOLO uno di questi numeri: 0, 4, 10, 22
 5. Includi SOLO le sezioni menzionate dall'utente (ometti client se non citato, ecc.)
-6. Se l'utente saluta o fa domande generiche: {"action":"chat","message":"la tua risposta"}
-7. Non inventare dati non menzionati
-8. Rispondi sempre in italiano`;
+6. Non inventare dati non menzionati
+7. Rispondi sempre in italiano
+8. Per update_items e remove_items, usa SEMPRE l'indice numerico dalla lista QUOTE_ITEMS
+9. Se l'utente dice "rimuovi la seconda voce" → indice 1 (partendo da 0)
+10. Se non riesci a individuare la voce giusta, chiedi chiarimenti`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -84,13 +123,20 @@ export async function POST(req: NextRequest) {
         text: z.string().max(5000),
       })).max(50).default([]),
       quoteId: z.string().uuid().optional(),
+      currentItems: z.array(z.object({
+        description: z.string(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        vatRate: z.number(),
+        discount: z.number().optional(),
+      })).max(100).default([]),
     });
 
     const parsed = aiSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Input non valido' }, { status: 400 });
     }
-    const { message, history, quoteId } = parsed.data;
+    const { message, history, quoteId, currentItems } = parsed.data;
 
     // ── Controllo quota + rate limit ─────────────────────────────────────────
     const quota = quoteId !== undefined ? await checkQuota(quoteId) : null;
@@ -117,9 +163,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Costruisce la cronologia per il contesto multi-turno
+    // Inietta le voci correnti come contesto per l'AI
+    let contextPrefix = '';
+    if (currentItems.length > 0) {
+      const itemsList = currentItems.map((item, i) =>
+        `  [${i}] "${item.description}" — qty: ${item.quantity}, prezzo: €${(item.unitPrice / 100).toFixed(2)}, IVA: ${item.vatRate}%${item.discount ? `, sconto: ${item.discount}%` : ''}`
+      ).join('\n');
+      contextPrefix = `QUOTE_ITEMS (voci attualmente nel preventivo):\n${itemsList}\n\nRICHIESTA UTENTE: `;
+    }
+
     const contents = [
       ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
-      { role: 'user' as const, parts: [{ text: message }] },
+      { role: 'user' as const, parts: [{ text: contextPrefix + message }] },
     ];
 
     const response = await ai.models.generateContent({

@@ -34,6 +34,23 @@ interface AiFields {
   }[];
 }
 
+interface AiUpdateItem {
+  index: number;
+  fields: Partial<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    discount: number;
+    discountType: 'percentage' | 'fixed';
+    vatRate: number;
+  }>;
+}
+
+type PendingAction =
+  | { type: 'fill'; fields: AiFields }
+  | { type: 'update'; updates: AiUpdateItem[] }
+  | { type: 'remove'; indices: number[] };
+
 const VALID_VAT_RATES: VatRate[] = [0, 4, 10, 22];
 
 function sanitizeVat(v: unknown): VatRate {
@@ -51,11 +68,11 @@ export function AIAssistant() {
       text: 'Ciao! Descrivimi i dati del preventivo e li compilo per te. Ad esempio: "Il cliente è Mario Rossi di Acme SRL, P.IVA 01234567890, vuole 3 giorni di consulenza a €500 al giorno + IVA 22%"',
     },
   ]);
-  const [pendingFields, setPendingFields] = useState<AiFields | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { updateClient, updateSender, updateDetails, addItem, currentQuote, setCurrentQuote } = useQuoteStore();
+  const { updateClient, updateSender, updateDetails, addItem, removeItem, updateItem, currentQuote, setCurrentQuote } = useQuoteStore();
 
   // Watch for external prompts (Magic Box)
   useEffect(() => {
@@ -110,36 +127,61 @@ export function AIAssistant() {
     text: m.text,
   }));
 
-  const applyFields = (fields: AiFields) => {
-    if (fields.client && Object.keys(fields.client).length > 0) {
-      updateClient(fields.client as Parameters<typeof updateClient>[0]);
-    }
-    if (fields.sender && Object.keys(fields.sender).length > 0) {
-      updateSender(fields.sender as Parameters<typeof updateSender>[0]);
-    }
-    if (fields.details) {
-      const d = fields.details;
-      updateDetails({
-        ...(d.notes !== undefined && { notes: d.notes }),
-        ...(d.paymentTerms !== undefined && { paymentTerms: d.paymentTerms }),
-        ...(d.validityDays !== undefined && { validityDays: d.validityDays }),
+  const applyAction = (action: PendingAction) => {
+    if (action.type === 'fill') {
+      const fields = action.fields;
+      if (fields.client && Object.keys(fields.client).length > 0) {
+        updateClient(fields.client as Parameters<typeof updateClient>[0]);
+      }
+      if (fields.sender && Object.keys(fields.sender).length > 0) {
+        updateSender(fields.sender as Parameters<typeof updateSender>[0]);
+      }
+      if (fields.details) {
+        const d = fields.details;
+        updateDetails({
+          ...(d.notes !== undefined && { notes: d.notes }),
+          ...(d.paymentTerms !== undefined && { paymentTerms: d.paymentTerms }),
+          ...(d.validityDays !== undefined && { validityDays: d.validityDays }),
+        });
+      }
+      if (fields.items && fields.items.length > 0) {
+        fields.items.forEach(item => {
+          const newItem: QuoteItem = {
+            id: crypto.randomUUID(),
+            description: item.description ?? '',
+            quantity: Number(item.quantity) || 1,
+            unitPrice: Math.round(Number(item.unitPrice)) || 0,
+            discount: Number(item.discount) || 0,
+            discountType: item.discountType === 'fixed' ? 'fixed' : 'percentage',
+            vatRate: sanitizeVat(item.vatRate),
+          };
+          addItem(newItem);
+        });
+      }
+    } else if (action.type === 'update') {
+      const items = currentQuote?.items ?? [];
+      action.updates.forEach(upd => {
+        const item = items[upd.index];
+        if (!item) return;
+        const sanitized: Partial<QuoteItem> = {};
+        if (upd.fields.description !== undefined) sanitized.description = upd.fields.description;
+        if (upd.fields.quantity !== undefined) sanitized.quantity = Number(upd.fields.quantity) || 1;
+        if (upd.fields.unitPrice !== undefined) sanitized.unitPrice = Math.round(Number(upd.fields.unitPrice)) || 0;
+        if (upd.fields.discount !== undefined) sanitized.discount = Number(upd.fields.discount) || 0;
+        if (upd.fields.discountType !== undefined) sanitized.discountType = upd.fields.discountType === 'fixed' ? 'fixed' : 'percentage';
+        if (upd.fields.vatRate !== undefined) sanitized.vatRate = sanitizeVat(upd.fields.vatRate);
+        updateItem(item.id, sanitized);
+      });
+    } else if (action.type === 'remove') {
+      const items = currentQuote?.items ?? [];
+      // Rimuovi dal fondo per non spostare gli indici
+      const sortedIndices = [...action.indices].sort((a, b) => b - a);
+      sortedIndices.forEach(idx => {
+        const item = items[idx];
+        if (item) removeItem(item.id);
       });
     }
-    if (fields.items && fields.items.length > 0) {
-      fields.items.forEach(item => {
-        const newItem: QuoteItem = {
-          id: crypto.randomUUID(),
-          description: item.description ?? '',
-          quantity: Number(item.quantity) || 1,
-          unitPrice: Math.round(Number(item.unitPrice)) || 0,
-          discount: Number(item.discount) || 0,
-          discountType: item.discountType === 'fixed' ? 'fixed' : 'percentage',
-          vatRate: sanitizeVat(item.vatRate),
-        };
-        addItem(newItem);
-      });
-    }
-    setPendingFields(null);
+    setPendingAction(null);
   };
 
   const handleSend = async (overrideText?: string) => {
@@ -150,13 +192,21 @@ export function AIAssistant() {
     setMessages(prev => [...prev, userMsg]);
     if (!overrideText) setInput('');
     setLoading(true);
-    setPendingFields(null);
+    setPendingAction(null);
 
     try {
+      const currentItems = (currentQuote?.items ?? []).map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        vatRate: item.vatRate,
+        discount: item.discount ?? 0,
+      }));
+
       const res = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: historyForApi, quoteId: currentQuote?.id }),
+        body: JSON.stringify({ message: text, history: historyForApi, quoteId: currentQuote?.id, currentItems }),
       });
 
       if (res.status === 403 || res.status === 429) {
@@ -174,16 +224,18 @@ export function AIAssistant() {
       const data = await res.json();
       const replyText: string = data.message ?? 'Ho elaborato le informazioni.';
 
+      setMessages(prev => [...prev, { role: 'assistant', text: replyText }]);
+
       if (data.action === 'fill_quote' && data.fields) {
         const fields = data.fields as AiFields;
         const hasData = fields.client || fields.sender || fields.details || (fields.items?.length ?? 0) > 0;
-
-        setMessages(prev => [...prev, { role: 'assistant', text: replyText }]);
         if (hasData) {
-          setPendingFields(fields);
+          setPendingAction({ type: 'fill', fields });
         }
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', text: replyText }]);
+      } else if (data.action === 'update_items' && Array.isArray(data.updates)) {
+        setPendingAction({ type: 'update', updates: data.updates as AiUpdateItem[] });
+      } else if (data.action === 'remove_items' && Array.isArray(data.indices)) {
+        setPendingAction({ type: 'remove', indices: data.indices as number[] });
       }
     } catch {
       setMessages(prev => [...prev, {
@@ -195,14 +247,31 @@ export function AIAssistant() {
     }
   };
 
-  const summarizeFields = (fields: AiFields): string => {
-    const parts: string[] = [];
-    if (fields.client?.name) parts.push(`Cliente: ${fields.client.name}`);
-    if (fields.sender?.name) parts.push(`Mittente: ${fields.sender.name}`);
-    if (fields.items?.length) parts.push(`${fields.items.length} voce/i`);
-    if (fields.details?.notes) parts.push('Note');
-    if (fields.details?.paymentTerms) parts.push('Termini pagamento');
-    return parts.join(' · ') || 'dati';
+  const summarizeAction = (action: PendingAction): string => {
+    if (action.type === 'fill') {
+      const fields = action.fields;
+      const parts: string[] = [];
+      if (fields.client?.name) parts.push(`Cliente: ${fields.client.name}`);
+      if (fields.sender?.name) parts.push(`Mittente: ${fields.sender.name}`);
+      if (fields.items?.length) parts.push(`${fields.items.length} voce/i`);
+      if (fields.details?.notes) parts.push('Note');
+      if (fields.details?.paymentTerms) parts.push('Termini pagamento');
+      return parts.join(' · ') || 'dati';
+    } else if (action.type === 'update') {
+      const items = currentQuote?.items ?? [];
+      const descs = action.updates.map(u => {
+        const item = items[u.index];
+        return item ? `"${item.description.slice(0, 30)}"` : `voce #${u.index + 1}`;
+      });
+      return `Modifica: ${descs.join(', ')}`;
+    } else {
+      const items = currentQuote?.items ?? [];
+      const descs = action.indices.map(i => {
+        const item = items[i];
+        return item ? `"${item.description.slice(0, 30)}"` : `voce #${i + 1}`;
+      });
+      return `Rimuovi: ${descs.join(', ')}`;
+    }
   };
 
   return (
@@ -303,27 +372,44 @@ export function AIAssistant() {
             )}
 
             {/* Confirm card */}
-            {pendingFields && !loading && (
-              <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 shadow-xl shadow-primary/5 mx-4 mb-4">
-                <p className="text-xs font-black text-primary uppercase tracking-wider mb-2">
-                  Pronto a compilare ✨
+            {pendingAction && !loading && (
+              <div className={cn(
+                "border rounded-2xl p-4 shadow-xl mx-4 mb-4",
+                pendingAction.type === 'remove'
+                  ? "bg-red-500/10 border-red-500/20 shadow-red-500/5"
+                  : pendingAction.type === 'update'
+                    ? "bg-amber-500/10 border-amber-500/20 shadow-amber-500/5"
+                    : "bg-primary/10 border-primary/20 shadow-primary/5"
+              )}>
+                <p className={cn(
+                  "text-xs font-black uppercase tracking-wider mb-2",
+                  pendingAction.type === 'remove' ? "text-red-500" : pendingAction.type === 'update' ? "text-amber-500" : "text-primary"
+                )}>
+                  {pendingAction.type === 'remove' ? 'Rimuovere voci' : pendingAction.type === 'update' ? 'Modificare voci' : 'Pronto a compilare'} ✨
                 </p>
                 <p className="text-xs font-bold text-card-foreground/80 mb-4 leading-tight">
-                  {summarizeFields(pendingFields)}
+                  {summarizeAction(pendingAction)}
                 </p>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs h-9 font-black shadow-lg shadow-primary/20"
-                    onClick={() => applyFields(pendingFields)}
+                    className={cn(
+                      "flex-1 rounded-xl text-xs h-9 font-black shadow-lg",
+                      pendingAction.type === 'remove'
+                        ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
+                        : pendingAction.type === 'update'
+                          ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                          : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+                    )}
+                    onClick={() => applyAction(pendingAction)}
                   >
-                    ✓ Applica
+                    {pendingAction.type === 'remove' ? '✕ Rimuovi' : pendingAction.type === 'update' ? '✎ Modifica' : '✓ Applica'}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     className="flex-1 rounded-xl text-xs h-9 border-border bg-background hover:bg-muted font-bold"
-                    onClick={() => setPendingFields(null)}
+                    onClick={() => setPendingAction(null)}
                   >
                     Annulla
                   </Button>

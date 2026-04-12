@@ -17,7 +17,7 @@ export function QuotePreview({
   const { currentQuote } = useQuoteStore();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | false>(false);
   const [pageImages, setPageImages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -70,7 +70,7 @@ export function QuotePreview({
       setCurrentPage(0);
     } catch (err) {
       console.error("PDF render error:", err);
-      setError(true);
+      setError(err instanceof Error ? `Render: ${err.message}` : 'Errore rendering PDF');
     }
   }, []);
 
@@ -100,14 +100,18 @@ export function QuotePreview({
         });
 
         if (!response.ok) {
+          const errBody = await response.text().catch(() => '');
           if (attempt < 2) {
             await new Promise(r => setTimeout(r, 1000));
             return fetchPdf(attempt + 1);
           }
-          throw new Error("Failed to generate PDF");
+          throw new Error(`PDF ${response.status}: ${errBody.slice(0, 200)}`);
         }
 
         const blob = await response.blob();
+        if (blob.size === 0) {
+          throw new Error('PDF vuoto ricevuto dal server');
+        }
         const url = URL.createObjectURL(blob);
 
         // Clean up previous blob URL
@@ -120,8 +124,8 @@ export function QuotePreview({
       try {
         await fetchPdf(0);
       } catch (err) {
-        console.error(err);
-        setError(true);
+        console.error('QuotePreview fetch error:', err);
+        setError(err instanceof Error ? err.message : 'Errore sconosciuto');
       } finally {
         setLoading(false);
       }
@@ -190,8 +194,8 @@ export function QuotePreview({
           <div className="flex-1 flex flex-col items-center justify-center text-red-400 p-4 sm:p-8 text-center relative z-10">
             <AlertCircle className="w-10 h-10 sm:w-16 sm:h-16 mb-3 sm:mb-4 opacity-50" />
             <p className="font-bold text-base sm:text-lg">Errore Generazione PDF</p>
-            <p className="text-xs sm:text-sm text-white/40 mt-2">
-              Controlla i dati inseriti e riprova.
+            <p className="text-xs sm:text-sm text-white/40 mt-2 max-w-[280px] break-words">
+              {typeof error === 'string' ? error : 'Controlla i dati inseriti e riprova.'}
             </p>
             <button
               onClick={() => {
