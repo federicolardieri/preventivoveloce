@@ -100,10 +100,10 @@ export function SenderForm() {
   return (
     <Card className="shadow-sm border-border bg-card transition-colors">
       <CardHeader>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <CardTitle className="text-lg font-bold text-card-foreground tracking-tight">Dati Mittente</CardTitle>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {sender.name.trim() && !isAlreadySaved && (
               <Button
                 type="button"
@@ -215,16 +215,16 @@ export function SenderForm() {
           <div className="pt-4 mt-2 border-t border-border space-y-4 font-bold text-sm">
             <h4 className="text-sm font-bold text-card-foreground">Campi Personalizzati</h4>
             {sender.customFields?.map(field => (
-              <div key={field.id} className="flex gap-4 items-end animate-in fade-in">
-                <div className="space-y-2 flex-1">
+              <div key={field.id} className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-end animate-in fade-in">
+                <div className="space-y-2 flex-1 min-w-0">
                   <Label>Nome Campo</Label>
                   <Input value={field.label} onChange={e => updateCustomField(field.id, 'label', e.target.value)} placeholder="Es. Codice Ufficio" />
                 </div>
-                <div className="space-y-2 flex-1">
+                <div className="space-y-2 flex-1 min-w-0">
                   <Label>Valore</Label>
                   <Input value={field.value} onChange={e => updateCustomField(field.id, 'value', e.target.value)} placeholder="Es. AB123" />
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => removeCustomField(field.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 mb-0.5">
+                <Button variant="ghost" size="icon" onClick={() => removeCustomField(field.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 self-end sm:mb-0.5 h-11 w-11 shrink-0">
                   <X className="h-4 w-4" />
                 </Button>
               </div>

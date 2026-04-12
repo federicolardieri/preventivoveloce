@@ -124,22 +124,22 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
       {/* Welcome Banner */}
-      <div className="bg-[#5c32e6] rounded-2xl p-6 md:px-10 md:py-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+      <div className="bg-[#5c32e6] rounded-2xl p-5 sm:p-6 md:px-10 md:py-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-400 opacity-20 rounded-full blur-3xl -ml-10 -mb-10" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Smetti di compilare, inizia a vendere 🚀</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight mb-2">Smetti di compilare, inizia a vendere 🚀</h1>
             <p className="text-white/80 text-sm md:text-lg max-w-xl leading-relaxed">
               Scrivi cosa ti serve e l'Agente AI genererà il tuo preventivo <strong className="text-white">in meno di 20 secondi</strong>. Senza errori, senza fatica.
             </p>
           </div>
-          <Button 
+          <Button
             onClick={() => { setAiAssistantOpen(true); router.push('/nuovo'); }}
-            className="bg-white text-[#5c32e6] hover:bg-slate-50 font-black rounded-2xl px-8 h-14 shadow-2xl flex-shrink-0 text-lg gap-2 transition-transform hover:-translate-y-1"
+            className="bg-white text-[#5c32e6] hover:bg-slate-50 font-black rounded-2xl px-6 sm:px-8 h-12 sm:h-14 shadow-2xl flex-shrink-0 text-base sm:text-lg gap-2 transition-transform hover:-translate-y-1 w-full md:w-auto"
           >
             <Sparkles className="w-5 h-5" />
             ✨ Genera con AI
@@ -224,10 +224,8 @@ export default function DashboardHome() {
                   <h2 className="text-base font-bold text-card-foreground">Bozze da completare</h2>
                   <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{draftList.length}</span>
                 </div>
-                <Link href="/preventivi">
-                  <button className="text-xs text-primary hover:text-primary/80 font-semibold flex items-center gap-1">
+                <Link href="/preventivi" className="text-xs text-primary hover:text-primary/80 font-semibold flex items-center gap-1 min-h-[44px] py-2">
                     Vedi tutte <ArrowRight className="w-3 h-3" />
-                  </button>
                 </Link>
               </div>
               <div className="space-y-3">
@@ -275,7 +273,7 @@ export default function DashboardHome() {
                 Ultimi Preventivi
               </h2>
               <Link href="/preventivi">
-                <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 text-sm font-semibold rounded-xl h-8">
+                <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 text-sm font-semibold rounded-xl h-11 sm:h-8">
                   Vedi tutti →
                 </Button>
               </Link>
@@ -354,7 +352,7 @@ export default function DashboardHome() {
               </div>
               <p className="text-sm font-semibold text-slate-500">Nessun preventivo ancora</p>
               <Link href="/nuovo" className="mt-3">
-                <Button size="sm" className="bg-[#5c32e6] rounded-xl text-xs font-bold">
+                <Button size="sm" className="bg-[#5c32e6] rounded-xl text-xs font-bold min-h-[44px] sm:min-h-0">
                   <Plus className="w-3 h-3 mr-1" /> Crea il primo
                 </Button>
               </Link>
