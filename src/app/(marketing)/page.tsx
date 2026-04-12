@@ -553,7 +553,29 @@ function EmailFlowDemo() {
             {/* Phase 1 — Inbox del cliente */}
             {phase === 1 && (
               <motion.div key="p1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                <div className="bg-[#f1f5f9] rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                <div className="relative bg-[#f1f5f9] rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                  
+                  {/* Tracking notification popup (simulates sender's receive notice) */}
+                  <AnimatePresence>
+                    {phaseProgress > 0.35 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        className="absolute bottom-3 right-3 bg-[#0d0d14] rounded-xl shadow-2xl border border-white/10 p-2.5 flex gap-2.5 items-center z-50 max-w-[160px]"
+                      >
+                        <div className="w-7 h-7 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 flex-shrink-0">
+                          <Eye className="w-3.5 h-3.5 text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-black text-white leading-tight mb-0.5 truncate">Ha aperto l'email!</p>
+                          <p className="text-[8px] text-emerald-400 font-bold">Notifica ricevuta ✓</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* inbox topbar */}
                   <div className="bg-gray-200 px-3 py-1.5 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-gray-400" />
