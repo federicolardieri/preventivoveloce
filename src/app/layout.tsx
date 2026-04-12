@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | Preventivo Veloce",
   },
   description:
-    "Genera preventivi professionali in 20 secondi con l'AI. Generatore di preventivi online gratuito: template PDF, IVA automatica, storico clienti. Il modo più veloce per creare preventivi.",
+    "Genera preventivi professionali in 20 secondi con l'AI. Generatore di preventivi online gratuito: invio automatico ai clienti, template PDF, IVA automatica e storico. Il modo più veloce per creare preventivi.",
   keywords: [
     "generatore preventivo",
     "generatore preventivi",
@@ -50,13 +50,13 @@ export const metadata: Metadata = {
     siteName: "Preventivo Veloce",
     title: "Preventivo Veloce — Generatore di Preventivi Online Gratis con AI",
     description:
-      "Genera preventivi professionali in 20 secondi con l'AI. Template PDF, IVA automatica, storico clienti. Gratis, nessuna carta richiesta.",
+      "Genera preventivi professionali in 20 secondi con l'AI. Invio automatico ai clienti, template PDF, IVA automatica e storico. Gratis, nessuna carta richiesta.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Preventivo Veloce — Generatore di Preventivi Online con AI",
     description:
-      "Crea preventivi professionali in 20 secondi con l'AI. Gratis, nessuna carta richiesta.",
+      "Crea e invia preventivi in automatico ai clienti in 20 secondi con l'AI. Gratis, nessuna carta richiesta.",
   },
   alternates: {
     canonical: siteUrl,
