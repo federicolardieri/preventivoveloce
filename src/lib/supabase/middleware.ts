@@ -48,6 +48,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api/account/on-deleted') ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/firma/') ||
+    pathname.startsWith('/api/track/') ||
     pathname.startsWith('/firma/') ||
     pathname.startsWith('/privacy-policy') ||
     pathname.startsWith('/termini') ||
