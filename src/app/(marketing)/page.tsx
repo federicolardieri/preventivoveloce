@@ -1066,7 +1066,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-[#5c32e6]/12 border border-[#5c32e6]/25 text-[#a78bfa] text-sm font-semibold px-4 py-2 rounded-full mb-10"
+            className="inline-flex items-center gap-2 bg-[#5c32e6]/12 border border-[#5c32e6]/25 text-[#a78bfa] text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-full mb-10"
           >
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}>
               <Sparkles className="w-3.5 h-3.5" />
@@ -1080,7 +1080,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.1 }}
-            className="text-[44px] sm:text-5xl md:text-7xl lg:text-[88px] font-black tracking-tight leading-[0.95] mb-6"
+            className="text-[32px] sm:text-5xl md:text-7xl lg:text-[88px] font-black tracking-tight leading-[0.95] mb-6"
           >
             Basta preventivi
             <br />
@@ -1117,7 +1117,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.25 }}
-            className="text-lg md:text-xl text-white/45 max-w-2xl mx-auto leading-relaxed mb-10"
+            className="text-base sm:text-lg md:text-xl text-white/45 max-w-2xl mx-auto leading-relaxed mb-10 px-2 sm:px-0"
           >
             Descrivi il lavoro in una frase.{' '}
             <span className="text-white/80 font-semibold">Lui crea voci, prezzi, IVA e PDF professionale</span>{' '}
@@ -1134,10 +1134,10 @@ export default function LandingPage() {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
               <Link
                 href="/register"
-                className="flex items-center justify-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-6 sm:px-8 py-4 rounded-2xl text-sm sm:text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px] text-center"
+                className="flex items-center justify-center gap-2.5 bg-[#5c32e6] hover:bg-[#4f2bcc] text-white font-bold px-5 sm:px-8 py-4 rounded-2xl text-[13px] sm:text-base transition-all shadow-2xl shadow-[#5c32e6]/30 hover:shadow-[#5c32e6]/50 min-h-[52px] text-center"
               >
                 <Sparkles className="w-5 h-5 shrink-0" />
-                <span>Crea il tuo primo preventivo in 20 secondi</span>
+                <span className="text-center">Crea il tuo primo preventivo in 20 secondi</span>
               </Link>
             </motion.div>
             <a

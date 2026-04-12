@@ -21,6 +21,7 @@ export function QuotePreview({
   const [pageImages, setPageImages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -28,7 +29,7 @@ export function QuotePreview({
   const renderPdfToImages = useCallback(async (url: string) => {
     try {
       const pdfjsLib = await import("pdfjs-dist");
-      
+
       // Set the worker source to local copy
       pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
@@ -37,21 +38,32 @@ export function QuotePreview({
       setTotalPages(pdf.numPages);
 
       const images: string[] = [];
-      
+
+      // Use lower scale on mobile to avoid iOS canvas memory limits
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+      const scale = isMobile ? 1.5 : 2;
+
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
-        
-        // Scale for crisp rendering (2x for retina)
-        const scale = 2;
         const viewport = page.getViewport({ scale });
 
         const canvas = document.createElement("canvas");
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d")!;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          console.error("Failed to get canvas context for page", pageNum);
+          continue;
+        }
 
         await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-        images.push(canvas.toDataURL("image/png"));
+        // Use JPEG on mobile for lower memory footprint
+        images.push(isMobile ? canvas.toDataURL("image/jpeg", 0.92) : canvas.toDataURL("image/png"));
+
+        // Release canvas memory immediately
+        canvas.width = 0;
+        canvas.height = 0;
       }
 
       setPageImages(images);
@@ -119,7 +131,7 @@ export function QuotePreview({
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuote, mode]);
+  }, [currentQuote, mode, retryCount]);
 
   const goToPrevPage = () => setCurrentPage((p) => Math.max(0, p - 1));
   const goToNextPage = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
@@ -175,12 +187,23 @@ export function QuotePreview({
         )}
 
         {error ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-red-400 p-8 text-center relative z-10">
-            <AlertCircle className="w-16 h-16 mb-4 opacity-50" />
-            <p className="font-bold text-lg">Errore Generazione PDF</p>
-            <p className="text-sm text-white/40 mt-2">
+          <div className="flex-1 flex flex-col items-center justify-center text-red-400 p-4 sm:p-8 text-center relative z-10">
+            <AlertCircle className="w-10 h-10 sm:w-16 sm:h-16 mb-3 sm:mb-4 opacity-50" />
+            <p className="font-bold text-base sm:text-lg">Errore Generazione PDF</p>
+            <p className="text-xs sm:text-sm text-white/40 mt-2">
               Controlla i dati inseriti e riprova.
             </p>
+            <button
+              onClick={() => {
+                setError(false);
+                setPageImages([]);
+                setPdfUrl(null);
+                setRetryCount(c => c + 1);
+              }}
+              className="mt-4 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              Riprova
+            </button>
           </div>
         ) : pageImages.length > 0 ? (
           <>
