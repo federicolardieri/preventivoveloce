@@ -41,7 +41,7 @@ vi.mock('@/lib/quota', () => ({
 }));
 
 vi.mock('@/pdf/generatePDF', () => ({
-  generatePDF: vi.fn().mockResolvedValue(
+  generatePDF: vi.fn().mockImplementation(async () =>
     (async function* () {
       yield Buffer.from('%PDF-1.4 fake pdf content');
     })()

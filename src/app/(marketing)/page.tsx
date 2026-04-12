@@ -1504,12 +1504,12 @@ export default function LandingPage() {
               const Icon = cat.icon;
               return (
                 <FadeIn key={cat.slug} delay={i * 0.05}>
-                  <motion.a
-                    href={`/${cat.slug}`}
-                    className="group flex flex-col items-start gap-3 bg-[#111118] border border-white/6 rounded-2xl p-5 hover:border-white/14 transition-all relative overflow-hidden hover:shadow-xl"
+                  <motion.div
+                    className="group flex flex-col items-start gap-3 bg-[#111118] border border-white/6 rounded-2xl p-5 hover:border-white/14 transition-all relative overflow-hidden hover:shadow-xl cursor-pointer"
                     whileHover={{ y: -4 }}
                     transition={{ duration: 0.3 }}
                   >
+                    <Link href={`/${cat.slug}`} className="absolute inset-0 z-10" aria-label={cat.title} />
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                       style={{ background: `radial-gradient(ellipse 80% 60% at 50% 100%, ${cat.color}08, transparent)` }}
@@ -1526,7 +1526,7 @@ export default function LandingPage() {
                     <ChevronRight
                       className="relative w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-1 transition-all"
                     />
-                  </motion.a>
+                  </motion.div>
                 </FadeIn>
               );
             })}
