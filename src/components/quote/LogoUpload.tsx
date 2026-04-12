@@ -92,11 +92,12 @@ export function LogoUpload() {
         }
 
         updateSender({ logo: canvas.toDataURL("image/png") });
+        updateTheme({ hideLogo: false });
         resolve();
       };
       img.src = original;
     });
-  }, [updateSender]);
+  }, [updateSender, updateTheme]);
 
   useEffect(() => {
     if (logoOriginal) {
