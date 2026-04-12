@@ -6,15 +6,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Settings2, X } from "lucide-react";
+import { Plus, Trash2, Settings2, X, Sparkles, Loader2 } from "lucide-react";
 import { QuoteItem, VatRate } from "@/types/quote";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
 
 export function LineItemsTable() {
   const { currentQuote, addItem, removeItem, updateItem } = useQuoteStore();
+  const [improvingId, setImprovingId] = useState<string | null>(null);
 
   if (!currentQuote) return null;
+
+  const handleImproveCopy = async (id: string, currentText: string) => {
+    if (!currentText || currentText.trim().length < 2) return;
+    
+    setImprovingId(id);
+    try {
+      const res = await fetch('/api/ai/improve-copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: currentText }),
+      });
+      
+      const data = await res.json();
+      if (data.improvedText) {
+        handleUpdate(id, 'description', data.improvedText);
+      }
+    } catch (error) {
+      console.error('Failed to improve copy:', error);
+    } finally {
+      setImprovingId(null);
+    }
+  };
 
   const handleAddNewItem = () => {
     const newItem: QuoteItem = {
@@ -117,12 +141,31 @@ export function LineItemsTable() {
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block ml-1">
                       Descrizione
                     </Label>
-                    <Input
-                      value={item.description}
-                      onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
-                      placeholder="Descrivi il servizio o prodotto..."
-                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium px-4 text-base shadow-sm w-full"
-                    />
+                    <div className="relative group/desc">
+                      <Input
+                        value={item.description}
+                        onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
+                        placeholder="Descrivi il servizio o prodotto..."
+                        className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium pl-4 pr-24 text-base shadow-sm w-full transition-all"
+                      />
+                      <div className="absolute right-1.5 top-1.5 bottom-1.5 flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost" 
+                          size="sm"
+                          disabled={improvingId === item.id || !item.description || item.description.length < 3}
+                          onClick={() => handleImproveCopy(item.id, item.description)}
+                          className="h-8 rounded-lg text-[10px] font-black uppercase tracking-tighter bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 flex items-center gap-1.5 px-2.5 transition-all shadow-sm"
+                        >
+                          {improvingId === item.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3" />
+                          )}
+                          <span className="hidden xs:inline">Migliora</span>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Quantità */}
