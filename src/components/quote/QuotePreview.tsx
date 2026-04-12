@@ -28,10 +28,11 @@ export function QuotePreview({
   // Render PDF pages to canvas images using pdfjs-dist
   const renderPdfToImages = useCallback(async (url: string) => {
     try {
-      const pdfjsLib = await import("pdfjs-dist");
+      // Use legacy build for Safari/iOS compatibility (Map.getOrInsertComputed)
+      const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-      // Set the worker source to local copy
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+      // Set the worker source to legacy copy
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.legacy.min.mjs`;
 
       const loadingTask = pdfjsLib.getDocument(url);
       const pdf = await loadingTask.promise;
