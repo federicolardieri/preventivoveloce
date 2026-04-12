@@ -229,12 +229,15 @@ export async function POST(req: NextRequest) {
     const acceptUrl = `${SITE_URL}/firma/${token}`;
     const fileName = `Preventivo-${quoteRow.number}.pdf`;
 
+    // Derive tracking URL from acceptUrl token
+    const trackUrl = `${SITE_URL}/api/track/${token}`;
+
     // Invia email al cliente
     const { error: emailErr } = await resend.emails.send({
       from: `${senderName} via Preventivo Veloce <${FROM_EMAIL}>`,
       to: clientEmail,
       subject: `Preventivo ${quoteRow.number} da ${senderName}`,
-      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays, customMessage: customMessage.trim() }),
+      html: buildClientEmailHtml({ senderName, clientName, quoteNumber: quoteRow.number, acceptUrl, validityDays: quote.validityDays, customMessage: customMessage.trim(), trackUrl }),
       attachments: [
         {
           filename: fileName,
@@ -268,6 +271,7 @@ function buildClientEmailHtml({
   acceptUrl,
   validityDays,
   customMessage,
+  trackUrl,
 }: {
   senderName: string;
   clientName: string;
@@ -275,6 +279,7 @@ function buildClientEmailHtml({
   acceptUrl: string;
   validityDays: number;
   customMessage: string;
+  trackUrl: string;
 }) {
   return `<!DOCTYPE html>
 <html lang="it">
@@ -351,6 +356,8 @@ function buildClientEmailHtml({
       </td>
     </tr>
   </table>
+  <!-- Tracking pixel -->
+  <img src="${trackUrl}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />
 </body>
 </html>`;
 }

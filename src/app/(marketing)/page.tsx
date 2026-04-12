@@ -8,7 +8,7 @@ import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
   Play, Star, Clock, Download, Palette, ChevronRight,
   Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
-  HardHat, Code2, Briefcase, Wrench, Camera, PenTool,
+  HardHat, Code2, Briefcase, Wrench, Camera, PenTool, Eye,
 } from 'lucide-react';
 import { categories } from '@/lib/category-config';
 
@@ -80,6 +80,7 @@ const MARQUEE_ITEMS = [
   { icon: Mail, text: 'Invio email diretto al cliente' },
   { icon: MailCheck, text: 'Accettazione in un click' },
   { icon: PenTool, text: 'Firma digitale da mobile' },
+  { icon: Eye, text: 'Sai quando aprono il preventivo' },
   { icon: Bell, text: 'Notifica quando accetta' },
   { icon: Users, text: 'Storico clienti completo' },
 ];
@@ -1440,17 +1441,17 @@ export default function LandingPage() {
             <FadeIn delay={0.12} direction="right">
               <div className="inline-flex items-center gap-2 bg-emerald-500/12 border border-emerald-500/20 text-emerald-300 text-sm font-bold px-3 py-1.5 rounded-full mb-6">
                 <MailCheck className="w-3.5 h-3.5" />
-                Nuova funzione — Invio automatico
+                Invio, tracking e accettazione
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
-                Invia. Il cliente
+                Invia. Sai quando apre.
                 <br />
-                <span className="text-emerald-300">accetta. Tu vinci.</span>
+                <span className="text-emerald-300">Il cliente accetta.</span>
               </h2>
               <p className="text-white/45 text-base leading-relaxed mb-8">
-                Clicchi "Invia via email" e il preventivo arriva direttamente al cliente con un pulsante{' '}
-                <span className="text-white/75 font-semibold">Accetta Preventivo</span>.
-                Quando firma, ricevi subito una notifica — senza muovere un dito.
+                Clicchi &quot;Invia via email&quot; e il preventivo arriva al cliente.{' '}
+                <span className="text-white/75 font-semibold">Sai in tempo reale quando lo apre</span>
+                {' '}— e ricevi una notifica quando accetta. Tutto automatico.
               </p>
 
               <div className="space-y-4 mb-8">
@@ -1462,6 +1463,12 @@ export default function LandingPage() {
                     desc: 'Un click e il preventivo è nella sua inbox, con il PDF allegato.',
                   },
                   {
+                    icon: Eye,
+                    color: 'bg-blue-500/15 text-blue-300',
+                    title: 'Sai quando lo apre',
+                    desc: 'Appena il cliente apre l\'email, ricevi notifica + email. Perfetto per il follow-up.',
+                  },
+                  {
                     icon: MailCheck,
                     color: 'bg-emerald-500/15 text-emerald-300',
                     title: 'Accettazione in un click',
@@ -1471,7 +1478,7 @@ export default function LandingPage() {
                     icon: Bell,
                     color: 'bg-amber-500/15 text-amber-300',
                     title: 'Notifica immediata',
-                    desc: 'Ricevi un\'email nel momento esatto in cui il cliente accetta. Stato aggiornato in automatico.',
+                    desc: 'Email + notifica in-app nel momento esatto in cui accetta. Stato aggiornato in automatico.',
                   },
                 ].map(({ icon: Icon, color, title, desc }) => (
                   <motion.div

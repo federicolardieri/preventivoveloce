@@ -14,7 +14,8 @@ type NotificationType =
   | "credits_low"
   | "credits_empty"
   | "quote_sent"
-  | "quote_accepted";
+  | "quote_accepted"
+  | "quote_opened";
 
 interface NotificationRow {
   id: string;
