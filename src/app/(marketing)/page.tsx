@@ -206,8 +206,9 @@ function SpeedBar({ label, minutes, max, color, delay }: {
 
 function DashboardMockup() {
   return (
-    <div className="w-full flex justify-center overflow-hidden py-4 sm:py-8 pointer-events-none sm:pointer-events-auto">
-      <div className="w-[850px] min-w-[850px] origin-top scale-[0.45] sm:scale-[0.75] md:scale-[0.85] lg:scale-100 -mb-[200px] sm:-mb-[100px] lg:mb-0 relative">
+    <div className="w-full relative h-[160px] sm:h-[300px] lg:h-[400px] mt-4 lg:mt-0 pointer-events-none sm:pointer-events-auto overflow-hidden sm:overflow-visible">
+      {/* Container posizionato in modo assoluto e centrato, non influenza la larghezza della pagina */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] sm:w-[850px] origin-top center scale-[0.45] sm:scale-[0.75] md:scale-[0.85] lg:scale-100">
         <div className="absolute -inset-6 bg-[#5c32e6]/18 rounded-3xl blur-3xl opacity-50 sm:opacity-100" />
         <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-[0_40px_140px_-20px_rgba(0,0,0,0.9)]">
         {/* Browser bar */}
