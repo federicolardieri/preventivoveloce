@@ -55,6 +55,7 @@ export function QuoteEditor() {
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const isNewQuote = currentQuote?.items.length === 0 && !currentQuote?.client.name;
   const [showTour, setShowTour] = useState(false);
+  const [hasSeenTourState, setHasSeenTourState] = useState(false);
 
   // Auto-open AI for new quotes OR show onboarding tour for first-timers
   useEffect(() => {
@@ -62,13 +63,17 @@ export function QuoteEditor() {
     if (!hasSeenTour) {
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
-    } else if (isNewQuote) {
-      setAiAssistantOpen(true);
+    } else {
+      setHasSeenTourState(true);
+      if (isNewQuote) {
+        setAiAssistantOpen(true);
+      }
     }
   }, [isNewQuote, setAiAssistantOpen]);
 
   const handleTourComplete = () => {
     localStorage.setItem('preventivo_tour_seen', 'true');
+    setHasSeenTourState(true);
     setShowTour(false);
   };
 
@@ -285,6 +290,29 @@ export function QuoteEditor() {
                 </div>
               </div>
             </div>
+
+            {/* Manual Tour Trigger Banner (only if they have already seen it, so we don't spam them while they do it) */}
+            {(hasSeenTourState && !showTour) && (
+              <div className="mb-4 md:mb-8 border border-[#5c32e6]/20 bg-[#5c32e6]/5 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#5c32e6]/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-[#5c32e6]" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm md:text-base font-bold text-foreground">Hai bisogno d'aiuto per generare il tuo preventivo?</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground mt-0.5">Avvia la guida rapida interattiva per scoprire subito tutte le funzioni.</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => setShowTour(true)} 
+                  variant="outline" 
+                  className="w-full sm:w-auto shrink-0 border-[#5c32e6]/20 hover:bg-[#5c32e6]/10 text-[#5c32e6] font-bold text-xs md:text-sm h-10 md:h-11 rounded-xl"
+                >
+                  Fai partire la guida
+                </Button>
+              </div>
+            )}
+
             {/* Guide Section */}
             <div className="mb-8 md:mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
               <h2 className="text-lg md:text-xl font-black text-foreground/80 mb-4 tracking-tight">Come vuoi procedere?</h2>
