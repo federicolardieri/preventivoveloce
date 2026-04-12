@@ -132,4 +132,41 @@ describe('POST /api/pdf', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toBe('application/pdf');
   });
+
+  it('does not inject default logo when hideLogo is true', async () => {
+    const { generatePDF } = await import('@/pdf/generatePDF');
+
+    const body = makeQuoteBody({
+      theme: {
+        primaryColor: '#5c32e6',
+        accentColor: '#1d4ed8',
+        textColor: '#1e293b',
+        fontFamily: 'Helvetica',
+        tableStyle: 'striped',
+        logoPosition: 'left',
+        showFooterNotes: true,
+        showPaymentTerms: true,
+        hideLogo: true,
+      },
+      sender: {
+        name: 'Test',
+        address: '',
+        city: '',
+        postalCode: '',
+        country: '',
+        vatNumber: '',
+        email: '',
+        phone: '',
+        // no logo property
+      },
+    });
+
+    const res = await POST(makeRequest(body));
+    expect(res.status).toBe(200);
+
+    const calls = vi.mocked(generatePDF).mock.calls;
+    const lastCall = calls[calls.length - 1];
+    const quote = lastCall[0];
+    expect(quote.sender.logo).toBeUndefined();
+  });
 });

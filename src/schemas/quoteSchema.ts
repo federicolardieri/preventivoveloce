@@ -28,6 +28,7 @@ export const quoteThemeSchema = z.object({
   logoPadding: z.number().optional(),
   showFooterNotes: z.boolean(),
   showPaymentTerms: z.boolean(),
+  hideLogo: z.boolean().optional(),
 });
 
 export const contactInfoSchema = z.object({

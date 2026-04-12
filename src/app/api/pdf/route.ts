@@ -14,7 +14,7 @@ async function normalizeQuote(raw: Quote): Promise<Quote> {
   
   // Default logo logic
   let logo = raw.sender?.logo;
-  if (!logo) {
+  if (!logo && !raw.theme?.hideLogo) {
     try {
       const logoPath = path.join(process.cwd(), 'public', 'logo.png');
       const logoBuffer = await fs.readFile(logoPath);
