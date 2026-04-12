@@ -35,6 +35,7 @@ import { QuotePreview } from "./QuotePreview";
 import { AttachmentsManager } from "./AttachmentsManager";
 import { AIAssistant } from "./AIAssistant";
 import { SendQuoteDialog } from "./SendQuoteDialog";
+import { OnboardingTour } from "@/components/ui/OnboardingTour";
 
 export function QuoteEditor() {
   const { currentQuote, updateDetails, saveQuote, saveToSupabase, changeStatus } = useQuoteStore();
@@ -53,13 +54,23 @@ export function QuoteEditor() {
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const isNewQuote = currentQuote?.items.length === 0 && !currentQuote?.client.name;
+  const [showTour, setShowTour] = useState(false);
 
-  // Auto-open AI for new quotes ONLY when it becomes a new quote
+  // Auto-open AI for new quotes OR show onboarding tour for first-timers
   useEffect(() => {
-    if (isNewQuote) {
+    const hasSeenTour = localStorage.getItem('preventivo_tour_seen');
+    if (!hasSeenTour) {
+      const timer = setTimeout(() => setShowTour(true), 800);
+      return () => clearTimeout(timer);
+    } else if (isNewQuote) {
       setAiAssistantOpen(true);
     }
-  }, [isNewQuote]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isNewQuote, setAiAssistantOpen]);
+
+  const handleTourComplete = () => {
+    localStorage.setItem('preventivo_tour_seen', 'true');
+    setShowTour(false);
+  };
 
   // Controlla quota al mount per bloccare preview e download se limite esaurito
   // Se la quote esiste già nel DB, segna savedToDb = true (evita duplicati)
@@ -278,9 +289,10 @@ export function QuoteEditor() {
             <div className="mb-8 md:mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
               <h2 className="text-lg md:text-xl font-black text-foreground/80 mb-4 tracking-tight">Come vuoi procedere?</h2>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <div className="flex flex-col gap-4 md:gap-5">
                 {/* AI Option */}
                 <div 
+                  id="tour-ai-btn"
                   className="bg-gradient-to-br from-[#5c32e6] to-[#7c3aed] rounded-2xl md:rounded-3xl p-5 md:p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group cursor-pointer transition-transform hover:-translate-y-1" 
                   onClick={() => setAiAssistantOpen(true)}
                 >
@@ -307,6 +319,7 @@ export function QuoteEditor() {
 
                 {/* Manual Option */}
                 <div 
+                  id="tour-manual-card"
                   className="bg-card rounded-2xl md:rounded-3xl p-5 md:p-8 border-2 border-border hover:border-primary/30 transition-all shadow-sm relative group cursor-pointer flex flex-col justify-between" 
                   onClick={() => document.getElementById('tabs-navigation')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 >
@@ -315,9 +328,15 @@ export function QuoteEditor() {
                       <FileText className="w-6 h-6 md:w-7 md:h-7 text-primary" />
                     </div>
                     <h3 className="text-xl md:text-2xl font-black text-foreground mb-2 leading-tight">Compila Manualmente</h3>
-                    <p className="text-muted-foreground text-sm md:text-base font-medium mb-6 leading-relaxed">
+                    <p className="text-muted-foreground text-sm font-medium mb-4 leading-relaxed">
                       Il metodo classico. Segui le tre schede in basso per inserire in autonomia tutti i dettagli del preventivo passo dopo passo.
                     </p>
+                    <div className="flex items-start gap-3 bg-primary/5 rounded-xl p-3 md:p-4 mb-5 border border-primary/10">
+                      <span className="text-lg md:text-xl shrink-0 mt-0.5">🎨</span>
+                      <p className="text-xs md:text-sm text-foreground/70 leading-relaxed font-medium">
+                        Cerca la barra laterale <strong>"Template"</strong> (su PC) o premi su <strong>"Anteprima"</strong> (su mobile) per personalizzare <span className="text-primary font-bold">font, colori e layout</span> in qualsiasi momento.
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center justify-center gap-1.5 md:gap-3 w-full bg-muted/40 p-3 md:p-4 rounded-xl border border-muted">
                      <span className="text-[10px] md:text-xs font-black bg-background border border-border shadow-sm px-2 md:px-3 py-1.5 rounded-lg text-foreground">1. DATI</span>
@@ -589,7 +608,7 @@ export function QuoteEditor() {
         )}
 
         {/* Right Sidebar: Persistent Live Preview (Expanded) — desktop only */}
-        <div className="hidden lg:flex h-full border-l border-border w-[60%] overflow-hidden transition-colors">
+        <div id="tour-preview" className="hidden lg:flex h-full border-l border-border w-[60%] overflow-hidden transition-colors">
           {/* Style Mini Sidebar */}
           <div className="w-32 flex-shrink-0 bg-card border-r border-border h-full overflow-y-auto custom-scrollbar shadow-inner">
              <TemplateSelector variant="mini" />
@@ -653,6 +672,7 @@ export function QuoteEditor() {
       quoteNumber={currentQuote.number}
       onConfirmSend={handleSendToClient}
     />
+    {showTour && <OnboardingTour onComplete={handleTourComplete} />}
     </>
   );
 }
