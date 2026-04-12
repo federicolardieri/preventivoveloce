@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Sparkles, ChevronRight } from 'lucide-react';
 import { Navbar } from './Navbar';
-import type { CategoryConfig } from '@/lib/category-config';
+import { categories } from '@/lib/category-config';
 
 function FadeIn({
   children,
@@ -31,7 +31,9 @@ function formatPrice(cents: number): string {
   return (cents / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function CategoryPage({ config }: { config: CategoryConfig }) {
+export function CategoryPage({ slug }: { slug: string }) {
+  const config = categories.find(c => c.slug === slug);
+  if (!config) return null;
   const Icon = config.icon;
 
   const exampleSubtotal = config.exampleItems.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
