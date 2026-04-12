@@ -33,6 +33,7 @@ export interface QuoteTheme {
   logoPadding?: number;  // padding interno alla forma (0–0.5); negativo = taglia i bordi
   showFooterNotes: boolean;
   showPaymentTerms: boolean;
+  hideLogo?: boolean;
 }
 
 export interface ContactInfo {
