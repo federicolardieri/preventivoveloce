@@ -203,6 +203,34 @@ describe('executeSendFollowUp', () => {
     );
   });
 
+  it('returns ok: false and calls logError when Resend fails to send the email', async () => {
+    const resendError = { message: 'resend error' };
+    mockEmailsSend.mockResolvedValue({ data: null, error: resendError });
+
+    const updateFn = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) });
+
+    const followupsChain = chainReturning({ data: FOLLOWUP, error: null });
+    followupsChain.update = updateFn;
+
+    const quotesChain = chainReturning({ data: QUOTE, error: null });
+
+    // Existing token found
+    const tokensChain = chainReturning({ data: EXISTING_TOKEN, error: null });
+
+    const adminClient = buildAdminClient({
+      quote_followups: followupsChain,
+      quotes: quotesChain,
+      quote_tokens: tokensChain,
+    });
+
+    const result = await executeSendFollowUp(FOLLOWUP_ID, adminClient as never);
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain('email');
+    expect(mockLogError).toHaveBeenCalledWith('send-followup.resend', resendError);
+    expect(updateFn).toHaveBeenCalledWith({ status: 'failed' });
+  });
+
   it('happy path — reuses existing token and sends email once', async () => {
     mockEmailsSend.mockResolvedValue({ data: { id: 'email-1' }, error: null });
 
