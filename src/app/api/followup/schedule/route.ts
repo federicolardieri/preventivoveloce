@@ -8,7 +8,7 @@ const scheduleSchema = z.object({
   quoteId: z.string().min(1),
   scheduledFor: z.string().datetime().nullable(),
   templateId: z.enum(['reminder_1', 'reminder_2', 'custom']),
-  customMessage: z.string().max(1000),
+  customMessage: z.string().max(1000).default(''),
 });
 
 export async function POST(req: NextRequest) {

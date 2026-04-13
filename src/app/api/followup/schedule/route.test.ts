@@ -92,6 +92,28 @@ describe('POST /api/followup/schedule', () => {
     expect(mockExecuteSend).toHaveBeenCalledWith('fu-1', expect.anything());
   });
 
+  it('returns 404 when quote is not found', async () => {
+    mockQuoteSelect.mockResolvedValue({ data: null, error: { message: 'not found' } });
+    const res = await POST(makeRequest({
+      quoteId: '00000000-0000-0000-0000-000000000001',
+      templateId: 'reminder_1',
+      customMessage: 'ciao',
+      scheduledFor: null,
+    }));
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 500 when insert fails', async () => {
+    mockInsertSelect.mockResolvedValue({ data: null, error: { message: 'db error' } });
+    const res = await POST(makeRequest({
+      quoteId: '00000000-0000-0000-0000-000000000001',
+      templateId: 'reminder_1',
+      customMessage: 'ciao',
+      scheduledFor: null,
+    }));
+    expect(res.status).toBe(500);
+  });
+
   it('returns 200 and does NOT call executeSendFollowUp for scheduled send', async () => {
     const future = new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString();
     const res = await POST(makeRequest({
