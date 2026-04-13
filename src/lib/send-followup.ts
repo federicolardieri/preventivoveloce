@@ -70,11 +70,20 @@ export async function executeSendFollowUp(
     const expiresAt = new Date(
       now.getTime() + (quoteRow.validity_days ?? 30) * 24 * 60 * 60 * 1000
     );
-    await adminClient.from('quote_tokens').insert({
+    const { error: tokenInsertErr } = await adminClient.from('quote_tokens').insert({
       quote_id: followup.quote_id,
       token,
       expires_at: expiresAt.toISOString(),
     });
+
+    if (tokenInsertErr) {
+      logError('send-followup.token-insert', tokenInsertErr);
+      await adminClient
+        .from('quote_followups')
+        .update({ status: 'failed' })
+        .eq('id', followupId);
+      return { ok: false, error: 'Errore creazione token' };
+    }
   }
 
   const acceptUrl = `${SITE_URL}/firma/${token}`;
@@ -103,10 +112,14 @@ export async function executeSendFollowUp(
   }
 
   // 5. Aggiorna status
-  await adminClient
+  const { error: updateErr } = await adminClient
     .from('quote_followups')
     .update({ status: 'sent', sent_at: new Date().toISOString() })
     .eq('id', followupId);
+
+  if (updateErr) {
+    logError('send-followup.status-update', updateErr, { followupId });
+  }
 
   return { ok: true };
 }
