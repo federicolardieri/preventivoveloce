@@ -53,7 +53,8 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/privacy-policy') ||
     pathname.startsWith('/termini') ||
     pathname === '/sitemap.xml' ||
-    pathname === '/robots.txt';
+    pathname === '/robots.txt' ||
+    pathname.startsWith('/preventivo-');
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();

@@ -220,6 +220,20 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Brand & Logo</h3>
                 </div>
                 <LogoUpload />
+                {!currentQuote.sender?.logo && (
+                  <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100">
+                    <input
+                      type="checkbox"
+                      id="hideLogo1"
+                      checked={theme.hideLogo ?? false}
+                      onChange={(e) => updateTheme({ hideLogo: e.target.checked })}
+                      className="w-4 h-4 accent-indigo-600 cursor-pointer flex-shrink-0"
+                    />
+                    <label htmlFor="hideLogo1" className="cursor-pointer text-sm text-slate-600">
+                      Nascondi logo Preventivo Veloce nel PDF
+                    </label>
+                  </div>
+                )}
               </section>
 
               <Separator />
@@ -366,6 +380,20 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Brand & Logo</h3>
               </div>
               <LogoUpload />
+              {!currentQuote.sender?.logo && (
+                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-100">
+                  <input
+                    type="checkbox"
+                    id="hideLogo2"
+                    checked={theme.hideLogo ?? false}
+                    onChange={(e) => updateTheme({ hideLogo: e.target.checked })}
+                    className="w-4 h-4 accent-indigo-600 cursor-pointer flex-shrink-0"
+                  />
+                  <label htmlFor="hideLogo2" className="cursor-pointer text-sm text-slate-600">
+                    Nascondi logo Preventivo Veloce nel PDF
+                  </label>
+                </div>
+              )}
             </section>
 
             <Separator />
