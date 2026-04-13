@@ -95,7 +95,7 @@ export function Sidebar({ user }: SidebarProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-full md:h-full w-full md:w-64 shadow-2xl z-20 relative bg-sidebar text-sidebar-foreground transition-colors duration-300">
+    <div className="flex flex-col h-full w-full md:w-64 shadow-2xl z-20 relative bg-sidebar text-sidebar-foreground transition-colors duration-300 overflow-y-auto">
       {/* Logo Section */}
       <div className="relative px-5 pt-6 pb-5 border-b border-sidebar-foreground/10 flex justify-center">
         <Link href="/dashboard" className="group">

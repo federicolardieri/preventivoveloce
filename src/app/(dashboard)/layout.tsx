@@ -65,10 +65,10 @@ export default async function DashboardLayout({
     <div className="flex h-screen overflow-hidden bg-slate-50 w-full">
       <QuoteLoader plan={dashboardUser.plan} />
       <MobileNav user={dashboardUser} />
-      <div className="hidden md:block">
+      <div className="hidden md:flex h-full overflow-hidden">
         <Sidebar user={dashboardUser} />
       </div>
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-hidden min-h-0">
         <DashboardHeader user={dashboardUser} />
         <div className="flex-1 overflow-auto">
           {children}
