@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 
 // ── Mocks ──────────────────────────────────────────────────────
 const mockExecuteSend = vi.fn();
@@ -16,7 +17,7 @@ process.env.FOLLOWUP_WEBHOOK_SECRET = SECRET;
 
 const { POST } = await import('./route');
 
-function makeRequest(body: unknown, secret?: string): Request {
+function makeRequest(body: unknown, secret?: string): NextRequest {
   return new Request('http://localhost/api/email/send-followup', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -24,7 +25,7 @@ function makeRequest(body: unknown, secret?: string): Request {
       'Content-Type': 'application/json',
       ...(secret !== undefined ? { 'x-webhook-secret': secret } : {}),
     },
-  });
+  }) as unknown as NextRequest;
 }
 
 // ── Tests ──────────────────────────────────────────────────────
