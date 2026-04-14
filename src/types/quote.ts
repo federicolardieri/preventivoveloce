@@ -1,5 +1,5 @@
 export type VatRate = 0 | 4 | 10 | 22;
-export type QuoteStatus = 'bozza' | 'da_inviare' | 'inviato' | 'accettato' | 'rifiutato' | 'scaduto';
+export type QuoteStatus = 'bozza' | 'da_inviare' | 'inviato' | 'follow_up_inviato' | 'accettato' | 'rifiutato' | 'scaduto';
 export type TemplateId = 'classic' | 'modern' | 'minimal' | 'bold' | 'corporate' | 'creative' | 'cover-page' | 'executive';
 export type FontFamily = 'Helvetica' | 'Times-Roman' | 'Courier';
 export type TableStyle = 'striped' | 'bordered' | 'minimal';

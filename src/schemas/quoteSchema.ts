@@ -66,7 +66,7 @@ export const quoteAttachmentSchema = z.object({
 export const quoteSchema = z.object({
   id: z.string(),
   number: z.string(),
-  status: z.enum(['bozza', 'da_inviare', 'inviato', 'accettato', 'rifiutato', 'scaduto']),
+  status: z.enum(['bozza', 'da_inviare', 'inviato', 'follow_up_inviato', 'accettato', 'rifiutato', 'scaduto']),
   template: z.enum(['classic', 'modern', 'minimal', 'bold', 'corporate', 'creative', 'cover-page', 'executive']),
   theme: quoteThemeSchema,
   sender: contactInfoSchema,
