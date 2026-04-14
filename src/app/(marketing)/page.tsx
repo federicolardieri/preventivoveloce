@@ -7,7 +7,7 @@ import { Navbar } from './_components/Navbar';
 import {
   Zap, FileText, Sparkles, ArrowRight, Check, X,
   Play, Star, Clock, Download, Palette, ChevronDown, ChevronRight,
-  Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell,
+  Timer, TrendingUp, Shield, Users, Mail, MailCheck, Send, Bell, RefreshCw,
   HardHat, Code2, Briefcase, Wrench, Camera, PenTool, Eye,
 } from 'lucide-react';
 import { categories } from '@/lib/category-config';
@@ -937,6 +937,7 @@ function Pricing() {
         { ok: true, text: 'Template standard' },
         { ok: true, text: 'AI Assistant' },
         { ok: true, text: 'PDF senza watermark' },
+        { ok: true, text: 'Follow-up email' },
         { ok: false, text: 'Template premium' },
         { ok: false, text: 'Preventivi illimitati' },
       ],
@@ -956,6 +957,7 @@ function Pricing() {
         { ok: true, text: 'AI Assistant avanzato' },
         { ok: true, text: 'PDF senza watermark' },
         { ok: true, text: 'Template premium' },
+        { ok: true, text: 'Follow-up email programmati' },
         { ok: true, text: 'Supporto prioritario' },
       ],
       cta: 'Inizia con Pro',
@@ -1467,6 +1469,13 @@ export default function LandingPage() {
                 glow: 'hover:border-rose-500/40 hover:shadow-rose-500/10',
                 iconBg: 'bg-rose-500/15', iconColor: 'text-rose-300',
                 glowBg: 'group-hover:bg-rose-500/5',
+              },
+              {
+                icon: RefreshCw, title: 'Follow-up automatico',
+                desc: 'Invia un promemoria al cliente in un click. Programma l\'orario esatto — ci pensa il sistema.',
+                glow: 'hover:border-violet-500/40 hover:shadow-violet-500/10',
+                iconBg: 'bg-violet-500/15', iconColor: 'text-violet-300',
+                glowBg: 'group-hover:bg-violet-500/5',
               },
             ].map((f, i) => (
               <FadeIn key={f.title} delay={i * 0.06}>
