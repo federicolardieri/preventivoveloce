@@ -784,6 +784,329 @@ function EmailFlowDemo() {
   );
 }
 
+// ── Follow-up Demo ────────────────────────────────────────────────────────────
+
+const FU_PHASES = [3000, 3000, 3200, 3200];
+const FU_TOTAL = FU_PHASES.reduce((s, d) => s + d, 0);
+
+function FollowUpDemo() {
+  const [phase, setPhase] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: false, margin: '-80px' });
+
+  useEffect(() => {
+    if (!inView) return;
+    const id = setInterval(() => {
+      setElapsed(e => {
+        const next = (e + 80) % FU_TOTAL;
+        let acc = 0;
+        for (let i = 0; i < FU_PHASES.length; i++) {
+          acc += FU_PHASES[i];
+          if (next < acc) { setPhase(i); break; }
+        }
+        return next;
+      });
+    }, 80);
+    return () => clearInterval(id);
+  }, [inView]);
+
+  const phaseStart = FU_PHASES.slice(0, phase).reduce((s, d) => s + d, 0);
+  const phaseProgress = Math.min((elapsed - phaseStart) / FU_PHASES[phase], 1);
+
+  const STEPS = [
+    { label: '1. Lista preventivi', dot: 'bg-violet-500' },
+    { label: '2. Scegli il momento', dot: 'bg-blue-400' },
+    { label: '3. Scrivi il messaggio', dot: 'bg-indigo-400' },
+    { label: '4. Email al cliente', dot: 'bg-emerald-400' },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="absolute -inset-3 bg-violet-500/8 rounded-3xl blur-3xl" />
+      <div className="relative bg-[#111118] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+
+        {/* Browser bar */}
+        <div className="h-9 bg-[#0d0d14] border-b border-white/5 flex items-center px-4 gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+          </div>
+          <div className="flex items-center gap-1.5 ml-2">
+            <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }} className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+            <span className="text-[10px] font-bold text-white/40">Demo in tempo reale</span>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            {STEPS.map((s, i) => (
+              <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === phase ? `w-8 ${s.dot}` : i < phase ? `w-3 ${s.dot} opacity-60` : 'w-1.5 bg-white/10'}`} />
+            ))}
+          </div>
+        </div>
+
+        {/* Step label + progress */}
+        <div className="px-4 pt-3 pb-1">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={phase}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center gap-2"
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${STEPS[phase].dot}`} />
+              <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">{STEPS[phase].label}</span>
+            </motion.div>
+          </AnimatePresence>
+          <div className="mt-1.5 h-0.5 bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${STEPS[phase].dot}`}
+              animate={{ width: `${phaseProgress * 100}%` }}
+              transition={{ duration: 0.08, ease: 'linear' }}
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
+          <AnimatePresence mode="wait">
+
+            {/* Phase 0 — Lista preventivi, dropdown aperto */}
+            {phase === 0 && (
+              <motion.div key="fu0" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#0d0d14] rounded-xl border border-white/8 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                    <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">I tuoi preventivi</span>
+                    <span className="text-[9px] text-violet-400 font-bold">3 inviati</span>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {[
+                      { n: 'PRV-024', c: 'Acme SRL', v: '€4.200', s: 'accettato', dot: 'bg-emerald-400' },
+                      { n: 'PRV-023', c: 'Studio Rossi', v: '€1.800', s: 'inviato', dot: 'bg-blue-400', active: true },
+                      { n: 'PRV-022', c: 'TechCorp', v: '€8.500', s: 'inviato', dot: 'bg-blue-400' },
+                    ].map((q) => (
+                      <div key={q.n} className={`px-3 py-2.5 flex items-center gap-2.5 ${q.active ? 'bg-white/[0.04]' : ''}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-[10px] font-black text-white/70">{q.n}</span>
+                            <div className={`w-1.5 h-1.5 rounded-full ${q.dot}`} />
+                            <span className="text-[9px] text-white/30 font-bold">{q.s}</span>
+                          </div>
+                          <p className="text-[9px] text-white/40">{q.c} · {q.v}</p>
+                        </div>
+                        {q.active && (
+                          <div className="relative">
+                            <div className="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center">
+                              <span className="text-white/60 text-[10px] font-black">⋯</span>
+                            </div>
+                            {/* Dropdown */}
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                              animate={{ opacity: phaseProgress > 0.3 ? 1 : 0, scale: phaseProgress > 0.3 ? 1 : 0.9, y: phaseProgress > 0.3 ? 0 : -4 }}
+                              transition={{ duration: 0.2 }}
+                              className="absolute right-0 top-7 bg-[#1a1a28] border border-white/10 rounded-xl shadow-2xl z-10 w-36 overflow-hidden"
+                            >
+                              {[
+                                { label: 'Visualizza', icon: '👁' },
+                                { label: 'Modifica', icon: '✏️' },
+                                { label: 'Invia email', icon: '✉️' },
+                                { label: 'Follow-up', icon: '🔄', highlight: true },
+                              ].map((item) => (
+                                <div
+                                  key={item.label}
+                                  className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold ${item.highlight ? 'bg-violet-500/15 text-violet-300' : 'text-white/50'}`}
+                                >
+                                  <span>{item.icon}</span>
+                                  <span>{item.label}</span>
+                                  {item.highlight && (
+                                    <motion.div
+                                      animate={{ x: [0, 2, 0] }}
+                                      transition={{ duration: 0.6, repeat: Infinity }}
+                                      className="ml-auto"
+                                    >
+                                      <span className="text-violet-400">→</span>
+                                    </motion.div>
+                                  )}
+                                </div>
+                              ))}
+                            </motion.div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 1 — Dialog step timing */}
+            {phase === 1 && (
+              <motion.div key="fu1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#0d0d14] rounded-xl border border-white/8 overflow-hidden">
+                  <div className="px-4 pt-4 pb-3 border-b border-white/5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <RefreshCw className="w-3.5 h-3.5 text-violet-400" />
+                      <span className="text-[11px] font-black text-white/80">Invia Follow-up</span>
+                    </div>
+                    <p className="text-[9px] text-white/35">Preventivo <strong className="text-white/55">PRV-023</strong> a <strong className="text-white/55">Studio Rossi</strong></p>
+                  </div>
+                  <div className="p-3 space-y-2.5">
+                    <motion.button
+                      animate={{ boxShadow: ['0 0 0 0 rgba(139,92,246,0)', '0 0 0 8px rgba(139,92,246,0.2)', '0 0 0 0 rgba(139,92,246,0)'] }}
+                      transition={{ duration: 1.8, repeat: Infinity }}
+                      className="w-full bg-violet-600 rounded-lg py-2.5 flex items-center justify-center gap-2 text-[11px] font-black text-white"
+                    >
+                      <Send className="w-3 h-3" />
+                      Invia ora
+                    </motion.button>
+                    <div className="flex items-center gap-2 my-1">
+                      <div className="flex-1 h-px bg-white/8" />
+                      <span className="text-[8px] font-bold text-white/25 uppercase tracking-widest">Oppure programma</span>
+                      <div className="flex-1 h-px bg-white/8" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {['3 giorni', '1 sett.', '2 sett.'].map((label, i) => (
+                        <motion.div
+                          key={label}
+                          animate={i === 1 && phaseProgress > 0.5 ? { borderColor: ['rgba(139,92,246,0.2)', 'rgba(139,92,246,0.8)', 'rgba(139,92,246,0.8)'] } : {}}
+                          transition={{ duration: 0.4 }}
+                          className={`rounded-lg border px-2 py-2 text-[9px] font-bold text-center transition-all ${i === 1 && phaseProgress > 0.5 ? 'border-violet-500 bg-violet-500/10 text-violet-300' : 'border-white/8 text-white/30'}`}
+                        >
+                          {label}
+                        </motion.div>
+                      ))}
+                    </div>
+                    {phaseProgress > 0.65 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/8"
+                      >
+                        <Clock className="w-3 h-3 text-violet-400 shrink-0" />
+                        <span className="text-[9px] font-bold text-white/50 flex-1">Orario</span>
+                        <span className="text-[9px] font-black text-white/70">09:00</span>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 2 — Dialog step template */}
+            {phase === 2 && (
+              <motion.div key="fu2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="bg-[#0d0d14] rounded-xl border border-white/8 overflow-hidden">
+                  <div className="px-4 pt-4 pb-3 border-b border-white/5">
+                    <span className="text-[11px] font-black text-white/80">Scrivi il messaggio</span>
+                    <p className="text-[9px] text-white/35 mt-0.5">Scegli un template o scrivi da zero</p>
+                  </div>
+                  <div className="p-3 space-y-2.5">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {['Sollecito gentile', 'Urgenza scadenza', 'Scrivi di tuo'].map((t, i) => (
+                        <div
+                          key={t}
+                          className={`rounded-md px-2.5 py-1 text-[9px] font-bold border ${i === 0 ? 'bg-violet-600 text-white border-violet-600' : 'bg-white/5 text-white/35 border-white/8'}`}
+                        >
+                          {t}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="bg-[#1a1a28] rounded-lg border border-white/8 p-2.5 min-h-[72px] relative">
+                      <AnimatePresence>
+                        {phaseProgress < 1 && (
+                          <motion.p
+                            key="text"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-[9px] text-white/50 leading-relaxed"
+                          >
+                            {`Gentile Luca,\n\nvolevo verificare se hai avuto modo di valutare il preventivo PRV-023 che ti ho inviato.\n\nResto a disposizione per qualsiasi domanda.`
+                              .slice(0, Math.floor(phaseProgress * 140))}
+                            <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-[1px] h-3 bg-violet-400 ml-0.5 align-middle" />
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] text-white/25 tabular-nums">{Math.floor(phaseProgress * 140)}/1000</span>
+                      <motion.button
+                        animate={phaseProgress > 0.7 ? { boxShadow: ['0 0 0 0 rgba(139,92,246,0)', '0 0 0 6px rgba(139,92,246,0.25)', '0 0 0 0 rgba(139,92,246,0)'] } : {}}
+                        transition={{ duration: 1.2, repeat: Infinity }}
+                        className="bg-violet-600 text-white text-[9px] font-black px-3 py-1.5 rounded-lg"
+                      >
+                        Avanti →
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Phase 3 — Email ricevuta dal cliente */}
+            {phase === 3 && (
+              <motion.div key="fu3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                <div className="relative bg-[#f1f5f9] rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                  {/* Scheduled badge */}
+                  <AnimatePresence>
+                    {phaseProgress > 0.2 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        className="absolute top-3 right-3 bg-[#0d0d14] rounded-xl shadow-2xl border border-white/10 p-2 flex gap-2 items-center z-10 max-w-[150px]"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center border border-violet-500/30 flex-shrink-0">
+                          <Clock className="w-3 h-3 text-violet-400" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black text-white leading-tight">Follow-up inviato!</p>
+                          <p className="text-[8px] text-violet-400 font-bold">Automaticamente ✓</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="bg-gray-200 px-3 py-1.5 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-[11px] font-black text-gray-600 uppercase tracking-widest">Inbox — luca@studiorossi.it</span>
+                  </div>
+                  <div className="bg-[#f0ebff] px-3 py-2.5 border-b border-violet-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-600 to-indigo-500 flex items-center justify-center text-white text-[10px] font-black flex-shrink-0">PV</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-[11px] font-black text-gray-900">La Mia Azienda via Preventivo Veloce</span>
+                          <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">adesso</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-700 truncate">Promemoria: preventivo PRV-023</p>
+                        <p className="text-[10px] text-gray-500 truncate">Gentile Luca, volevo verificare se hai avuto...</p>
+                      </div>
+                      <div className="w-2 h-2 rounded-full bg-violet-500 flex-shrink-0" />
+                    </div>
+                  </div>
+                  <div className="bg-white px-3 py-3">
+                    <p className="text-[12px] font-bold text-gray-800 mb-1">Gentile Luca,</p>
+                    <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
+                      volevo verificare se hai avuto modo di valutare il preventivo <strong className="text-gray-800">PRV-023</strong>. Resto a disposizione per qualsiasi domanda.
+                    </p>
+                    <motion.button
+                      animate={{ boxShadow: ['0 0 0 0 rgba(139,92,246,0)', '0 0 0 8px rgba(139,92,246,0.2)', '0 0 0 0 rgba(139,92,246,0)'] }}
+                      transition={{ duration: 1.4, repeat: Infinity }}
+                      className="w-full bg-violet-600 text-white text-[12px] font-black py-2.5 rounded-lg"
+                    >
+                      → Visualizza preventivo
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Testimonials ──────────────────────────────────────────────────────────────
 
 const TESTIMONIALS = [
@@ -1586,6 +1909,94 @@ export default function LandingPage() {
                 </div>
               </div>
             </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOLLOW-UP ── */}
+      <section id="followup" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-500/3 to-transparent pointer-events-none" />
+        <FloatingOrb className="top-1/2 right-0 w-80 h-80 bg-violet-500/6" delay={1.5} />
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
+
+            {/* Left: copy */}
+            <FadeIn direction="left">
+              <div className="inline-flex items-center gap-2 bg-violet-500/12 border border-violet-500/20 text-violet-300 text-sm font-bold px-3 py-1.5 rounded-full mb-6">
+                <RefreshCw className="w-3.5 h-3.5" />
+                Nuova funzione — Follow-up
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+                Ricordaglielo.
+                <br />
+                <span className="text-violet-300">Senza sembrare insistente.</span>
+              </h2>
+              <p className="text-white/45 text-base leading-relaxed mb-8">
+                Il cliente ha visto il preventivo ma non ha risposto?{' '}
+                <span className="text-white/75 font-semibold">Invia un follow-up in un click</span>
+                {' '}— subito o programmato al momento giusto. Il sistema ci pensa lui.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {[
+                  {
+                    icon: Send,
+                    color: 'bg-violet-500/15 text-violet-300',
+                    title: 'Invia subito o programma',
+                    desc: 'Scegli "Invia ora" oppure imposta data e orario — tra 3 giorni, 1 settimana o 2 settimane.',
+                  },
+                  {
+                    icon: FileText,
+                    color: 'bg-indigo-500/15 text-indigo-300',
+                    title: 'Template pronti da usare',
+                    desc: 'Sollecito gentile, urgenza scadenza o testo libero. La textarea si pre-compila — modifica quello che vuoi.',
+                  },
+                  {
+                    icon: Clock,
+                    color: 'bg-blue-500/15 text-blue-300',
+                    title: 'Automatico e puntuale',
+                    desc: 'I follow-up programmati partono in autonomia all\'orario esatto, anche quando sei offline.',
+                  },
+                  {
+                    icon: RefreshCw,
+                    color: 'bg-emerald-500/15 text-emerald-300',
+                    title: 'Accessibile ovunque',
+                    desc: 'Dal menu azioni nella lista preventivi o dal pannello del dettaglio — sempre a portata di click.',
+                  },
+                ].map(({ icon: Icon, color, title, desc }) => (
+                  <motion.div
+                    key={title}
+                    className="flex items-start gap-3"
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-white/80 mb-0.5">{title}</p>
+                      <p className="text-sm text-white/40 leading-relaxed">{desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="bg-[#111118] border border-white/6 rounded-2xl p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 text-violet-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-white/80">Il momento perfetto fa la differenza</p>
+                  <p className="text-xs text-white/40">Un follow-up inviato <span className="text-violet-400 font-black">3–5 giorni</span> dopo il primo invio aumenta il tasso di risposta del cliente.</p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Right: demo */}
+            <FadeIn delay={0.12} direction="right">
+              <FollowUpDemo />
+            </FadeIn>
+
           </div>
         </div>
       </section>
