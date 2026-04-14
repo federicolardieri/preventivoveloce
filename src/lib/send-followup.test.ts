@@ -25,6 +25,7 @@ const FOLLOWUP_ID = 'fu-1';
 const FOLLOWUP = {
   id: FOLLOWUP_ID,
   quote_id: 'q-1',
+  user_id: 'user-1',
   status: 'pending',
   custom_message: 'Ti scrivo per seguire il preventivo.',
 };
@@ -38,6 +39,15 @@ const QUOTE = {
 };
 
 const EXISTING_TOKEN = { token: 'existing-token-abc' };
+
+const QUOTE_INVIATO = {
+  id: 'q-1',
+  number: 'PRV-001',
+  status: 'inviato',
+  validity_days: 30,
+  client: { name: 'Mario Rossi', email: 'mario@example.com' },
+  sender: { name: 'Acme Srl', email: 'acme@example.com' },
+};
 
 // ── Builder helpers ────────────────────────────────────────────
 
@@ -258,5 +268,118 @@ describe('executeSendFollowUp', () => {
     expect(mockEmailsSend).toHaveBeenCalledTimes(1);
     expect(insertFn).not.toHaveBeenCalled();
     expect(mockLogError).not.toHaveBeenCalled();
+  });
+
+  it('happy path — aggiorna stato preventivo a follow_up_inviato quando era inviato', async () => {
+    mockEmailsSend.mockResolvedValue({ data: { id: 'email-1' }, error: null });
+
+    // Track update su quotes
+    const quotesEqFn = vi.fn().mockReturnThis();
+    const quotesUpdateResult = { eq: quotesEqFn };
+    const quotesUpdateFn = vi.fn().mockReturnValue(quotesUpdateResult);
+
+    const quotesChain = chainReturning({ data: QUOTE_INVIATO, error: null });
+    quotesChain.update = quotesUpdateFn;
+
+    // Track insert su notifications
+    const notificationsInsertFn = vi.fn().mockResolvedValue({ data: null, error: null });
+    const notificationsChain = chainReturning({ data: null, error: null });
+    notificationsChain.insert = notificationsInsertFn;
+
+    const updateFollowupFn = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) });
+    const followupsChain = chainReturning({ data: FOLLOWUP, error: null });
+    followupsChain.update = updateFollowupFn;
+
+    const tokensChain = chainReturning({ data: EXISTING_TOKEN, error: null });
+
+    const adminClient = buildAdminClient({
+      quote_followups: followupsChain,
+      quotes: quotesChain,
+      quote_tokens: tokensChain,
+      notifications: notificationsChain,
+    });
+
+    const result = await executeSendFollowUp(FOLLOWUP_ID, adminClient as never);
+
+    expect(result.ok).toBe(true);
+
+    // Verifica aggiornamento stato preventivo
+    expect(quotesUpdateFn).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'follow_up_inviato' })
+    );
+    // Verifica che il filtro condizionale su status sia presente
+    expect(quotesEqFn).toHaveBeenCalledWith('status', 'inviato');
+
+    // Verifica notifica in-app
+    expect(notificationsInsertFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-1',
+        type: 'followup_sent',
+        quote_id: FOLLOWUP.quote_id,
+      })
+    );
+
+    // Verifica email al mittente (seconda chiamata Resend)
+    expect(mockEmailsSend).toHaveBeenCalledTimes(2);
+    const ownerEmailCall = mockEmailsSend.mock.calls[1][0];
+    expect(ownerEmailCall.to).toBe('acme@example.com');
+    expect(ownerEmailCall.subject).toContain('PRV-001');
+  });
+
+  it('non invia email al mittente se sender.email è assente', async () => {
+    mockEmailsSend.mockResolvedValue({ data: { id: 'email-1' }, error: null });
+
+    // QUOTE senza email mittente
+    const quoteSenzaEmail = {
+      ...QUOTE_INVIATO,
+      sender: { name: 'Acme Srl' }, // nessuna email
+    };
+
+    const quotesChain = chainReturning({ data: quoteSenzaEmail, error: null });
+    const updateFollowupFn = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) });
+    const followupsChain = chainReturning({ data: FOLLOWUP, error: null });
+    followupsChain.update = updateFollowupFn;
+    const tokensChain = chainReturning({ data: EXISTING_TOKEN, error: null });
+
+    const adminClient = buildAdminClient({
+      quote_followups: followupsChain,
+      quotes: quotesChain,
+      quote_tokens: tokensChain,
+    });
+
+    const result = await executeSendFollowUp(FOLLOWUP_ID, adminClient as never);
+
+    expect(result.ok).toBe(true);
+    // Solo l'email al cliente, nessuna al mittente
+    expect(mockEmailsSend).toHaveBeenCalledTimes(1);
+    expect(mockLogError).not.toHaveBeenCalled();
+  });
+
+  it('logga errore ma non fallisce se la notifica in-app fallisce', async () => {
+    mockEmailsSend.mockResolvedValue({ data: { id: 'email-1' }, error: null });
+
+    const quotesChain = chainReturning({ data: QUOTE_INVIATO, error: null });
+
+    const notifError = { message: 'insert failed' };
+    const notificationsInsertFn = vi.fn().mockResolvedValue({ data: null, error: notifError });
+    const notificationsChain = chainReturning({ data: null, error: null });
+    notificationsChain.insert = notificationsInsertFn;
+
+    const updateFollowupFn = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: null }) });
+    const followupsChain = chainReturning({ data: FOLLOWUP, error: null });
+    followupsChain.update = updateFollowupFn;
+    const tokensChain = chainReturning({ data: EXISTING_TOKEN, error: null });
+
+    const adminClient = buildAdminClient({
+      quote_followups: followupsChain,
+      quotes: quotesChain,
+      quote_tokens: tokensChain,
+      notifications: notificationsChain,
+    });
+
+    const result = await executeSendFollowUp(FOLLOWUP_ID, adminClient as never);
+
+    expect(result.ok).toBe(true);
+    expect(mockLogError).toHaveBeenCalledWith('send-followup.notification-insert', notifError);
   });
 });
