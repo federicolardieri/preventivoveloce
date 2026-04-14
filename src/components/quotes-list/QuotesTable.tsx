@@ -17,10 +17,11 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Copy, Eye, MoreHorizontal, Archive, Download, FileText, Search, Filter, AlertTriangle, Send } from "lucide-react";
+import { Copy, Eye, MoreHorizontal, Archive, Download, FileText, Search, Filter, AlertTriangle, Send, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DuplicateDialog } from "./DuplicateDialog";
 import { SendQuoteDialog } from "@/components/quote/SendQuoteDialog";
+import { FollowUpDialog } from "@/components/quote/FollowUpDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import {
@@ -113,6 +114,8 @@ function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
   const [pendingDuplicateId, setPendingDuplicateId] = useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [pendingSendQuote, setPendingSendQuote] = useState<Quote | null>(null);
+  const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false);
+  const [pendingFollowUpQuote, setPendingFollowUpQuote] = useState<Quote | null>(null);
 
   const pillCounts = STATUS_PILLS.reduce<Record<string, number>>((acc, p) => {
     acc[p.value] = p.value === 'all'
@@ -408,6 +411,17 @@ function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
+                              setPendingFollowUpQuote(quote);
+                              setFollowUpDialogOpen(true);
+                            }}
+                            disabled={!quote.client?.email}
+                            className="cursor-pointer text-violet-700 focus:text-violet-700 focus:bg-violet-50 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            <span>Follow-up</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
                               setPendingDuplicateId(quote.id);
                               setDuplicateDialogOpen(true);
                             }}
@@ -468,6 +482,20 @@ function QuotesTableContent({ limit, showFilters }: QuotesTableProps) {
           return ok;
         }}
       />
+      {pendingFollowUpQuote && (
+        <FollowUpDialog
+          open={followUpDialogOpen}
+          onOpenChange={(v) => {
+            setFollowUpDialogOpen(v);
+            if (!v) setPendingFollowUpQuote(null);
+          }}
+          quoteId={pendingFollowUpQuote.id}
+          clientEmail={pendingFollowUpQuote.client?.email || ''}
+          clientName={pendingFollowUpQuote.client?.name || ''}
+          quoteNumber={pendingFollowUpQuote.number}
+          validityDays={pendingFollowUpQuote.validityDays || 30}
+        />
+      )}
     </div>
   );
 }

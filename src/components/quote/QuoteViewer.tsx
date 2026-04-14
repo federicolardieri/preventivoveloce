@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QuotePreview } from "./QuotePreview";
 import { QuoteStatusBadge } from "@/components/quotes-list/QuoteStatusBadge";
-import { Download, ArrowLeft, Edit3, AlertCircle, Send, CheckCircle2, X } from "lucide-react";
+import { Download, ArrowLeft, Edit3, AlertCircle, Send, CheckCircle2, X, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { QuoteStatus } from "@/types/quote";
 import { SendQuoteDialog } from "./SendQuoteDialog";
+import { FollowUpDialog } from "./FollowUpDialog";
 
 const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
   { value: "bozza",      label: "Bozza" },
@@ -29,6 +30,7 @@ export function QuoteViewer() {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<'success' | 'error' | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [followUpDialogOpen, setFollowUpDialogOpen] = useState(false);
 
   const handleSend = async (customMessage: string): Promise<boolean> => {
     if (!currentQuote?.id) return false;
@@ -222,6 +224,15 @@ export function QuoteViewer() {
               <Send className="w-4 h-4 mr-2" />
               {sending ? 'Invio in corso…' : hasClientEmail ? 'Invia al cliente' : 'Email cliente mancante'}
             </Button>
+            <Button
+              onClick={() => setFollowUpDialogOpen(true)}
+              disabled={!hasClientEmail}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50 font-bold gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Follow-up
+            </Button>
           </div>
         </div>
 
@@ -285,6 +296,17 @@ export function QuoteViewer() {
             </Button>
 
             <Button
+              onClick={() => setFollowUpDialogOpen(true)}
+              disabled={!hasClientEmail}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-violet-200 text-violet-700 hover:bg-violet-50 font-bold gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!hasClientEmail ? 'Inserisci l\'email del cliente per abilitare il follow-up' : undefined}
+            >
+              <RefreshCw className="w-4 h-4" />
+              Follow-up
+            </Button>
+
+            <Button
               onClick={handleDownload}
               disabled={downloading}
               className="w-full h-12 rounded-xl bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-bold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5"
@@ -322,6 +344,17 @@ export function QuoteViewer() {
         quoteNumber={currentQuote.number}
         onConfirmSend={handleSend}
       />
+      {currentQuote && (
+        <FollowUpDialog
+          open={followUpDialogOpen}
+          onOpenChange={setFollowUpDialogOpen}
+          quoteId={currentQuote.id}
+          clientEmail={currentQuote.client?.email || ''}
+          clientName={currentQuote.client?.name || ''}
+          quoteNumber={currentQuote.number}
+          validityDays={currentQuote.validityDays || 30}
+        />
+      )}
     </div>
   );
 }
