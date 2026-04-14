@@ -39,12 +39,14 @@ export function SendQuoteDialog({
   onConfirmSend,
 }: SendQuoteDialogProps) {
   const [step, setStep] = useState<Step>("ask");
-  const [customMessage, setCustomMessage] = useState("");
+  const [customMessage, setCustomMessage] = useState(
+    () => `Gentile ${clientName || "cliente"}, in allegato il preventivo ${quoteNumber} come da accordi.\nResto a disposizione per qualsiasi chiarimento.`
+  );
 
   const reset = useCallback(() => {
     setStep("ask");
-    setCustomMessage("");
-  }, []);
+    setCustomMessage(`Gentile ${clientName || "cliente"}, in allegato il preventivo ${quoteNumber} come da accordi.\nResto a disposizione per qualsiasi chiarimento.`);
+  }, [clientName, quoteNumber]);
 
   const handleClose = useCallback(
     (v: boolean) => {
@@ -162,8 +164,7 @@ export function SendQuoteDialog({
                 <Textarea
                   value={customMessage}
                   onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder={`Es. Gentile ${clientName || "cliente"}, in allegato il preventivo come da accordi. Resto a disposizione per qualsiasi chiarimento.`}
-                  className="resize-none h-32 bg-muted/30 border-border focus-visible:ring-primary/20 rounded-xl text-sm placeholder:text-muted-foreground/40"
+                  className="resize-none h-32 bg-muted/30 border-border focus-visible:ring-primary/20 rounded-xl text-sm"
                   maxLength={1000}
                   autoFocus
                 />

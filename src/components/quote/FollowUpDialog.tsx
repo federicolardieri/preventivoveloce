@@ -36,10 +36,12 @@ interface FollowUpDialogProps {
   onSuccess?: (immediate: boolean) => void;
 }
 
-const PRESET_OPTIONS = [
-  { label: "Tra 3 giorni", getDays: () => addDays(new Date(), 3) },
-  { label: "Tra 1 settimana", getDays: () => addWeeks(new Date(), 1) },
-  { label: "Tra 2 settimane", getDays: () => addWeeks(new Date(), 2) },
+type SchedulingMode = "days-3" | "days-7" | "days-14" | "expiry" | "custom" | null;
+
+const PRESET_OPTIONS: { label: string; mode: SchedulingMode }[] = [
+  { label: "Tra 3 giorni", mode: "days-3" },
+  { label: "Tra 1 settimana", mode: "days-7" },
+  { label: "Tra 2 settimane", mode: "days-14" },
 ];
 
 const TIME_OPTIONS = Array.from({ length: 24 }, (_, h) =>
@@ -58,7 +60,8 @@ export function FollowUpDialog({
 }: FollowUpDialogProps) {
   const [step, setStep] = useState<Step>("timing");
   const [isImmediate, setIsImmediate] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
+  const [schedulingMode, setSchedulingMode] = useState<SchedulingMode>(null);
+  const [customDays, setCustomDays] = useState<number>(7);
   const [selectedTime, setSelectedTime] = useState("09:00");
   const [templateId, setTemplateId] = useState<FollowUpTemplateId>("reminder_1");
   const [message, setMessage] = useState(
@@ -72,7 +75,8 @@ export function FollowUpDialog({
   const reset = useCallback(() => {
     setStep("timing");
     setIsImmediate(false);
-    setSelectedPreset(null);
+    setSchedulingMode(null);
+    setCustomDays(7);
     setSelectedTime("09:00");
     setTemplateId("reminder_1");
     setMessage(getTemplatePreviewText("reminder_1", { clientName, quoteNumber, validityDays }));
@@ -96,10 +100,21 @@ export function FollowUpDialog({
     setMessage(getTemplatePreviewText(id, { clientName, quoteNumber, validityDays }));
   };
 
+  const getScheduledDate = (): Date | null => {
+    switch (schedulingMode) {
+      case "days-3": return addDays(new Date(), 3);
+      case "days-7": return addWeeks(new Date(), 1);
+      case "days-14": return addWeeks(new Date(), 2);
+      case "expiry": return addDays(new Date(), validityDays);
+      case "custom": return addDays(new Date(), customDays > 0 ? customDays : 1);
+      default: return null;
+    }
+  };
+
   const getScheduledFor = (): string | null => {
     if (isImmediate) return null;
-    if (selectedPreset === null) return null;
-    const base = PRESET_OPTIONS[selectedPreset].getDays();
+    const base = getScheduledDate();
+    if (!base) return null;
     const [h, m] = selectedTime.split(":").map(Number);
     base.setHours(h, m, 0, 0);
     return base.toISOString();
@@ -107,8 +122,8 @@ export function FollowUpDialog({
 
   const buildScheduledLabel = (): string => {
     if (isImmediate) return "Subito";
-    if (selectedPreset === null) return "";
-    const base = PRESET_OPTIONS[selectedPreset].getDays();
+    const base = getScheduledDate();
+    if (!base) return "";
     const [h, m] = selectedTime.split(":").map(Number);
     base.setHours(h, m, 0, 0);
     return format(base, "EEEE d MMMM 'alle' HH:mm", { locale: it });
@@ -190,24 +205,63 @@ export function FollowUpDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {PRESET_OPTIONS.map((opt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedPreset(i)}
-                    className={cn(
-                      "rounded-xl border px-3 py-3 text-xs font-bold transition-all text-center",
-                      selectedPreset === i
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  {PRESET_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.mode}
+                      onClick={() => setSchedulingMode(opt.mode)}
+                      className={cn(
+                        "rounded-xl border px-3 py-3 text-xs font-bold transition-all text-center",
+                        schedulingMode === opt.mode
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setSchedulingMode("expiry")}
+                  className={cn(
+                    "w-full rounded-xl border px-3 py-3 text-xs font-bold transition-all text-center",
+                    schedulingMode === "expiry"
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  Alla scadenza (tra {validityDays} giorni)
+                </button>
+
+                <div
+                  onClick={() => setSchedulingMode("custom")}
+                  className={cn(
+                    "w-full rounded-xl border px-3 py-3 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                    schedulingMode === "custom"
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  <span>Giorni personalizzati:</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={customDays}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      setSchedulingMode("custom");
+                      setCustomDays(Math.max(1, Math.min(365, Number(e.target.value) || 1)));
+                    }}
+                    className="w-14 rounded-lg border border-current bg-transparent px-2 py-0.5 text-center font-bold focus:outline-none"
+                  />
+                  <span>giorni</span>
+                </div>
               </div>
 
-              {selectedPreset !== null && (
+              {schedulingMode !== null && (
                 <div className="flex items-center gap-3 bg-muted/30 rounded-xl px-4 py-3 border border-border">
                   <Clock className="w-4 h-4 text-primary shrink-0" />
                   <span className="text-sm font-bold text-foreground flex-1">Orario</span>
@@ -223,7 +277,7 @@ export function FollowUpDialog({
                 </div>
               )}
 
-              {selectedPreset !== null && (
+              {schedulingMode !== null && (
                 <Button
                   onClick={() => handleGoToTemplate(false)}
                   variant="outline"
