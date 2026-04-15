@@ -137,18 +137,32 @@ export function LogoUpload() {
       if (!dataUrl) return;
 
       // Verifica che il browser riesca effettivamente a decodificare l'immagine.
-      // Se riesce, la converte in PNG così il generatore PDF non avrà mai problemi.
+      // Se riesce, la ridimensiona e comprime per restare sotto il limite payload
+      // delle Vercel Serverless Functions (4.5 MB).
       const img = new window.Image();
       img.onload = () => {
         try {
           const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
+          const MAX_DIM = 800;
+          let w = img.naturalWidth;
+          let h = img.naturalHeight;
+          if (w > MAX_DIM || h > MAX_DIM) {
+            const ratio = Math.min(MAX_DIM / w, MAX_DIM / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          canvas.width = w;
+          canvas.height = h;
           const ctx = canvas.getContext('2d');
           if (!ctx) throw new Error('Canvas context non disponibile');
-          ctx.drawImage(img, 0, 0);
-          const pngDataUrl = canvas.toDataURL('image/png');
-          updateSender({ logoOriginal: pngDataUrl });
+          ctx.drawImage(img, 0, 0, w, h);
+          // Usa JPEG a qualità 0.7 per ridurre la dimensione del base64.
+          // Se l'immagine ha trasparenza (PNG/WEBP), mantieni PNG.
+          const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
+          const compressedDataUrl = hasAlpha
+            ? canvas.toDataURL('image/png')
+            : canvas.toDataURL('image/jpeg', 0.7);
+          updateSender({ logoOriginal: compressedDataUrl });
           updateTheme({ logoScale: 1 });
         } catch {
           alert(

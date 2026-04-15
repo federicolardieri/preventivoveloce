@@ -136,7 +136,7 @@ export function SenderForm() {
               </Button>
 
               {pickerOpen && (
-                <div className="absolute right-0 top-10 z-50 w-72 bg-card rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute left-0 sm:left-auto sm:right-0 top-10 z-50 w-[calc(100vw-3rem)] sm:w-72 max-w-72 bg-card rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-4 pt-4 pb-2 border-b border-border/50">
                     Seleziona azienda
                   </p>
@@ -151,7 +151,7 @@ export function SenderForm() {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                           <Building2 className="w-5 h-5 text-primary" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold text-card-foreground truncate">{company.label || company.name}</p>
                           {company.vatNumber && (
                             <p className="text-[11px] text-muted-foreground truncate font-medium">P.IVA {company.vatNumber}</p>

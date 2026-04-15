@@ -261,7 +261,7 @@ export function QuoteEditor() {
       <div className="flex flex-col lg:flex-row w-full h-full max-w-[1600px] mx-auto relative">
 
         {/* Main Editor Area (Left Pane) */}
-        <div className={`w-full lg:w-[40%] flex flex-col h-full overflow-y-auto custom-scrollbar px-4 md:px-6 lg:px-10 py-6 md:py-10 transition-all ${isLocked || noCreditsEdit ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
+        <div className={`w-full lg:w-[40%] flex flex-col h-full overflow-y-auto custom-scrollbar px-4 md:px-6 lg:px-10 py-6 md:py-10 pb-28 lg:pb-10 transition-all ${isLocked || noCreditsEdit ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
           
           <div className="w-full max-w-2xl mx-auto space-y-8">
             <div className="flex items-center justify-between gap-2">
