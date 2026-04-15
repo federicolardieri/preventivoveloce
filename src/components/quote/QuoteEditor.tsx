@@ -546,28 +546,28 @@ export function QuoteEditor() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3">
                     <Button
                       onClick={handleDownloadPDF}
                       disabled={downloading || isProTemplate || quotaBlocked}
-                      className="w-full h-14 rounded-2xl bg-white dark:bg-white border-2 border-[#5c32e6] text-[#5c32e6] hover:bg-indigo-50 font-bold text-lg transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-full h-12 md:h-14 rounded-2xl bg-white dark:bg-white border-2 border-[#5c32e6] text-[#5c32e6] hover:bg-indigo-50 font-bold text-sm md:text-base transition-all flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                       size="lg"
                     >
-                      {quotaBlocked ? <Lock className="w-5 h-5 mr-2" /> : <Download className="w-5 h-5 mr-2" />}
+                      {quotaBlocked ? <Lock className="w-4 h-4 md:w-5 md:h-5 mr-2" /> : <Download className="w-4 h-4 md:w-5 md:h-5 mr-2" />}
                       {downloading ? "Generazione PDF..." : quotaBlocked ? "Crediti esauriti" : "Scarica PDF"}
                     </Button>
                     <Button
                       onClick={handleSave}
                       disabled={isProTemplate || quotaBlocked || saving}
-                      className="w-full h-14 rounded-2xl bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-bold text-lg shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-full h-12 md:h-14 rounded-2xl bg-[#5c32e6] hover:bg-[#4b27cb] text-white font-bold text-sm md:text-base shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                       size="lg"
                     >
                       {quotaBlocked ? (
-                        <><Lock className="w-5 h-5 mr-2" /> Crediti esauriti</>
+                        <><Lock className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Crediti esauriti</>
                       ) : saving ? (
                         <>Salvataggio...</>
                       ) : (
-                        <><Save className="w-5 h-5 mr-2" /> Salva nello Storico</>
+                        <><Save className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Salva nello Storico</>
                       )}
                     </Button>
                   </div>
@@ -579,11 +579,11 @@ export function QuoteEditor() {
                   <Button
                     onClick={() => setSendDialogOpen(true)}
                     disabled={sending || isProTemplate || quotaBlocked || !currentQuote.client?.email}
-                    className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full h-12 md:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                     size="lg"
                     title={!currentQuote.client?.email ? 'Inserisci l\'email del cliente per abilitare l\'invio' : undefined}
                   >
-                    <Send className="w-5 h-5 mr-2" />
+                    <Send className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                     {sending ? 'Salvataggio e invio…' : currentQuote.client?.email ? 'Salva e Invia al Cliente' : 'Email cliente mancante'}
                   </Button>
 
