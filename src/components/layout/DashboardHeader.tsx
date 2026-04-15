@@ -56,7 +56,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     : user.email.slice(0, 2).toUpperCase();
 
   return (
-    <header suppressHydrationWarning className="h-[60px] md:h-[80px] flex items-center justify-between px-4 pl-14 md:pl-8 md:px-8 sticky top-0 z-30 border-b border-primary/30 overflow-visible shadow-[0_10px_60px_-15px_rgba(92,50,230,0.3)] transition-all duration-300">
+    <header suppressHydrationWarning className="h-[60px] md:h-[80px] flex flex-shrink-0 items-center justify-between px-4 pl-14 md:pl-8 md:px-8 sticky top-0 z-30 border-b border-primary/30 overflow-visible shadow-[0_10px_60px_-15px_rgba(92,50,230,0.3)] transition-all duration-300">
 
       {/* Premium Glass Layer */}
       <div className="absolute inset-0 bg-white/40 backdrop-blur-[45px] backdrop-saturate-[200%] -z-10" />
@@ -85,14 +85,14 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <div className="absolute inset-0 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),inset_0_-1px_3px_rgba(92,50,230,0.15)] pointer-events-none -z-10" />
 
       {/* Left: Page Title */}
-      <div className="flex items-center relative z-10">
+      <div className="flex items-center min-w-0 flex-1 relative z-10 mr-4">
         <h2 className="text-lg md:text-2xl font-black bg-gradient-to-br from-primary via-primary to-purple-800 bg-clip-text text-transparent tracking-tighter drop-shadow-sm truncate">
           {getPageTitle()}
         </h2>
       </div>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-3 md:gap-6 relative z-10">
+      <div className="flex items-center flex-shrink-0 gap-3 md:gap-6 relative z-10">
           <NotificationBell />
 
         <div className="hidden sm:block h-8 w-px bg-border"></div>

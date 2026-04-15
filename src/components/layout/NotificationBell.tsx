@@ -99,9 +99,9 @@ export function NotificationBell() {
         <button
           type="button"
           aria-label={`Notifiche${unreadCount > 0 ? ` (${unreadCount} non lette)` : ""}`}
-          className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 hover:bg-primary/10 border border-white/30 text-muted-foreground hover:text-primary transition-all shadow-sm"
+          className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 hover:bg-primary/10 border border-white/30 text-muted-foreground hover:text-primary transition-all shadow-sm"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-4.5 w-4.5 md:h-5 md:w-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center px-1 shadow-md">
               {unreadCount > 9 ? "9+" : unreadCount}

@@ -31,10 +31,10 @@ export function MobileNav({ user }: MobileNavProps) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="md:hidden fixed top-[10px] left-3 z-50 w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30"
+          className="md:hidden fixed top-[12px] left-3 z-50 w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30"
           aria-label="Apri menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4.5 h-4.5" />
         </button>
       )}
 
