@@ -25,7 +25,7 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'preventivi@ilpreventivovelo
 async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
   const now = new Date().toISOString();
   let logo = raw.sender?.logo;
-  if (!logo) {
+  if (!logo && !raw.theme?.hideLogo) {
     try {
       const logoPath = path.join(process.cwd(), 'public', 'logo.png');
       const logoBuffer = await fs.readFile(logoPath);

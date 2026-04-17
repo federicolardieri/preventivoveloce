@@ -337,8 +337,17 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
           </ScrollArea>
 
           {/* ── Right: live PDF preview ── */}
-          <div className="flex-1 bg-slate-100 p-8 min-w-0 flex items-start justify-center overflow-y-auto w-full">
-            <QuotePreview compact />
+          <div className="flex-1 bg-slate-100 p-4 min-w-0 flex flex-col overflow-hidden w-full relative">
+            <button
+              onClick={() => setPreviewFullscreen(true)}
+              className="absolute top-3 right-3 z-10 bg-white/80 hover:bg-white rounded-lg p-1.5 shadow-sm border border-slate-200 text-slate-500 hover:text-slate-800 transition-all"
+              title="Espandi anteprima"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+            <div className="flex-1 min-h-0">
+              <QuotePreview compact />
+            </div>
           </div>
         </div>
 
@@ -511,9 +520,9 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
           </div>
         </div>
 
-        {/* Fullscreen preview overlay (mobile) */}
+        {/* Fullscreen preview overlay */}
         {previewFullscreen && (
-          <div className="md:hidden fixed inset-0 z-[60] bg-background flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-background flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
               <p className="font-bold text-foreground text-sm">Anteprima PDF</p>
               <button

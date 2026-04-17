@@ -18,7 +18,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 async function normalizeQuoteForPDF(raw: Quote): Promise<Quote> {
   const now = new Date().toISOString();
   let logo = raw.sender?.logo;
-  if (!logo) {
+  if (!logo && !raw.theme?.hideLogo) {
     try {
       const logoPath = path.join(process.cwd(), 'public', 'logo.png');
       const logoBuffer = await fs.readFile(logoPath);

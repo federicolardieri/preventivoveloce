@@ -94,7 +94,7 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
 
   const signatureStyles = StyleSheet.create({
     signatureSection: {
-      marginTop: 36,
+      marginTop: 20,
       flexDirection: 'row',
       justifyContent: 'space-between',
       gap: 24,
@@ -111,7 +111,7 @@ export const PDFFooter = ({ quote }: { quote: Quote }) => {
       color: '#94a3b8',
       textTransform: 'uppercase',
       letterSpacing: 0.8,
-      marginBottom: 40,
+      marginBottom: 22,
     },
     signatureLine: {
       borderBottomWidth: 1,
