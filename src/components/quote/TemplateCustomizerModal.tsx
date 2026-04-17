@@ -140,6 +140,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
   const showAccentColor = TEMPLATES_WITH_ACCENT.has(currentQuote.template);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v: boolean) => !v && onClose()}>
       <DialogContent className="!max-w-[96vw] sm:!max-w-[96vw] w-[1200px] !max-h-[90vh] h-[85vh] !p-0 flex flex-col !gap-0 overflow-hidden !rounded-2xl">
 
@@ -520,24 +521,6 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
           </div>
         </div>
 
-        {/* Fullscreen preview overlay */}
-        {previewFullscreen && (
-          <div className="fixed inset-0 z-[60] bg-background flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
-              <p className="font-bold text-foreground text-sm">Anteprima PDF</p>
-              <button
-                onClick={() => setPreviewFullscreen(false)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
-              >
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <QuotePreview />
-            </div>
-          </div>
-        )}
-
         {/* Footer CTA */}
         <div className="px-4 md:px-6 py-3 md:py-4 border-t bg-white flex-shrink-0 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p className="text-xs text-slate-400 hidden sm:block">Le modifiche vengono salvate automaticamente nel preventivo corrente.</p>
@@ -551,5 +534,24 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
 
       </DialogContent>
     </Dialog>
+
+    {/* Fullscreen preview — Dialog separato per evitare il transform stacking context del Dialog principale */}
+    <Dialog open={previewFullscreen} onOpenChange={setPreviewFullscreen}>
+      <DialogContent className="!max-w-[100vw] !max-h-[100vh] w-screen h-screen !p-0 !rounded-none flex flex-col [&>button:first-child]:hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
+          <p className="font-bold text-foreground text-sm">Anteprima PDF</p>
+          <button
+            onClick={() => setPreviewFullscreen(false)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="flex-1 min-h-0">
+          <QuotePreview />
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

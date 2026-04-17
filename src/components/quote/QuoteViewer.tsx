@@ -164,13 +164,16 @@ export function QuoteViewer() {
 
           {/* Fullscreen preview dialog */}
           <Dialog open={previewFullscreen} onOpenChange={setPreviewFullscreen}>
-            <DialogContent className="!max-w-[100vw] !max-h-[100vh] w-screen h-screen !p-0 !rounded-none flex flex-col [&>button]:hidden">
-              <button
-                onClick={() => setPreviewFullscreen(false)}
-                className="absolute top-3 right-3 z-50 bg-white/10 hover:bg-white/20 rounded-lg p-2 text-white transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            <DialogContent className="!max-w-[100vw] !max-h-[100vh] w-screen h-screen !p-0 !rounded-none flex flex-col [&>button:first-child]:hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-card shrink-0">
+                <p className="font-bold text-sm">Anteprima PDF</p>
+                <button
+                  onClick={() => setPreviewFullscreen(false)}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-muted transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
               <div className="flex-1 min-h-0">
                 <QuotePreview mode="view" />
               </div>
