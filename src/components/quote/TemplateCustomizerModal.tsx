@@ -537,7 +537,7 @@ export function TemplateCustomizerModal({ open, onClose }: Props) {
 
     {/* Fullscreen preview — Dialog separato per evitare il transform stacking context del Dialog principale */}
     <Dialog open={previewFullscreen} onOpenChange={setPreviewFullscreen}>
-      <DialogContent className="!max-w-[100vw] !max-h-[100vh] w-screen h-screen !p-0 !rounded-none flex flex-col [&>button:first-child]:hidden">
+      <DialogContent showCloseButton={false} className="!max-w-[100vw] !max-h-[100vh] w-screen h-screen !p-0 !rounded-none flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
           <p className="font-bold text-foreground text-sm">Anteprima PDF</p>
           <button
