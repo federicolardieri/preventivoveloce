@@ -58,9 +58,6 @@ export const metadata: Metadata = {
     description:
       "Crea e invia preventivi in automatico ai clienti in 20 secondi con l'AI. Gratis, nessuna carta richiesta.",
   },
-  alternates: {
-    canonical: siteUrl,
-  },
   icons: {
     icon: "/icon.png",
     apple: "/icon.png",
