@@ -46,7 +46,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "it_IT",
-    url: siteUrl,
     siteName: "Preventivo Veloce",
     title: "Preventivo Veloce — Generatore di Preventivi Online Gratis con AI",
     description:
@@ -57,6 +56,9 @@ export const metadata: Metadata = {
     title: "Preventivo Veloce — Generatore di Preventivi Online con AI",
     description:
       "Crea e invia preventivi in automatico ai clienti in 20 secondi con l'AI. Gratis, nessuna carta richiesta.",
+  },
+  alternates: {
+    canonical: "/",
   },
   icons: {
     icon: "/icon.png",

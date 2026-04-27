@@ -8,6 +8,11 @@ const config = categories.find(c => c.slug === slug);
 export const metadata: Metadata = {
   ...config?.metadata,
   alternates: { canonical: `/${slug}` },
+  openGraph: {
+    url: `/${slug}`,
+    title: config?.metadata.title,
+    description: config?.metadata.description,
+  },
 };
 
 export default function Page() {
