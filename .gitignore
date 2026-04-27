@@ -43,3 +43,7 @@ next-env.d.ts
 
 # responsive check screenshots (throwaway)
 /.responsive-screenshots/
+
+# local tool config (MCP servers, Claude settings) — keep locally, never commit
+.mcp.json
+.claude/settings.json
