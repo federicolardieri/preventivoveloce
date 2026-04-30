@@ -4,6 +4,7 @@ import { useQuoteStore } from "@/store/quoteStore";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Settings2, X, Sparkles, Loader2 } from "lucide-react";
@@ -158,11 +159,12 @@ export function LineItemsTable() {
                         Migliora con AI
                       </Button>
                     </div>
-                    <Input
+                    <Textarea
                       value={item.description}
                       onChange={(e) => handleUpdate(item.id, 'description', e.target.value)}
                       placeholder="Descrivi il servizio o prodotto..."
-                      className="h-11 rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 font-medium px-4 text-base shadow-sm w-full transition-all"
+                      rows={1}
+                      className="min-h-[44px] rounded-xl border-border/80 bg-background focus-visible:ring-primary/20 focus-visible:border-transparent font-medium px-4 py-[11px] text-base shadow-sm w-full transition-all resize-none leading-[1.375]"
                     />
                   </div>
 
