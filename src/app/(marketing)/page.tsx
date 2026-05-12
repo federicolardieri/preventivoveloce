@@ -2017,7 +2017,7 @@ export default function LandingPage() {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
                 Firmato col dito.
                 <br />
-                <span className="text-[#a78bfa]">Valido per legge.</span>
+                <span className="text-[#a78bfa]">Tutto registrato.</span>
               </h2>
               <p className="text-white/45 text-base leading-relaxed mb-8">
                 Il tuo cliente riceve il preventivo via email, lo apre dal telefono,{' '}
