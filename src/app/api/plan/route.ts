@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import type { Plan } from '@/lib/quota';
 
 const PLAN_CREDITS: Record<Plan, number | null> = {
-  free: 1,
+  free: 10,
   starter: 10,
   pro: null,
 };

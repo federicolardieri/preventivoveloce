@@ -18,11 +18,11 @@ const PLANS = (billing: Billing) => [
     priceLabel: 'Gratis',
     perMonth: null,
     priceId: null,
-    credits: '1 preventivo totale',
+    credits: '10 preventivi totali',
     badge: null,
     highlight: false,
     features: [
-      { text: '1 preventivo totale', included: true },
+      { text: '10 preventivi totali', included: true },
       { text: 'Tutti gli 8 template PDF', included: true },
       { text: 'Firma digitale del cliente', included: true },
       { text: 'Invio email', included: true },

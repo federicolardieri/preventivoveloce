@@ -36,7 +36,7 @@ export default async function DashboardLayout({
     phoneNumber: user?.user_metadata?.phone_number ?? '',
     plan: 'free',
     creditsRemaining: 0,
-    creditsTotal: 1,
+    creditsTotal: 10,
   };
 
   if (user) {
@@ -48,7 +48,7 @@ export default async function DashboardLayout({
 
     if (profile) {
       const plan = (profile.plan ?? 'free') as DashboardUser['plan'];
-      const PLAN_CREDITS: Record<string, number | null> = { free: 1, starter: 10, pro: null };
+      const PLAN_CREDITS: Record<string, number | null> = { free: 10, starter: 10, pro: null };
       dashboardUser = {
         ...dashboardUser,
         fullName: profile.full_name ?? dashboardUser.fullName,
@@ -56,7 +56,7 @@ export default async function DashboardLayout({
         phoneNumber: profile.phone_number ?? dashboardUser.phoneNumber,
         plan,
         creditsRemaining: plan === 'pro' ? null : (profile.credits_remaining ?? 0),
-        creditsTotal: PLAN_CREDITS[plan] ?? 1,
+        creditsTotal: PLAN_CREDITS[plan] ?? 10,
       };
     }
   }

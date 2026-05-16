@@ -54,7 +54,7 @@ const jsonLdFaq = {
       "name": "Il generatore di preventivi è gratis?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Sì, Preventivo Veloce ha un piano Free gratuito per sempre che include 1 preventivo completo con AI e PDF. Non è richiesta nessuna carta di credito."
+        "text": "Sì, Preventivo Veloce ha un piano Free gratuito per sempre che include 10 preventivi completi con AI e PDF. Non è richiesta nessuna carta di credito."
       }
     },
     {

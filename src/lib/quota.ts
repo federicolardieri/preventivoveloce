@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 export type Plan = 'free' | 'starter' | 'pro';
 
 const PLAN_CREDITS: Record<Plan, number | null> = {
-  free: 1,       // 1 credito totale, mai resetta
+  free: 10,      // 10 crediti totali, mai resetta
   starter: 10,   // 10 crediti per ciclo di 30 giorni
   pro: null,     // illimitato per la durata dell'abbonamento
 };
@@ -24,7 +24,7 @@ interface QuotaResult {
  * Controlla lato server se l'utente può generare/scaricare un nuovo preventivo.
  *
  * Flusso crediti:
- * - Free: 1 credito totale (mai resetta, non scade)
+ * - Free: 10 crediti totali (mai resetta, non scade)
  * - Starter: 10 crediti per ciclo 30gg. Alla scadenza decade a Free.
  * - Pro: illimitato per la durata dell'abbonamento. Alla scadenza decade a Free.
  *
@@ -40,7 +40,7 @@ export async function checkQuota(quoteId: string): Promise<QuotaResult> {
       allowed: false,
       plan: 'free',
       creditsRemaining: 0,
-      creditsTotal: 1,
+      creditsTotal: 10,
       isExistingQuote: false,
       planExpiresAt: null,
       message: 'Utente non autenticato.',
@@ -72,7 +72,7 @@ export async function checkQuota(quoteId: string): Promise<QuotaResult> {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      const freeCredits = Math.max(0, 1 - (totalQuotes ?? 0));
+      const freeCredits = Math.max(0, 10 - (totalQuotes ?? 0));
 
       await admin
         .from('profiles')
@@ -170,7 +170,7 @@ export async function checkQuota(quoteId: string): Promise<QuotaResult> {
     message: allowed
       ? undefined
       : plan === 'free'
-        ? 'Il piano Free permette 1 preventivo totale. Passa a Starter o Pro per continuare.'
+        ? 'Hai esaurito i 10 crediti del piano Free. Passa a Starter o Pro per continuare.'
         : `Hai esaurito i tuoi ${creditsTotal} crediti per questo ciclo. Passa a Pro per preventivi illimitati.`,
   };
 }
