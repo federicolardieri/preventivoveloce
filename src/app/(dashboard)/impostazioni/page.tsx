@@ -485,7 +485,7 @@ const PLANS = (billing: BillingCycle) => [
     perMonth: null,
     priceId: null,
     credits: '10 preventivi totali',
-    features: ['10 preventivi', 'Tutti gli 8 template', 'Watermark sul PDF'],
+    features: ['10 preventivi', '6 template su 8', 'Watermark sul PDF'],
     icon: Zap,
     color: 'border-border',
     badge: '',

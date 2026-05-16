@@ -23,7 +23,7 @@ const PLANS = (billing: Billing) => [
     highlight: false,
     features: [
       { text: '10 preventivi totali', included: true },
-      { text: 'Tutti gli 8 template PDF', included: true },
+      { text: '6 template su 8', included: true },
       { text: 'Firma digitale del cliente', included: true },
       { text: 'Invio email', included: true },
       { text: 'Nessun watermark', included: false },

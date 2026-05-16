@@ -1239,7 +1239,7 @@ function Pricing() {
       desc: 'Per iniziare senza rischi',
       highlight: false,
       features: [
-        { ok: true, text: '1 preventivo totale' },
+        { ok: true, text: '10 preventivi totali' },
         { ok: true, text: 'Template standard' },
         { ok: true, text: 'AI Assistant' },
         { ok: false, text: 'PDF senza watermark' },
