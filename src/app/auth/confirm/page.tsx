@@ -18,7 +18,8 @@ function ConfirmHandler() {
 
     const token_hash = searchParams.get('token_hash');
     const type = searchParams.get('type') as EmailOtpType | null;
-    const next = searchParams.get('next') ?? '/welcome?type=register';
+    const rawNext = searchParams.get('next') ?? '/welcome?type=register';
+    const next = rawNext.startsWith('/') ? rawNext : '/welcome?type=register';
 
     if (!token_hash || !type) {
       router.replace('/login?error=auth_callback_failed');
