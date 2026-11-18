@@ -49,12 +49,18 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/firma/') ||
     pathname.startsWith('/api/track/') ||
+    pathname.startsWith('/api/cron/') ||
     pathname.startsWith('/firma/') ||
     pathname.startsWith('/privacy-policy') ||
     pathname.startsWith('/termini') ||
+    pathname === '/prezzi' ||
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
     pathname.startsWith('/preventivo-');
+
+  if (!user && !isPublicPath && pathname.startsWith('/api/')) {
+    return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  }
 
   if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
