@@ -50,6 +50,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/api/firma/') ||
     pathname.startsWith('/api/track/') ||
     pathname.startsWith('/api/cron/') ||
+    pathname === '/api/email/send-followup' ||
     pathname.startsWith('/firma/') ||
     pathname.startsWith('/privacy-policy') ||
     pathname.startsWith('/termini') ||
