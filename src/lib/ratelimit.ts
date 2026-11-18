@@ -6,6 +6,10 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+export async function pingRedis(): Promise<string> {
+  return redis.ping();
+}
+
 const LIMITS = {
   free: 8,
   starter: 10,
